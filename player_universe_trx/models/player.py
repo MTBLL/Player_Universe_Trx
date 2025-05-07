@@ -19,16 +19,21 @@ class PlayerModel(BaseModel):
     """Pydantic model for baseball player data"""
 
     # Basic player info
-    id: Optional[int] = None
+    id_espn: Optional[int] = Field(None, alias="id")
+    id_fangraphs: Optional[str] = None
+    id_xmlbam: Optional[int] = None
     name: Optional[str] = None
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
+    name_nonascii: Optional[str] = None
 
     # Display information
     display_name: Optional[str] = Field(None, alias="displayName")
     short_name: Optional[str] = Field(None, alias="shortName")
     nickname: Optional[str] = None
-    slug: Optional[str] = None
+    slug_espn: Optional[str] = Field(None, alias="slug")
+    slug_fangraphs: Optional[str] = None
+    fangraphs_api_route: Optional[str] = None
 
     # Position information
     primary_position: Optional[str] = Field(None, alias="primaryPosition")
@@ -44,9 +49,6 @@ class PlayerModel(BaseModel):
     status: Optional[str] = None
     injured: bool = False
     active: bool = False
-
-    # Ownership statistics
-    percent_owned: float = -1
 
     # Physical attributes
     weight: Optional[float] = None
@@ -64,7 +66,7 @@ class PlayerModel(BaseModel):
     debut_year: Optional[int] = Field(None, alias="debutYear")
 
     # Jersey information
-    jersey: Optional[str] = ""
+    jersey: Optional[int] = None
 
     # Media information
     headshot: Optional[str] = None
@@ -75,52 +77,30 @@ class PlayerModel(BaseModel):
     model_config = ConfigDict(
         populate_by_name=True, arbitrary_types_allowed=True, str_strip_whitespace=True
     )
-
+    
     @classmethod
-    def from_player(cls, player):
-        """Convert a Player object to PlayerModel"""
-        data = {}
-
-        # Copy all attributes from player object
-        for key, value in player.__dict__.items():
-            # Special handling for date_of_birth to ensure it's always in YYYY-MM-DD format
-            if key == "date_of_birth" and value and "T" in value:
-                data[key] = value.split("T")[0]
-            else:
-                data[key] = value
-
-        # Convert stats dictionary to use StatPeriod model
-        if hasattr(player, "stats") and player.stats:
-            processed_stats = {}
-            for period, stats in player.stats.items():
-                stat_period = StatPeriod(
-                    points=stats.get("points", 0.0),
-                    projected_points=stats.get("projected_points", 0.0),
-                    breakdown=stats.get("breakdown", {}),
-                    projected_breakdown=stats.get("projected_breakdown", {}),
-                )
-                processed_stats[period] = stat_period
-            data["stats"] = processed_stats
-
-        # Convert camelCase attributes to snake_case to match Player class
-        for camel, snake in [
-            ("primaryPosition", "primary_position"),
-            ("eligibleSlots", "eligible_slots"),
-            ("proTeam", "pro_team"),
-            ("injuryStatus", "injury_status"),
-            ("displayName", "display_name"),
-            ("shortName", "short_name"),
-            ("displayWeight", "display_weight"),
-            ("displayHeight", "display_height"),
-            ("dateOfBirth", "date_of_birth"),
-            ("birthPlace", "birth_place"),
-            ("debutYear", "debut_year"),
-            ("positionName", "position_name"),
-        ]:
-            if camel in data:
-                data[snake] = data.pop(camel)
-
-        return cls(**data)
+    def model_validate(cls, obj, **kwargs):
+        """
+        Custom validation to handle specific data formatting issues.
+        
+        - Converts empty string jersey numbers to None
+        - Converts string jersey numbers to integers when possible
+        """
+        if isinstance(obj, dict):
+            obj_copy = obj.copy()
+            
+            # Handle jersey number conversion
+            if "jersey" in obj_copy:
+                jersey = obj_copy["jersey"]
+                if jersey == "":
+                    obj_copy["jersey"] = None
+                elif isinstance(jersey, str) and jersey.isdigit():
+                    obj_copy["jersey"] = int(jersey)
+            
+            # Use the standard validation with our modified data
+            return super().model_validate(obj_copy, **kwargs)
+        
+        return super().model_validate(obj, **kwargs)
 
     def to_player_dict(self) -> dict:
         """Convert PlayerModel to a dictionary ready for Player class initialization"""
@@ -145,3 +125,6 @@ class PlayerModel(BaseModel):
             data["stats"] = processed_stats
 
         return data
+
+    def _from_json(self, data):
+        pass
