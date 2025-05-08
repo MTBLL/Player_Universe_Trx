@@ -30,7 +30,7 @@ def test_player_model_from_espn_json(espn_player_data, player_name):
         if player_name == "Corbin Carroll"
         else "gunnar-henderson"
     )
-    assert player.slug_fangraphs is None  # hasn't been readin yet
+    assert player.slug_fangraphs is None  # hasn't been read yet
 
     # Test nested properties
     if player_data.get("birth_place"):
