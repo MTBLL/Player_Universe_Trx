@@ -128,7 +128,7 @@ class PlayerModel(BaseModel):
         return data
 
     def _from_json(self, data):
-        pass
+        raise NotImplementedError("_from_json method is not implemented yet.")
         
     def merge_fangraphs_data(self, data: dict) -> None:
         """
