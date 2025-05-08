@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field
 
 
+
 class BirthPlace(BaseModel):
     city: Optional[str] = None
     country: Optional[str] = None
@@ -128,3 +129,39 @@ class PlayerModel(BaseModel):
 
     def _from_json(self, data):
         pass
+        
+    def merge_fangraphs_data(self, data: dict) -> None:
+        """
+        Merges data from FanGraphs API into this player model.
+        
+        Args:
+            data: Dictionary containing FanGraphs player data
+        
+        Note:
+            This method does not process projections, as those are stored separately.
+        """
+        if not isinstance(data, dict):
+            return
+            
+        # Use match/case for better readability and lower complexity
+        for key, value in data.items():
+            match key:
+                case "playerid":
+                    self.id_fangraphs = value
+                case "xmlbam_id":
+                    self.id_xmlbam = value
+                case "name":
+                    if not self.name:
+                        self.name = value
+                case "ascii_name":
+                    if "name" in data and data["name"] != value:
+                        self.name_nonascii = data["name"]
+                case "slug":
+                    self.slug_fangraphs = value
+                case "stats_api":
+                    self.fangraphs_api_route = value
+                case "team":
+                    self.pro_team = value
+                # We ignore projections as requested - they'll be stored separately
+                case _:
+                    pass  # Ignore other fields
