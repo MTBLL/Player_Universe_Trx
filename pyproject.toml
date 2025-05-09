@@ -2,22 +2,10 @@
 name = "player-universe-trx"
 version = "0.1.0"
 description = "Player Universe Transformer"
-authors = [
-    {name = "Taylor \"TP\" Pubins",email = "tpubz@icloud.com"}
-]
+authors = [{ name = "Taylor \"TP\" Pubins", email = "tpubz@icloud.com" }]
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = [
-    "pydantic (>=2.11.4,<3.0.0)"
-]
-
-[tool.poetry]
-
-[tool.poetry.group.dev.dependencies]
-pdbpp = "^0.11.6"
-mypy = "^1.15.0"
-pytest = "^8.3.5"
-pytest-cov = "^6.1.1"
+dependencies = ["pydantic (>=2.11.4,<3.0.0)"]
 
 [tool.mypy]
 python_version = "3.13"
@@ -35,5 +23,8 @@ module = "tests.*"
 disallow_incomplete_defs = false
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["mypy>=1.15.0", "pdbpp>=0.11.6", "pytest-cov>=6.1.1", "pytest>=8.3.5"]
