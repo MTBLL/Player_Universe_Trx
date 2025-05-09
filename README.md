@@ -1,4 +1,6 @@
 # Player Universe Transformer
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![codecov](https://codecov.io/gh/MTBLL/Player_Universe_Trx/graph/badge.svg?token=9EE4ZWL41W)](https://codecov.io/gh/MTBLL/Player_Universe_Trx)
 
 ## Overview
@@ -15,7 +17,7 @@ As part of the MTBL ETL pipeline, this module serves to transform player data fr
 
 ## Installation
 
-This project uses [Poetry](https://python-poetry.org/) for dependency management.
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management.
 
 ```bash
 # Clone the repository
@@ -23,7 +25,7 @@ git clone <repository-url>
 cd Player_Universe_Trx
 
 # Install dependencies
-poetry install
+uv sync
 ```
 
 ## Usage
@@ -46,10 +48,10 @@ espn_player.merge_fangraphs_data(fangraphs_data)
 
 ```bash
 # Install dev dependencies
-poetry install --with dev
+uv sync
 
 # Run tests
-poetry run pytest
+uv run pytest
 ```
 
 ### Project Structure
@@ -73,13 +75,13 @@ player_universe_trx/
 
 ```bash
 # Run all tests
-poetry run pytest
+uv run pytest
 
 # Run a specific test
-poetry run pytest tests/test_player_model_merge.py -v
+uv run pytest tests/test_player_model_merge.py -v
 
 # Run with coverage
-poetry run pytest --cov=player_universe_trx
+uv run pytest --cov=player_universe_trx
 ```
 
 ### Testing Framework
@@ -96,10 +98,10 @@ This project uses pytest for testing with the following features:
 def test_merge_fangraphs_data_corbin_carroll(corbin_carroll_espn, corbin_carroll_fangraphs):
     # Create player model from ESPN data
     player = PlayerModel.model_validate(corbin_carroll_espn)
-    
+
     # Merge FanGraphs data
     player.merge_fangraphs_data(corbin_carroll_fangraphs)
-    
+
     # Assertions
     assert player.id_fangraphs == corbin_carroll_fangraphs["playerid"]
 ```
