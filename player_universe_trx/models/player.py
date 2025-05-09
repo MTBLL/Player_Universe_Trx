@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -26,6 +26,7 @@ class PlayerModel(BaseModel):
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
     name_nonascii: Optional[str] = None
+    name_ascii: Optional[str] = None
 
     # Display information
     display_name: Optional[str] = Field(None, alias="displayName")
@@ -79,9 +80,6 @@ class PlayerModel(BaseModel):
 
     # Media information
     headshot: Optional[str] = None
-
-    # Statistics
-    stats: Dict[Union[int, str], StatPeriod] = Field(default_factory=dict)
 
     model_config = ConfigDict(
         populate_by_name=True, arbitrary_types_allowed=True, str_strip_whitespace=True
@@ -174,7 +172,6 @@ class PlayerModel(BaseModel):
         Note:
             This method does not process projections, as those are stored separately.
         """
-        # Use match/case for better readability and lower complexity
         for key, value in data.items():
             match key:
                 case "playerid":
@@ -182,17 +179,14 @@ class PlayerModel(BaseModel):
                 case "xmlbam_id":
                     self.id_xmlbam = value
                 case "name":
-                    if not self.name:
-                        self.name = value
+                    if not self.name_nonascii:
+                        self.name_nonascii = value
                 case "ascii_name":
-                    if "name" in data and data["name"] != value:
-                        self.name_nonascii = data["name"]
+                    if not self.name_ascii:
+                        self.name_ascii = value
                 case "slug":
                     self.slug_fangraphs = value
                 case "stats_api":
                     self.fangraphs_api_route = value
-                case "team":
-                    self.pro_team = value
-                # We ignore projections as requested - they'll be stored separately
                 case _:
                     pass  # Ignore other fields

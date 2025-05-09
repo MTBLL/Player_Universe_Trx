@@ -62,7 +62,7 @@ def test_merge_fangraphs_data_with_nonascii_name():
 
     # FanGraphs data with non-ASCII name
     data = {
-        "name": "José Ramírez",
+        "name": "Jos\u00e9 Ram\u00edrez",
         "ascii_name": "Jose Ramirez",
         "playerid": "12345",
     }
@@ -70,14 +70,18 @@ def test_merge_fangraphs_data_with_nonascii_name():
     player.merge_fangraphs_data(data)
 
     # Check that name_nonascii is populated correctly
-    assert player.name_nonascii == "José Ramírez"
+    assert player.name_nonascii == "Jos\u00e9 Ram\u00edrez"
 
     # Test with matching ASCII and non-ASCII names
     player = PlayerModel.model_validate({"id": 1, "name": "Test Player"})
-    data["ascii_name"] = data["name"]
+    data = {
+        "name": "Bobby Witt Jr.",
+        "ascii_name": "Bobby Witt Jr.",
+        "playerid": "12345",
+    }
 
     player.merge_fangraphs_data(data)
-    assert player.name_nonascii is None
+    assert player.name_nonascii == "Bobby Witt Jr."
 
 
 def test_merge_fangraphs_data_invalid_input():

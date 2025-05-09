@@ -29,17 +29,3 @@ def test_player_list_attributes(player_models: List[PlayerModel]):
         assert hasattr(player, "status")
         assert isinstance(player.active, bool)
         assert isinstance(player.injured, bool)
-
-
-def test_player_list_stats(player_models: List[PlayerModel]):
-    """Test that player stats are correctly loaded when present."""
-    # Check stats for players that have them
-    for player in player_models:
-        if player.stats:
-            # Validate that stats periods exist
-            for period, stat_period in player.stats.items():
-                # Check that the stat period has the expected attributes
-                assert hasattr(stat_period, "points")
-                assert hasattr(stat_period, "projected_points")
-                assert hasattr(stat_period, "breakdown")
-                assert hasattr(stat_period, "projected_breakdown")
