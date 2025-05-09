@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class BirthPlace(BaseModel):
@@ -19,22 +19,25 @@ class PlayerModel(BaseModel):
     """Pydantic model for baseball player data"""
 
     # Basic player info
-    id: Optional[int] = None
+    id_espn: Optional[int] = Field(None, alias="id")
+    id_fangraphs: Optional[str] = None
+    id_xmlbam: Optional[int] = None
     name: Optional[str] = None
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
+    name_nonascii: Optional[str] = None
 
     # Display information
     display_name: Optional[str] = Field(None, alias="displayName")
     short_name: Optional[str] = Field(None, alias="shortName")
     nickname: Optional[str] = None
-    slug: Optional[str] = None
+    slug_espn: Optional[str] = Field(None, alias="slug")
+    slug_fangraphs: Optional[str] = None
+    fangraphs_api_route: Optional[str] = None
 
     # Position information
     primary_position: Optional[str] = Field(None, alias="primaryPosition")
     eligible_slots: List[str] = Field(default_factory=list, alias="eligibleSlots")
-    position_name: Optional[str] = Field(None, alias="positionName")
-    pos: Optional[str] = None
 
     # Team information
     pro_team: Optional[str] = Field(None, alias="proTeam")
@@ -42,11 +45,19 @@ class PlayerModel(BaseModel):
     # Status information
     injury_status: Optional[str] = Field(None, alias="injuryStatus")
     status: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_not_retired(cls, data: Dict) -> Optional[Dict]:
+        """Validate that the player is not retired."""
+        if isinstance(data, dict) and data.get("status") == "retired":
+            raise ValueError(
+                f"Retired players ({data.get('name')}) cannot be serialized"
+            )
+        return data
+
     injured: bool = False
     active: bool = False
-
-    # Ownership statistics
-    percent_owned: float = -1
 
     # Physical attributes
     weight: Optional[float] = None
@@ -64,7 +75,7 @@ class PlayerModel(BaseModel):
     debut_year: Optional[int] = Field(None, alias="debutYear")
 
     # Jersey information
-    jersey: Optional[str] = ""
+    jersey: Optional[int] = None
 
     # Media information
     headshot: Optional[str] = None
@@ -77,53 +88,57 @@ class PlayerModel(BaseModel):
     )
 
     @classmethod
-    def from_player(cls, player):
-        """Convert a Player object to PlayerModel"""
-        data = {}
+    def model_validate(cls, obj: Dict, **kwargs: Any):
+        """
+        Custom validation to handle specific data formatting issues.
 
-        # Copy all attributes from player object
-        for key, value in player.__dict__.items():
-            # Special handling for date_of_birth to ensure it's always in YYYY-MM-DD format
-            if key == "date_of_birth" and value and "T" in value:
-                data[key] = value.split("T")[0]
-            else:
-                data[key] = value
+        - Converts empty string jersey numbers to None
+        - Converts string jersey numbers to integers when possible
+        - Skip retired players from being serialized
+        """
+        # Check if player is retired and skip serialization
+        if obj.get("status") == "retired":
+            # Returning None would not be consistent with Pydantic's behavior
+            # so we raise a ValueError to indicate this player should be skipped
+            raise ValueError(f"Retired player ({obj.get('name', 'unknown')}) skipped")
 
-        # Convert stats dictionary to use StatPeriod model
-        if hasattr(player, "stats") and player.stats:
-            processed_stats = {}
-            for period, stats in player.stats.items():
-                stat_period = StatPeriod(
-                    points=stats.get("points", 0.0),
-                    projected_points=stats.get("projected_points", 0.0),
-                    breakdown=stats.get("breakdown", {}),
-                    projected_breakdown=stats.get("projected_breakdown", {}),
-                )
-                processed_stats[period] = stat_period
-            data["stats"] = processed_stats
+        obj_copy = obj.copy()
 
-        # Convert camelCase attributes to snake_case to match Player class
-        for camel, snake in [
-            ("primaryPosition", "primary_position"),
-            ("eligibleSlots", "eligible_slots"),
-            ("proTeam", "pro_team"),
-            ("injuryStatus", "injury_status"),
-            ("displayName", "display_name"),
-            ("shortName", "short_name"),
-            ("displayWeight", "display_weight"),
-            ("displayHeight", "display_height"),
-            ("dateOfBirth", "date_of_birth"),
-            ("birthPlace", "birth_place"),
-            ("debutYear", "debut_year"),
-            ("positionName", "position_name"),
-        ]:
-            if camel in data:
-                data[snake] = data.pop(camel)
+        # Handle jersey number conversion
+        if "jersey" in obj_copy:
+            jersey = obj_copy["jersey"]
+            if jersey == "":
+                obj_copy["jersey"] = None
+            elif isinstance(jersey, str) and jersey.isdigit():
+                obj_copy["jersey"] = int(jersey)
 
-        return cls(**data)
+        # Use the standard validation with our modified data
+        return super().model_validate(obj_copy, **kwargs)
+
+    def name_contains_first_and_last(self) -> bool:
+        """
+        Check if full name contains both first and last name components.
+
+        Handles edge cases like middle initials or suffixes:
+        - "Michael A. Taylor" contains both "Michael" and "Taylor"
+        - "Ken Griffey Jr." contains both "Ken" and "Griffey"
+
+        Returns:
+            bool: True if both first and last name are found in the full name
+        """
+        if not all([self.name, self.first_name, self.last_name]):
+            return False
+
+        # Check if both first and last name are contained within the full name
+        assert self.name and self.first_name and self.last_name
+        return self.first_name in self.name and self.last_name in self.name
 
     def to_player_dict(self) -> dict:
-        """Convert PlayerModel to a dictionary ready for Player class initialization"""
+        """
+        Convert PlayerModel to a dictionary ready for Player class initialization.
+
+        Note: Retired players will be filtered out before this method is called.
+        """
         # Convert to dict with all fields - use snake_case
         data = self.model_dump(exclude_none=True)
 
@@ -145,3 +160,39 @@ class PlayerModel(BaseModel):
             data["stats"] = processed_stats
 
         return data
+
+    def _from_json(self, data: Dict) -> NotImplementedError:
+        raise NotImplementedError("_from_json method is not implemented yet.")
+
+    def merge_fangraphs_data(self, data: dict) -> None:
+        """
+        Merges data from FanGraphs API into this player model.
+
+        Args:
+            data: Dictionary containing FanGraphs player data
+
+        Note:
+            This method does not process projections, as those are stored separately.
+        """
+        # Use match/case for better readability and lower complexity
+        for key, value in data.items():
+            match key:
+                case "playerid":
+                    self.id_fangraphs = value
+                case "xmlbam_id":
+                    self.id_xmlbam = value
+                case "name":
+                    if not self.name:
+                        self.name = value
+                case "ascii_name":
+                    if "name" in data and data["name"] != value:
+                        self.name_nonascii = data["name"]
+                case "slug":
+                    self.slug_fangraphs = value
+                case "stats_api":
+                    self.fangraphs_api_route = value
+                case "team":
+                    self.pro_team = value
+                # We ignore projections as requested - they'll be stored separately
+                case _:
+                    pass  # Ignore other fields

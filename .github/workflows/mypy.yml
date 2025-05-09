@@ -29,4 +29,4 @@ jobs:
 
       - name: Run mypy type checking
         run: |
-          poetry run mypy espn_api_extractor
+          poetry run mypy player_universe_trx
