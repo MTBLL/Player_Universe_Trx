@@ -25,11 +25,11 @@ def test_player_model_from_espn_json(espn_player_data, player_name):
     assert player.name == player_name
     assert player.first_name == player_data["first_name"]
     assert player.last_name == player_data["last_name"]
-    assert (
-        player.slug_espn == "corbin-carroll"
-        if player_name == "Corbin Carroll"
-        else "gunnar-henderson"
-    )
+    if player_name == "Corbin Carroll":
+        assert player.slug_espn == "corbin-carroll"
+    if player_name == "Gunnar Henderson":
+        assert player.slug_espn == "gunnar-henderson"
+
     assert player.slug_fangraphs is None  # hasn't been read yet
 
     # Test nested properties
