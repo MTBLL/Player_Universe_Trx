@@ -11,19 +11,19 @@ This module is part of the MTBL ETL pipeline, transforming player data from ESPN
 1. **Development Commands**:
    ```bash
    # Install dependencies
-   uv pip install -e .
+   uv sync
 
    # Run tests
-   python -m pytest
+   uv run pytest
 
    # Type check with mypy
-   python -m mypy player_universe_trx/
+   uv run mypy player_universe_trx/
 
    # Run linting with ruff
-   python -m ruff check player_universe_trx/
+   uv run ruff check player_universe_trx/
 
    # Format code with ruff
-   python -m ruff format player_universe_trx/
+   uv run ruff format player_universe_trx/
    ```
 
 2. **Project Structure**:
@@ -37,40 +37,40 @@ This module is part of the MTBL ETL pipeline, transforming player data from ESPN
 
 ```bash
 # Add a dependency
-uv pip install <package-name>
+uv add <package-name>
 
 # Add a dev dependency
-uv pip install --dev <package-name>
+uv add --dev <package-name>
 
 # Update dependencies
-uv pip sync requirements.txt
+uv sync
 
 # Run a command
-python -m <command>
+uv run <command>
 ```
 
 ### Running Tests
 
 ```bash
 # Run all tests
-python -m pytest
+uv run pytest
 
 # Run a specific test file
-python -m pytest tests/test_specific.py
+uv run pytest tests/test_specific.py
 
 # Run with verbose output
-python -m pytest -v
+uv run pytest -v
 ```
 
 ### Formatting and Linting
 
 ```bash
 # Check typing
-python -m mypy player_universe_trx/
+uv run mypy player_universe_trx/
 
 # Lint code with ruff
-python -m ruff check player_universe_trx/
+uv run ruff check player_universe_trx/
 
 # Format code with ruff
-python -m ruff format player_universe_trx/
+uv run ruff format player_universe_trx/
 ```
