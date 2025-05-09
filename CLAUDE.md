@@ -11,19 +11,19 @@ This module is part of the MTBL ETL pipeline, transforming player data from ESPN
 1. **Development Commands**:
    ```bash
    # Install dependencies
-   poetry install
+   uv pip install -e .
 
    # Run tests
-   poetry run pytest
+   python -m pytest
 
    # Type check with mypy
-   poetry run mypy player_universe_trx/
+   python -m mypy player_universe_trx/
 
    # Run linting with ruff
-   poetry run ruff check player_universe_trx/
+   python -m ruff check player_universe_trx/
 
    # Format code with ruff
-   poetry run ruff format player_universe_trx/
+   python -m ruff format player_universe_trx/
    ```
 
 2. **Project Structure**:
@@ -33,44 +33,44 @@ This module is part of the MTBL ETL pipeline, transforming player data from ESPN
 
 ## Common Tasks
 
-### Working with Poetry
+### Working with uv
 
 ```bash
 # Add a dependency
-poetry add <package-name>
+uv pip install <package-name>
 
 # Add a dev dependency
-poetry add --group dev <package-name>
+uv pip install --dev <package-name>
 
 # Update dependencies
-poetry update
+uv pip sync requirements.txt
 
-# Run a script within the environment
-poetry run <command>
+# Run a command
+python -m <command>
 ```
 
 ### Running Tests
 
 ```bash
 # Run all tests
-poetry run pytest
+python -m pytest
 
 # Run a specific test file
-poetry run pytest tests/test_specific.py
+python -m pytest tests/test_specific.py
 
 # Run with verbose output
-poetry run pytest -v
+python -m pytest -v
 ```
 
 ### Formatting and Linting
 
 ```bash
 # Check typing
-poetry run mypy player_universe_trx/
+python -m mypy player_universe_trx/
 
 # Lint code with ruff
-poetry run ruff check player_universe_trx/
+python -m ruff check player_universe_trx/
 
 # Format code with ruff
-poetry run ruff format player_universe_trx/
+python -m ruff format player_universe_trx/
 ```
