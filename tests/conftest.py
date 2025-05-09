@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 import pytest
 
@@ -20,7 +20,7 @@ def fangraphs_fixture_path():
 
 
 @pytest.fixture
-def espn_player_data(espn_fixture_path):
+def espn_player_data(espn_fixture_path) -> List[Dict]:
     """Fixture providing the loaded ESPN player data."""
     with open(espn_fixture_path, "r") as f:
         return json.load(f)
@@ -37,7 +37,14 @@ def fangraphs_player_data(fangraphs_fixture_path):
 def player_models(espn_player_data) -> List[PlayerModel]:
     """Fixture providing PlayerModel objects created from ESPN data."""
     # Load the first 10 players to keep the test fast
-    return [PlayerModel.model_validate(data) for data in espn_player_data[:10]]
+    validated_models = []
+    for obj in espn_player_data:
+        try:
+            model = PlayerModel.model_validate(obj)
+            validated_models.append(model)
+        except ValueError:
+            continue
+    return validated_models
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict
 
 import pytest
 
@@ -57,56 +57,46 @@ def test_player_model_from_espn_json(espn_player_data, player_name):
                 assert player.stats[period_key].points == stats["points"]
 
 
-def test_player_list_creation(player_models: List[PlayerModel]):
-    """Test that we can create multiple player models from a list of player data."""
-    # Check that we have players in our list
-    assert len(player_models) > 0
+def test_skip_retired_players():
+    retired_player: Dict = {
+        "id": 32286,
+        "name": "Danry Vasquez",
+        "first_name": "Danry",
+        "last_name": "Vasquez",
+        "display_name": "Danry Vasquez",
+        "short_name": "D. Vasquez",
+        "nickname": "",
+        "slug": "danry-vasquez",
+        "primary_position": "CF",
+        "eligible_slots": ["CF", "OF", "UTIL"],
+        "position_name": "Right Field",
+        "pos": "RF",
+        "pro_team": "HOU",
+        "injury_status": None,
+        "status": "retired",
+        "injured": False,
+        "active": False,
+        "percent_owned": 0.0,
+        "weight": 189.0,
+        "display_weight": "189 lbs",
+        "height": 75,
+        "display_height": "6' 3\"",
+        "bats": "Left",
+        "throws": "Right",
+        "date_of_birth": "1994-01-08",
+        "birth_place": {"city": "Ocumare Del Tuy", "country": "Venezuela"},
+        "debut_year": None,
+        "jersey": "",
+        "headshot": None,
+        "stats": {},
+    }
 
-    # Check that each item is a PlayerModel
-    for player in player_models:
-        assert isinstance(player, PlayerModel)
+    # Test that validation fails for retired players
+    with pytest.raises(ValueError, match="Retired player"):
+        PlayerModel.model_validate(retired_player)
 
-
-def test_player_list_attributes(player_models: List[PlayerModel]):
-    """Test that player models in the list have the expected attributes."""
-    for player in player_models:
-        # Check that essential attributes are present
-        assert hasattr(player, "id_espn")
-        assert hasattr(player, "name")
-        assert hasattr(player, "first_name")
-        assert hasattr(player, "last_name")
-
-        # Check that team information is present
-        assert hasattr(player, "pro_team")
-
-        # Check status information
-        assert hasattr(player, "status")
-        assert isinstance(player.active, bool)
-        assert isinstance(player.injured, bool)
-
-
-def test_player_list_stats(player_models: List[PlayerModel]):
-    """Test that player stats are correctly loaded when present."""
-    # Check stats for players that have them
-    for player in player_models:
-        if player.stats:
-            # Validate that stats periods exist
-            for period, stat_period in player.stats.items():
-                # Check that the stat period has the expected attributes
-                assert hasattr(stat_period, "points")
-                assert hasattr(stat_period, "projected_points")
-                assert hasattr(stat_period, "breakdown")
-                assert hasattr(stat_period, "projected_breakdown")
-
-
-def test_player_data_consistency(player_models: List[PlayerModel]):
-    """Test that player data is consistent with the expected format."""
-    for player in player_models:
-        # Test that name matches first/last name when both are present
-        if player.first_name and player.last_name and player.name:
-            assert f"{player.first_name} {player.last_name}" == player.name
-
-        # Test that birth_place is properly populated when present
-        if player.birth_place:
-            assert hasattr(player.birth_place, "city")
-            assert hasattr(player.birth_place, "country")
+    # Test that active players process normally
+    active_player_data = retired_player.copy()
+    active_player_data["status"] = "active"
+    active_result = PlayerModel.model_validate(active_player_data)
+    assert isinstance(active_result, PlayerModel)

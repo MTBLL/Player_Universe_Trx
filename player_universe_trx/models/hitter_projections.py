@@ -28,7 +28,7 @@ class HitterProjectionModel(BaseProjectionModel):
     # Validator to convert float to int for h and hr
     @field_validator("h", "hr", mode="before")
     @classmethod
-    def convert_to_int(cls, v):
+    def convert_to_int(cls, v: float) -> Any:
         return int_from_float(v)
 
     r: Optional[float] = Field(None, alias="R")
