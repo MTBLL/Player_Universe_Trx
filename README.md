@@ -25,7 +25,7 @@ git clone <repository-url>
 cd Player_Universe_Trx
 
 # Install dependencies
-uv pip install -e .
+uv sync
 ```
 
 ## Usage
@@ -48,10 +48,10 @@ espn_player.merge_fangraphs_data(fangraphs_data)
 
 ```bash
 # Install dev dependencies
-uv pip install -e ".[dev]"
+uv sync"
 
 # Run tests
-python -m pytest
+uv run pytest
 ```
 
 ### Project Structure
@@ -75,13 +75,13 @@ player_universe_trx/
 
 ```bash
 # Run all tests
-python -m pytest
+uv run pytest
 
 # Run a specific test
-python -m pytest tests/test_player_model_merge.py -v
+uv run pytest tests/test_player_model_merge.py -v
 
 # Run with coverage
-python -m pytest --cov=player_universe_trx
+uv run pytest --cov=player_universe_trx
 ```
 
 ### Testing Framework
