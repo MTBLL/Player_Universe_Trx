@@ -48,7 +48,7 @@ espn_player.merge_fangraphs_data(fangraphs_data)
 
 ```bash
 # Install dev dependencies
-uv sync"
+uv sync
 
 # Run tests
 uv run pytest
