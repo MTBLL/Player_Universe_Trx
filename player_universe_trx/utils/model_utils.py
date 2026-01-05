@@ -6,6 +6,10 @@ from player_universe_trx.models.fangraphs import (
     FangraphsBatterModel,
     FangraphsPitcherModel,
 )
+from player_universe_trx.models.savant import (
+    SavantBatterModel,
+    SavantPitcherModel,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -112,4 +116,86 @@ def create_fangraphs_pitcher_models(pitcher_data: List[Dict]) -> List[FangraphsP
             skipped_count += 1
 
     logger.info(f"Created {len(valid_pitchers)} FanGraphs pitcher models, skipped {skipped_count} invalid records")
+    return valid_pitchers
+
+
+def create_savant_batter_models(batter_data: List[Dict]) -> List[SavantBatterModel]:
+    """
+    Create SavantBatterModel instances from raw Savant batter data.
+
+    Transforms flat Savant data structure into nested model with stats object.
+    Separates player identity/pitch count fields from statistical fields.
+
+    Args:
+        batter_data: Raw Savant batter data from JSON (flat structure)
+
+    Returns:
+        List of validated SavantBatterModel instances (nested structure)
+    """
+    valid_batters = []
+    skipped_count = 0
+
+    # Identity and pitch count fields that stay at root level
+    identity_fields = {"player_id", "name", "first_name", "last_name", "name_ascii", "slug"}
+    pitch_count_fields = {"pitches", "total_pitches", "pitch_percent"}
+    root_fields = identity_fields | pitch_count_fields
+
+    for batter in batter_data:
+        try:
+            # Separate root-level fields from stats fields
+            player_data = {k: v for k, v in batter.items() if k in root_fields}
+            stats_data = {k: v for k, v in batter.items() if k not in root_fields}
+
+            # Create nested structure
+            nested_data = {**player_data, "stats": stats_data if stats_data else None}
+
+            # Validate with Pydantic
+            model = SavantBatterModel.model_validate(nested_data)
+            valid_batters.append(model)
+        except Exception as e:
+            logger.debug(f"Skipped batter {batter.get('name', 'unknown')}: {e}")
+            skipped_count += 1
+
+    logger.info(f"Created {len(valid_batters)} Savant batter models, skipped {skipped_count} invalid records")
+    return valid_batters
+
+
+def create_savant_pitcher_models(pitcher_data: List[Dict]) -> List[SavantPitcherModel]:
+    """
+    Create SavantPitcherModel instances from raw Savant pitcher data.
+
+    Transforms flat Savant data structure into nested model with stats object.
+    Separates player identity/pitch count fields from statistical fields.
+
+    Args:
+        pitcher_data: Raw Savant pitcher data from JSON (flat structure)
+
+    Returns:
+        List of validated SavantPitcherModel instances (nested structure)
+    """
+    valid_pitchers = []
+    skipped_count = 0
+
+    # Identity and pitch count fields that stay at root level
+    identity_fields = {"player_id", "name", "first_name", "last_name", "name_ascii", "slug"}
+    pitch_count_fields = {"pitches", "total_pitches", "pitch_percent"}
+    root_fields = identity_fields | pitch_count_fields
+
+    for pitcher in pitcher_data:
+        try:
+            # Separate root-level fields from stats fields
+            player_data = {k: v for k, v in pitcher.items() if k in root_fields}
+            stats_data = {k: v for k, v in pitcher.items() if k not in root_fields}
+
+            # Create nested structure
+            nested_data = {**player_data, "stats": stats_data if stats_data else None}
+
+            # Validate with Pydantic
+            model = SavantPitcherModel.model_validate(nested_data)
+            valid_pitchers.append(model)
+        except Exception as e:
+            logger.debug(f"Skipped pitcher {pitcher.get('name', 'unknown')}: {e}")
+            skipped_count += 1
+
+    logger.info(f"Created {len(valid_pitchers)} Savant pitcher models, skipped {skipped_count} invalid records")
     return valid_pitchers

@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -20,6 +19,10 @@ class DataLoader:
     - ESPN League: espn_league_{league_id}_{year}_{timestamp}.json
     - FanGraphs Batters: fangraph_batters_{year}_{timestamp}.json
     - FanGraphs Pitchers: fangraph_pitchers_{year}_{timestamp}.json
+    - Savant Batters: savant_batters_{year}_{MM}_{DD}_{HHMM}.json
+    - Savant Pitchers: savant_pitchers_{year}_{MM}_{DD}_{HHMM}.json
+
+    Note: Savant uses a different timestamp format (YYYY_MM_DD_HHMM) vs ESPN/FanGraphs (YYYYMMDD_HHMMSS)
     """
 
     DEFAULT_RESOURCES_PATH = "/Users/Shared/BaseballHQ/resources/extract"
@@ -80,12 +83,12 @@ class DataLoader:
         Returns:
             datetime object if timestamp found, None otherwise
         """
-        timestamp_pattern = r'(\d{8}_\d{6})'
+        timestamp_pattern = r"(\d{8}_\d{6})"
         match = re.search(timestamp_pattern, filename)
 
         if match:
             try:
-                return datetime.strptime(match.group(1), '%Y%m%d_%H%M%S')
+                return datetime.strptime(match.group(1), "%Y%m%d_%H%M%S")
             except ValueError:
                 logger.warning(f"Invalid timestamp format in filename: {filename}")
                 return None
@@ -254,4 +257,66 @@ class DataLoader:
         """
         file_path = self.get_fangraphs_pitchers_file()
         logger.info(f"Loading FanGraphs pitchers from: {file_path}")
+        return load_json_data(str(file_path))
+
+    def get_savant_batters_file(self) -> Path:
+        """
+        Get the most recent Savant batters file for the configured year.
+
+        Returns:
+            Path to the Savant batters file
+
+        Raises:
+            FileNotFoundError: If no matching file is found
+        """
+        pattern = f"savant_batters_{self.year}_\\d{{2}}_\\d{{2}}_\\d{{4}}\\.json"
+
+        file_path = self._find_latest_file(pattern)
+        if not file_path:
+            raise FileNotFoundError(
+                f"No Savant batters file found for year {self.year} in {self.resources_path}"
+            )
+
+        return file_path
+
+    def get_savant_pitchers_file(self) -> Path:
+        """
+        Get the most recent Savant pitchers file for the configured year.
+
+        Returns:
+            Path to the Savant pitchers file
+
+        Raises:
+            FileNotFoundError: If no matching file is found
+        """
+        pattern = f"savant_pitchers_{self.year}_\\d{{2}}_\\d{{2}}_\\d{{4}}\\.json"
+
+        file_path = self._find_latest_file(pattern)
+        if not file_path:
+            raise FileNotFoundError(
+                f"No Savant pitchers file found for year {self.year} in {self.resources_path}"
+            )
+
+        return file_path
+
+    def load_savant_batters(self) -> List[Dict]:
+        """
+        Load Savant batters data for the configured year.
+
+        Returns:
+            List of Savant batter dictionaries
+        """
+        file_path = self.get_savant_batters_file()
+        logger.info(f"Loading Savant batters from: {file_path}")
+        return load_json_data(str(file_path))
+
+    def load_savant_pitchers(self) -> List[Dict]:
+        """
+        Load Savant pitchers data for the configured year.
+
+        Returns:
+            List of Savant pitcher dictionaries
+        """
+        file_path = self.get_savant_pitchers_file()
+        logger.info(f"Loading Savant pitchers from: {file_path}")
         return load_json_data(str(file_path))

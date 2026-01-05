@@ -107,6 +107,17 @@ def test_get_file_methods(fixtures_dir):
         == "fangraph_pitchers_2025_20260103_135002.json"
     )
 
+    # Test Savant file methods (year 2026 for Savant fixtures)
+    loader_2026 = DataLoader(resources_path=str(fixtures_dir), year=2026)
+    assert (
+        loader_2026.get_savant_batters_file().name
+        == "savant_batters_2026_01_03_1444.json"
+    )
+    assert (
+        loader_2026.get_savant_pitchers_file().name
+        == "savant_pitchers_2026_01_03_1444.json"
+    )
+
     loader_no_files = DataLoader(resources_path=str(fixtures_dir), year=2099)
     with pytest.raises(
         FileNotFoundError, match="No ESPN batters file found for year 2099"
@@ -128,6 +139,14 @@ def test_get_file_methods(fixtures_dir):
         FileNotFoundError, match="No FanGraphs pitchers file found for year 2099"
     ):
         loader_no_files.get_fangraphs_pitchers_file()
+    with pytest.raises(
+        FileNotFoundError, match="No Savant batters file found for year 2099"
+    ):
+        loader_no_files.get_savant_batters_file()
+    with pytest.raises(
+        FileNotFoundError, match="No Savant pitchers file found for year 2099"
+    ):
+        loader_no_files.get_savant_pitchers_file()
 
 
 def test_load_methods(fixtures_dir):
@@ -151,3 +170,12 @@ def test_load_methods(fixtures_dir):
 
     fg_pitchers = loader.load_fangraphs_pitchers()
     assert isinstance(fg_pitchers, list) and len(fg_pitchers) > 0
+
+    # Test Savant load methods (year 2026 for Savant fixtures)
+    loader_2026 = DataLoader(resources_path=str(fixtures_dir), year=2026)
+
+    sv_batters = loader_2026.load_savant_batters()
+    assert isinstance(sv_batters, list) and len(sv_batters) > 0
+
+    sv_pitchers = loader_2026.load_savant_pitchers()
+    assert isinstance(sv_pitchers, list) and len(sv_pitchers) > 0

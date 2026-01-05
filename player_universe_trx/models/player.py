@@ -1,6 +1,10 @@
+import logging
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+# Configure logging
+logger = logging.getLogger("player_universe_trx.models")
 
 
 class BirthPlace(BaseModel):
@@ -80,6 +84,17 @@ class PlayerModel(BaseModel):
 
     # Media information
     headshot: Optional[str] = None
+
+    # Savant sabermetric stats (Optional - not all players have Savant data)
+    exit_velo: Optional[float] = None
+    barrel_rate: Optional[float] = None  # barrels_per_bbe_pct from Savant
+    hard_hit_rate: Optional[float] = None  # hardhit_pct from Savant
+    xwoba: Optional[float] = None
+    xavg: Optional[float] = None
+    xslg: Optional[float] = None
+    swing_miss_pct: Optional[float] = None
+    bat_speed: Optional[float] = None
+    attack_angle: Optional[float] = None
 
     model_config = ConfigDict(
         populate_by_name=True, arbitrary_types_allowed=True, str_strip_whitespace=True
@@ -190,3 +205,51 @@ class PlayerModel(BaseModel):
                     self.fangraphs_api_route = value
                 case _:
                     pass  # Ignore other fields
+
+    def merge_savant_data(self, data: dict) -> None:
+        """
+        Merge Savant player sabermetric data into this PlayerModel.
+
+        Args:
+            data: Savant player data dictionary. Can contain:
+                - player_id (int): MLB Statcast ID
+                - exit_velo (float): Average exit velocity
+                - barrels_per_bbe_pct (float): Barrel rate per batted ball event
+                - hardhit_pct (float): Hard hit percentage
+                - xwOBA (float): Expected weighted on-base average
+                - xAVG (float): Expected batting average
+                - xSLG (float): Expected slugging percentage
+                - swing_miss_pct (float): Swing and miss percentage
+                - bat_speed (float): Average bat speed
+                - attack_angle (float): Average attack angle
+        """
+        # Verify MLB ID consistency if present
+        if "player_id" in data:
+            player_id = data["player_id"]
+            if self.id_xmlbam and self.id_xmlbam != player_id:
+                logger.warning(
+                    f"MLB ID mismatch for {self.name}: PlayerModel has {self.id_xmlbam}, "
+                    f"Savant has {player_id}"
+                )
+            if not self.id_xmlbam:
+                self.id_xmlbam = player_id
+
+        # Merge sabermetric stats - use selective assignment
+        if "exit_velo" in data:
+            self.exit_velo = data["exit_velo"]
+        if "barrels_per_bbe_pct" in data:
+            self.barrel_rate = data["barrels_per_bbe_pct"]
+        if "hardhit_pct" in data:
+            self.hard_hit_rate = data["hardhit_pct"]
+        if "xwOBA" in data:
+            self.xwoba = data["xwOBA"]
+        if "xAVG" in data:
+            self.xavg = data["xAVG"]
+        if "xSLG" in data:
+            self.xslg = data["xSLG"]
+        if "swing_miss_pct" in data:
+            self.swing_miss_pct = data["swing_miss_pct"]
+        if "bat_speed" in data:
+            self.bat_speed = data["bat_speed"]
+        if "attack_angle" in data:
+            self.attack_angle = data["attack_angle"]
