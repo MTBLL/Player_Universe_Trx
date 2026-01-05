@@ -81,3 +81,21 @@ def espn_pitcher_data() -> List[Dict]:
     with open(fixtures_path / "espn_pitchers_2025_20260103_103120.json") as f:
         data = json.load(f)
     return data[:10]
+
+
+@pytest.fixture
+def fangraphs_batter_data() -> List[Dict]:
+    """Fixture providing FanGraphs batter data."""
+    fixtures_path = Path(__file__).parent / "fixtures"
+    with open(fixtures_path / "fangraph_batters_2025_20260103_135002.json") as f:
+        data = json.load(f)
+    return data[:10]
+
+
+@pytest.fixture
+def fangraphs_pitcher_data() -> List[Dict]:
+    """Fixture providing FanGraphs pitcher data."""
+    fixtures_path = Path(__file__).parent / "fixtures"
+    with open(fixtures_path / "fangraph_pitchers_2025_20260103_135002.json") as f:
+        data = json.load(f)
+    return data[:10]

@@ -2,10 +2,19 @@
 transform_app/
 ├── __main__.py                 # Entry point - orchestrates the pipeline
 ├── models/
-│   ├── espn.py            # ESPNBatter, ESPNPitcher
-│   ├── fangraphs.py       # FangraphsBatter, FangraphsPitcher  
-│   ├── savant.py          # SavantBatter, SavantPitcher
-│   └── player.py          # Batter, Pitcher (output models)
+│   ├── espn/
+│   │   ├── batter.py          # ESPNBatter
+│   │   └── pitcher.py         # ESPNPitcher
+│   │   └── stats.py           # ESPNStats
+│   ├── fangraphs/
+│   │   ├── batter.py          # FangraphsBatter
+│   │   └── pitcher.py         # FangraphsPitcher
+│   │   └── stats.py           # FangraphsStats
+│   ├── savant/
+│   │   ├── batter.py          # SavantBatter
+│   │   └── pitcher.py         # SavantPitcher
+│   │   └── stats.py           # SavantStats
+│   └── player.py              # Batter, Pitcher (output models)
 ├── loaders/
 │   └── file_loader.py     # Read JSON files from local dir
 ├── transformers/
