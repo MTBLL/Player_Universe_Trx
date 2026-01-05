@@ -63,3 +63,21 @@ def corbin_carroll_fangraphs(fangraphs_player_data) -> Dict[str, Any]:
         if player.get("name") == "Corbin Carroll":
             return player
     raise ValueError("Corbin Carroll not found in FanGraphs data")
+
+
+@pytest.fixture
+def espn_batter_data() -> List[Dict]:
+    """Fixture providing ESPN batter data."""
+    fixtures_path = Path(__file__).parent / "fixtures"
+    with open(fixtures_path / "espn_batters_2025_20260103_103120.json") as f:
+        data = json.load(f)
+    return data[:10]
+
+
+@pytest.fixture
+def espn_pitcher_data() -> List[Dict]:
+    """Fixture providing ESPN pitcher data."""
+    fixtures_path = Path(__file__).parent / "fixtures"
+    with open(fixtures_path / "espn_pitchers_2025_20260103_103120.json") as f:
+        data = json.load(f)
+    return data[:10]

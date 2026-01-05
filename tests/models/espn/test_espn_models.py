@@ -41,9 +41,7 @@ def test_batter_stats_model(sample_batter):
 
 def test_pitcher_stats_model(sample_pitcher):
     """Test EspnPitcherStatsModel with projection data."""
-    stats = EspnPitcherStatsModel.model_validate(
-        sample_pitcher["stats"]["projections"]
-    )
+    stats = EspnPitcherStatsModel.model_validate(sample_pitcher["stats"]["projections"])
 
     assert stats.W is not None
     assert stats.ERA is not None
@@ -55,6 +53,7 @@ def test_batter_model_all_stat_periods(espn_batter_data):
     """Test all stat periods load correctly for batters."""
     batter = EspnBatterModel.model_validate(espn_batter_data[0])
 
+    assert batter.stats is not None
     assert batter.stats.projections is not None
     assert batter.stats.current_season is not None
     assert batter.stats.previous_season_24 is not None
@@ -67,6 +66,7 @@ def test_pitcher_model_all_stat_periods(espn_pitcher_data):
     """Test all stat periods load correctly for pitchers."""
     pitcher = EspnPitcherModel.model_validate(espn_pitcher_data[0])
 
+    assert pitcher.stats is not None
     assert pitcher.stats.projections is not None
     assert pitcher.stats.current_season is not None
     assert pitcher.stats.previous_season_24 is not None

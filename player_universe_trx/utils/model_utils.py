@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, List
 
-from player_universe_trx.models.player import PlayerModel
+from player_universe_trx.models.espn import EspnBatterModel, EspnPitcherModel
 
 # Configure logging
 logging.basicConfig(
@@ -11,26 +11,51 @@ logging.basicConfig(
 logger = logging.getLogger("player_universe_trx.utils")
 
 
-def create_player_models(player_data: List[Dict]) -> List[PlayerModel]:
+def create_espn_batter_models(batter_data: List[Dict]) -> List[EspnBatterModel]:
     """
-    Create PlayerModel instances from raw player data.
-    
+    Create EspnBatterModel instances from raw ESPN batter data.
+
     Args:
-        player_data: Raw player data from JSON
-        
+        batter_data: Raw ESPN batter data from JSON
+
     Returns:
-        List of validated PlayerModel instances (retired players are filtered out)
+        List of validated EspnBatterModel instances
     """
-    valid_players = []
+    valid_batters = []
     skipped_count = 0
-    
-    for player in player_data:
+
+    for batter in batter_data:
         try:
-            model = PlayerModel.model_validate(player)
-            valid_players.append(model)
-        except ValueError:
-            # This is expected for retired players
+            model = EspnBatterModel.model_validate(batter)
+            valid_batters.append(model)
+        except Exception as e:
+            logger.debug(f"Skipped batter {batter.get('name', 'unknown')}: {e}")
             skipped_count += 1
-    
-    logger.info(f"Created {len(valid_players)} player models, skipped {skipped_count} invalid records")
-    return valid_players
+
+    logger.info(f"Created {len(valid_batters)} ESPN batter models, skipped {skipped_count} invalid records")
+    return valid_batters
+
+
+def create_espn_pitcher_models(pitcher_data: List[Dict]) -> List[EspnPitcherModel]:
+    """
+    Create EspnPitcherModel instances from raw ESPN pitcher data.
+
+    Args:
+        pitcher_data: Raw ESPN pitcher data from JSON
+
+    Returns:
+        List of validated EspnPitcherModel instances
+    """
+    valid_pitchers = []
+    skipped_count = 0
+
+    for pitcher in pitcher_data:
+        try:
+            model = EspnPitcherModel.model_validate(pitcher)
+            valid_pitchers.append(model)
+        except Exception as e:
+            logger.debug(f"Skipped pitcher {pitcher.get('name', 'unknown')}: {e}")
+            skipped_count += 1
+
+    logger.info(f"Created {len(valid_pitchers)} ESPN pitcher models, skipped {skipped_count} invalid records")
+    return valid_pitchers

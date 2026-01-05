@@ -5,7 +5,7 @@ from player_universe_trx.loaders import DataLoader
 from player_universe_trx.matchers.player_matcher import (
     match_player_models_on_fangraphs_data,
 )
-from player_universe_trx.utils.model_utils import create_player_models
+from player_universe_trx.utils.model_utils import create_espn_batter_models
 from player_universe_trx.utils.output_utils import save_results
 
 # Configure logging
@@ -38,13 +38,13 @@ def main(
     # Initialize data loader
     loader = DataLoader(resources_path=resources_path, year=year)
 
-    # Load ESPN player data
-    logger.info("Loading ESPN player data...")
-    espn_data = loader.load_espn_batters()
+    # Load ESPN batter data
+    logger.info("Loading ESPN batter data...")
+    espn_batter_data = loader.load_espn_batters()
 
-    # Create player models from ESPN data
-    logger.info("Creating player models from ESPN data...")
-    player_models = create_player_models(espn_data)
+    # Create ESPN batter models
+    logger.info("Creating ESPN batter models...")
+    espn_batter_models = create_espn_batter_models(espn_batter_data)
 
     # Load FanGraphs player data
     logger.info("Loading FanGraphs player data...")
@@ -52,7 +52,7 @@ def main(
 
     # Match players
     logger.info("Matching players between ESPN and FanGraphs data...")
-    result = match_player_models_on_fangraphs_data(player_models, fangraphs_data)
+    result = match_player_models_on_fangraphs_data(espn_batter_models, fangraphs_data)
 
     matched_players = result["matched"]
     unmatched_players = result["no_matches"]

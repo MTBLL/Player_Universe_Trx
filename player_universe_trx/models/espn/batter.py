@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from player_universe_trx.models.espn.player import EspnPlayerModel
+from player_universe_trx.models.espn.espn_player import EspnPlayerModel
 from player_universe_trx.models.espn.stats import EspnBatterStatsModel
 
 
