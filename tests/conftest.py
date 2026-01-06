@@ -10,13 +10,24 @@ from player_universe_trx.models.player import PlayerModel
 @pytest.fixture
 def espn_fixture_path():
     """Fixture providing the path to the ESPN player universe fixture file."""
-    return Path(__file__).parent / "fixtures" / "espn_player_universe.json"
+    fixtures_dir = Path(__file__).parent / "fixtures"
+    # Use the actual batter file (most complete for testing)
+    return fixtures_dir / "espn_batters_2025_20260103_103120.json"
 
 
 @pytest.fixture
 def fangraphs_fixture_path():
     """Fixture providing the path to the FanGraphs players fixture file."""
-    return Path(__file__).parent / "fixtures" / "fangraph_players.json"
+    fixtures_dir = Path(__file__).parent / "fixtures"
+    # Use the actual batter file (most complete for testing)
+    return fixtures_dir / "fangraph_batters_2025_20260103_135002.json"
+
+
+@pytest.fixture
+def savant_fixture_path():
+    """Fixture providing the path to the Savant players fixture file."""
+    fixtures_dir = Path(__file__).parent / "fixtures"
+    return fixtures_dir / "savant_batters_2026_01_03_1444.json"
 
 
 @pytest.fixture
@@ -30,6 +41,13 @@ def espn_player_data(espn_fixture_path) -> List[Dict]:
 def fangraphs_player_data(fangraphs_fixture_path):
     """Fixture providing the loaded FanGraphs player data."""
     with open(fangraphs_fixture_path, "r") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def savant_player_data(savant_fixture_path):
+    """Fixture providing the loaded Savant player data."""
+    with open(savant_fixture_path, "r") as f:
         return json.load(f)
 
 
@@ -97,5 +115,23 @@ def fangraphs_pitcher_data() -> List[Dict]:
     """Fixture providing FanGraphs pitcher data."""
     fixtures_path = Path(__file__).parent / "fixtures"
     with open(fixtures_path / "fangraph_pitchers_2025_20260103_135002.json") as f:
+        data = json.load(f)
+    return data[:10]
+
+
+@pytest.fixture
+def savant_batter_data() -> List[Dict]:
+    """Fixture providing Savant batter data."""
+    fixtures_path = Path(__file__).parent / "fixtures"
+    with open(fixtures_path / "savant_batters_2026_01_03_1444.json") as f:
+        data = json.load(f)
+    return data[:10]
+
+
+@pytest.fixture
+def savant_pitcher_data() -> List[Dict]:
+    """Fixture providing Savant pitcher data."""
+    fixtures_path = Path(__file__).parent / "fixtures"
+    with open(fixtures_path / "savant_pitchers_2026_01_03_1444.json") as f:
         data = json.load(f)
     return data[:10]
