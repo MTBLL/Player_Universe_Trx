@@ -3,9 +3,17 @@ from typing import Dict, Optional
 
 from player_universe_trx.loaders import DataLoader
 from player_universe_trx.matchers.player_matcher import (
-    match_player_models_on_fangraphs_data,
+    PlayerMatcher,
+    apply_matches,
 )
-from player_universe_trx.utils.model_utils import create_espn_batter_models
+from player_universe_trx.utils.model_utils import (
+    create_espn_batter_models,
+    create_espn_pitcher_models,
+    create_fangraphs_batter_models,
+    create_fangraphs_pitcher_models,
+    create_savant_batter_models,
+    create_savant_pitcher_models,
+)
 from player_universe_trx.utils.output_utils import save_results
 
 # Configure logging
@@ -38,41 +46,135 @@ def main(
     # Initialize data loader
     loader = DataLoader(resources_path=resources_path, year=year)
 
-    # Load ESPN batter data
-    logger.info("Loading ESPN batter data...")
-    espn_batter_data = loader.load_espn_batters()
+    # Load ESPN player data
+    logger.info("Loading ESPN player data...")
+    espn_batters_raw = loader.load_espn_batters()
+    espn_pitchers_raw = loader.load_espn_pitchers()
 
-    # Create ESPN batter models
-    logger.info("Creating ESPN batter models...")
-    espn_batter_models = create_espn_batter_models(espn_batter_data)
+    # Create player models from ESPN data
+    logger.info("Creating player models from ESPN data...")
+    espn_batters = create_espn_batter_models(espn_batters_raw)
+    espn_pitchers = create_espn_pitcher_models(espn_pitchers_raw)
 
-    # Load FanGraphs player data
+    # Load FanGraphs player data (raw dicts for matching)
     logger.info("Loading FanGraphs player data...")
-    fangraphs_data = loader.load_fangraphs_batters()
+    fangraphs_batters_raw = loader.load_fangraphs_batters()
+    fangraphs_pitchers_raw = loader.load_fangraphs_pitchers()
+    logger.info("Creating player models from FanGraphs data...")
+    fangraphs_batters = create_fangraphs_batter_models(fangraphs_batters_raw)
+    fangraphs_pitchers = create_fangraphs_pitcher_models(fangraphs_pitchers_raw)
 
-    # Match players
-    logger.info("Matching players between ESPN and FanGraphs data...")
-    result = match_player_models_on_fangraphs_data(espn_batter_models, fangraphs_data)
+    # Load Savant player data (raw dicts for matching)
+    logger.info("Loading Savant player data...")
+    savant_batters_raw = loader.load_savant_batters()
+    savant_pitchers_raw = loader.load_savant_pitchers()
+    logger.info("Creating player models from Savant data...")
+    savant_batters = create_savant_batter_models(savant_batters_raw)
+    savant_pitchers = create_savant_pitcher_models(savant_pitchers_raw)
 
-    matched_players = result["matched"]
-    unmatched_players = result["no_matches"]
-    multiple_matches = result["multiple_matches"]
+    # Match batters
+    logger.info("Matching batters across ESPN, FanGraphs, and Savant...")
+    batter_matcher = PlayerMatcher(
+        espn_players=espn_batters,
+        fangraphs_data=fangraphs_batters,
+        savant_data=savant_batters,
+    )
+    batter_results = batter_matcher.match_players()
+    batter_merged = apply_matches(batter_results)
 
-    logger.info("Matching complete:")
-    logger.info(f"  - {len(matched_players)} players matched successfully")
-    logger.info(f"  - {len(unmatched_players)} players couldn't be matched")
-    logger.info(f"  - {len(multiple_matches)} players have multiple potential matches")
+    # Match pitchers
+    logger.info("Matching pitchers across ESPN, FanGraphs, and Savant...")
+    pitcher_matcher = PlayerMatcher(
+        espn_players=espn_pitchers,
+        fangraphs_data=fangraphs_pitchers,
+        savant_data=savant_pitchers,
+    )
+    pitcher_results = pitcher_matcher.match_players()
+    pitcher_merged = apply_matches(pitcher_results)
 
-    # Save results
+    # Combine results
+    matched_players = batter_merged["matched"] + pitcher_merged["matched"]
+    unmatched_players = batter_merged["unmatched"] + pitcher_merged["unmatched"]
+    ambiguous_players = batter_merged["ambiguous"] + pitcher_merged["ambiguous"]
+
+    # Report statistics
+    logger.info("=" * 60)
+    logger.info("Matching complete!")
+    logger.info("=" * 60)
+    logger.info(f"Total players processed: {len(espn_batters) + len(espn_pitchers)}")
+    logger.info(f"  Batters: {len(espn_batters)}")
+    logger.info(f"  Pitchers: {len(espn_pitchers)}")
+    logger.info("")
+    logger.info(f"Successfully matched: {len(matched_players)}")
+    logger.info(f"  Batters: {len(batter_merged['matched'])}")
+    logger.info(f"  Pitchers: {len(pitcher_merged['matched'])}")
+    logger.info("")
+    logger.info(f"Unmatched players: {len(unmatched_players)}")
+    logger.info(f"  Batters: {len(batter_merged['unmatched'])}")
+    logger.info(f"  Pitchers: {len(pitcher_merged['unmatched'])}")
+    logger.info("")
+    logger.info(f"Ambiguous matches: {len(ambiguous_players)}")
+    logger.info(f"  Batters: {len(batter_merged['ambiguous'])}")
+    logger.info(f"  Pitchers: {len(pitcher_merged['ambiguous'])}")
+
+    # Report match method breakdown
+    _report_match_statistics(batter_results, pitcher_results)
+
+    # Save results to output directory
     logger.info("Saving results...")
-    save_results(matched_players, unmatched_players, multiple_matches, output_dir)
+    save_results(matched_players, unmatched_players, ambiguous_players, output_dir)
 
+    logger.info("=" * 60)
     logger.info("Player universe transformation complete")
+    logger.info("=" * 60)
+
     return {
         "matched": len(matched_players),
         "unmatched": len(unmatched_players),
-        "ambiguous": len(multiple_matches),
+        "ambiguous": len(ambiguous_players),
     }
+
+
+def _report_match_statistics(batter_results, pitcher_results):
+    """Report detailed statistics about match methods and confidence levels."""
+    from collections import Counter
+
+    all_results = batter_results + pitcher_results
+
+    # Count by match method
+    method_counts = Counter(r.match_method for r in all_results)
+
+    # Count by confidence level
+    confidence_counts = Counter(r.confidence for r in all_results)
+
+    # Count Savant matches
+    savant_matches = sum(1 for r in all_results if r.savant_match is not None)
+
+    logger.info("")
+    logger.info("Match Method Breakdown:")
+    for method, count in sorted(
+        method_counts.items(), key=lambda x: x[1], reverse=True
+    ):
+        percentage = (count / len(all_results)) * 100 if all_results else 0
+        logger.info(f"  {method.value:15s}: {count:4d} ({percentage:5.1f}%)")
+
+    logger.info("")
+    logger.info("Confidence Level Breakdown:")
+    for confidence, count in sorted(
+        confidence_counts.items(), key=lambda x: x[0].value, reverse=True
+    ):
+        percentage = (count / len(all_results)) * 100 if all_results else 0
+        logger.info(
+            f"  {confidence.name:10s} ({confidence.value:3d}): {count:4d} ({percentage:5.1f}%)"
+        )
+
+    logger.info("")
+    logger.info("Savant Data Enrichment:")
+    savant_percentage = (savant_matches / len(all_results)) * 100 if all_results else 0
+    logger.info(
+        f"  Players with Savant data: {savant_matches} ({savant_percentage:.1f}%)"
+    )
+    logger.info("")
 
 
 if __name__ == "__main__":

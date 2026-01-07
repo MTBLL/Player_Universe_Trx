@@ -1,6 +1,8 @@
 import logging
 from typing import Dict, List
 
+from typing_extensions import Sequence
+
 from player_universe_trx.models.espn import EspnBatterModel, EspnPitcherModel
 from player_universe_trx.models.fangraphs import (
     FangraphsBatterModel,
@@ -13,13 +15,12 @@ from player_universe_trx.models.savant import (
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("player_universe_trx.utils")
 
 
-def create_espn_batter_models(batter_data: List[Dict]) -> List[EspnBatterModel]:
+def create_espn_batter_models(batter_data: List[Dict]) -> Sequence[EspnBatterModel]:
     """
     Create EspnBatterModel instances from raw ESPN batter data.
 
@@ -27,7 +28,7 @@ def create_espn_batter_models(batter_data: List[Dict]) -> List[EspnBatterModel]:
         batter_data: Raw ESPN batter data from JSON
 
     Returns:
-        List of validated EspnBatterModel instances
+        Sequence of validated EspnBatterModel instances
     """
     valid_batters = []
     skipped_count = 0
@@ -40,11 +41,13 @@ def create_espn_batter_models(batter_data: List[Dict]) -> List[EspnBatterModel]:
             logger.debug(f"Skipped batter {batter.get('name', 'unknown')}: {e}")
             skipped_count += 1
 
-    logger.info(f"Created {len(valid_batters)} ESPN batter models, skipped {skipped_count} invalid records")
+    logger.info(
+        f"Created {len(valid_batters)} ESPN batter models, skipped {skipped_count} invalid records"
+    )
     return valid_batters
 
 
-def create_espn_pitcher_models(pitcher_data: List[Dict]) -> List[EspnPitcherModel]:
+def create_espn_pitcher_models(pitcher_data: List[Dict]) -> Sequence[EspnPitcherModel]:
     """
     Create EspnPitcherModel instances from raw ESPN pitcher data.
 
@@ -52,7 +55,7 @@ def create_espn_pitcher_models(pitcher_data: List[Dict]) -> List[EspnPitcherMode
         pitcher_data: Raw ESPN pitcher data from JSON
 
     Returns:
-        List of validated EspnPitcherModel instances
+        Sequence of validated EspnPitcherModel instances
     """
     valid_pitchers = []
     skipped_count = 0
@@ -65,11 +68,15 @@ def create_espn_pitcher_models(pitcher_data: List[Dict]) -> List[EspnPitcherMode
             logger.debug(f"Skipped pitcher {pitcher.get('name', 'unknown')}: {e}")
             skipped_count += 1
 
-    logger.info(f"Created {len(valid_pitchers)} ESPN pitcher models, skipped {skipped_count} invalid records")
+    logger.info(
+        f"Created {len(valid_pitchers)} ESPN pitcher models, skipped {skipped_count} invalid records"
+    )
     return valid_pitchers
 
 
-def create_fangraphs_batter_models(batter_data: List[Dict]) -> List[FangraphsBatterModel]:
+def create_fangraphs_batter_models(
+    batter_data: List[Dict],
+) -> Sequence[FangraphsBatterModel]:
     """
     Create FangraphsBatterModel instances from raw FanGraphs batter data.
 
@@ -77,7 +84,7 @@ def create_fangraphs_batter_models(batter_data: List[Dict]) -> List[FangraphsBat
         batter_data: Raw FanGraphs batter data from JSON
 
     Returns:
-        List of validated FangraphsBatterModel instances
+        Sequence of validated FangraphsBatterModel instances
     """
     valid_batters = []
     skipped_count = 0
@@ -90,11 +97,15 @@ def create_fangraphs_batter_models(batter_data: List[Dict]) -> List[FangraphsBat
             logger.debug(f"Skipped batter {batter.get('name', 'unknown')}: {e}")
             skipped_count += 1
 
-    logger.info(f"Created {len(valid_batters)} FanGraphs batter models, skipped {skipped_count} invalid records")
+    logger.info(
+        f"Created {len(valid_batters)} FanGraphs batter models, skipped {skipped_count} invalid records"
+    )
     return valid_batters
 
 
-def create_fangraphs_pitcher_models(pitcher_data: List[Dict]) -> List[FangraphsPitcherModel]:
+def create_fangraphs_pitcher_models(
+    pitcher_data: List[Dict],
+) -> Sequence[FangraphsPitcherModel]:
     """
     Create FangraphsPitcherModel instances from raw FanGraphs pitcher data.
 
@@ -102,7 +113,7 @@ def create_fangraphs_pitcher_models(pitcher_data: List[Dict]) -> List[FangraphsP
         pitcher_data: Raw FanGraphs pitcher data from JSON
 
     Returns:
-        List of validated FangraphsPitcherModel instances
+        Sequence of validated FangraphsPitcherModel instances
     """
     valid_pitchers = []
     skipped_count = 0
@@ -115,11 +126,13 @@ def create_fangraphs_pitcher_models(pitcher_data: List[Dict]) -> List[FangraphsP
             logger.debug(f"Skipped pitcher {pitcher.get('name', 'unknown')}: {e}")
             skipped_count += 1
 
-    logger.info(f"Created {len(valid_pitchers)} FanGraphs pitcher models, skipped {skipped_count} invalid records")
+    logger.info(
+        f"Created {len(valid_pitchers)} FanGraphs pitcher models, skipped {skipped_count} invalid records"
+    )
     return valid_pitchers
 
 
-def create_savant_batter_models(batter_data: List[Dict]) -> List[SavantBatterModel]:
+def create_savant_batter_models(batter_data: List[Dict]) -> Sequence[SavantBatterModel]:
     """
     Create SavantBatterModel instances from raw Savant batter data.
 
@@ -130,13 +143,20 @@ def create_savant_batter_models(batter_data: List[Dict]) -> List[SavantBatterMod
         batter_data: Raw Savant batter data from JSON (flat structure)
 
     Returns:
-        List of validated SavantBatterModel instances (nested structure)
+        Sequence of validated SavantBatterModel instances (nested structure)
     """
     valid_batters = []
     skipped_count = 0
 
     # Identity and pitch count fields that stay at root level
-    identity_fields = {"player_id", "name", "first_name", "last_name", "name_ascii", "slug"}
+    identity_fields = {
+        "player_id",
+        "name",
+        "first_name",
+        "last_name",
+        "name_ascii",
+        "slug",
+    }
     pitch_count_fields = {"pitches", "total_pitches", "pitch_percent"}
     root_fields = identity_fields | pitch_count_fields
 
@@ -156,11 +176,15 @@ def create_savant_batter_models(batter_data: List[Dict]) -> List[SavantBatterMod
             logger.debug(f"Skipped batter {batter.get('name', 'unknown')}: {e}")
             skipped_count += 1
 
-    logger.info(f"Created {len(valid_batters)} Savant batter models, skipped {skipped_count} invalid records")
+    logger.info(
+        f"Created {len(valid_batters)} Savant batter models, skipped {skipped_count} invalid records"
+    )
     return valid_batters
 
 
-def create_savant_pitcher_models(pitcher_data: List[Dict]) -> List[SavantPitcherModel]:
+def create_savant_pitcher_models(
+    pitcher_data: List[Dict],
+) -> Sequence[SavantPitcherModel]:
     """
     Create SavantPitcherModel instances from raw Savant pitcher data.
 
@@ -171,13 +195,20 @@ def create_savant_pitcher_models(pitcher_data: List[Dict]) -> List[SavantPitcher
         pitcher_data: Raw Savant pitcher data from JSON (flat structure)
 
     Returns:
-        List of validated SavantPitcherModel instances (nested structure)
+        Sequence of validated SavantPitcherModel instances (nested structure)
     """
     valid_pitchers = []
     skipped_count = 0
 
     # Identity and pitch count fields that stay at root level
-    identity_fields = {"player_id", "name", "first_name", "last_name", "name_ascii", "slug"}
+    identity_fields = {
+        "player_id",
+        "name",
+        "first_name",
+        "last_name",
+        "name_ascii",
+        "slug",
+    }
     pitch_count_fields = {"pitches", "total_pitches", "pitch_percent"}
     root_fields = identity_fields | pitch_count_fields
 
@@ -197,5 +228,7 @@ def create_savant_pitcher_models(pitcher_data: List[Dict]) -> List[SavantPitcher
             logger.debug(f"Skipped pitcher {pitcher.get('name', 'unknown')}: {e}")
             skipped_count += 1
 
-    logger.info(f"Created {len(valid_pitchers)} Savant pitcher models, skipped {skipped_count} invalid records")
+    logger.info(
+        f"Created {len(valid_pitchers)} Savant pitcher models, skipped {skipped_count} invalid records"
+    )
     return valid_pitchers

@@ -1,11 +1,90 @@
-import re
 import logging
-from typing import Dict, List, Optional, Set, Tuple
+import re
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
-from player_universe_trx.models.player import PlayerModel
+from typing_extensions import TYPE_CHECKING
+
+from player_universe_trx.models.espn import (
+    EspnBatterModel,
+    EspnBatterStats,
+    EspnPitcherModel,
+    EspnPitcherStats,
+    EspnPlayerModel,
+)
+from player_universe_trx.models.fangraphs import (
+    FangraphsBatterModel,
+    FangraphsPitcherModel,
+    FangraphsPlayerModel,
+)
+from player_universe_trx.models.mtbl import (
+    MtblBatterModel,
+    MtblBatterStatsModel,
+    MtblPitcherModel,
+    MtblPitcherStatsModel,
+    MtblPlayerModel,
+)
+from player_universe_trx.models.savant import (
+    SavantBatterModel,
+    SavantPitcherModel,
+)
+
+if TYPE_CHECKING:  # pragma: no cover
+    from player_universe_trx.models.espn import (
+        EspnBatterModel,
+        EspnPitcherModel,
+    )
+    from player_universe_trx.models.fangraphs import (
+        FangraphsBatterModel,
+        FangraphsPitcherModel,
+    )
+    from player_universe_trx.models.savant import SavantBatterModel, SavantPitcherModel
 
 # Configure logging
 logger = logging.getLogger("player_universe_trx.matchers")
+
+
+class MatchMethod(Enum):
+    """Method used to match a player between data sources."""
+
+    SLUG = "slug"
+    EXACT_NAME = "exact_name"
+    PREFIX_NAME = "prefix_name"
+    TEAM = "team"
+    NONE = "none"
+
+
+class MatchConfidence(Enum):
+    """Confidence level of a player match."""
+
+    HIGH = 90  # Slug or exact name + team
+    MEDIUM = 70  # Exact name or prefix + team
+    LOW = 40  # Prefix name or team only
+    AMBIGUOUS = 0  # Multiple candidates
+    NONE = -1  # No match
+
+
+@dataclass
+class PlayerMatchResult:
+    """
+    Result of matching a player across data sources.
+
+    This is a transient object used for auditing and debugging the matching process.
+    It is not stored in the PlayerModel, but can be inspected to understand how
+    matches were made.
+    """
+
+    espn_player: EspnBatterModel | EspnPitcherModel
+    fangraphs_match: Optional[FangraphsBatterModel | FangraphsPitcherModel]
+    savant_match: Optional[SavantBatterModel | SavantPitcherModel]
+    match_method: MatchMethod
+    confidence: MatchConfidence
+    candidates: List[FangraphsBatterModel | FangraphsPitcherModel] = field(
+        default_factory=list
+    )
+    notes: str = ""
+
 
 # Team code mapping from ESPN to FanGraphs
 ESPN_TO_FG_TEAM_MAPPING = {
@@ -14,75 +93,231 @@ ESPN_TO_FG_TEAM_MAPPING = {
     "TB": "TBR",
     "SF": "SFG",
 }
+# Team code mapping from FanGraphs to ESPN
+FG_TO_ESPN_TEAM_MAPPING = {
+    "KCR": "KC",
+    "SDP": "SD",
+    "TBR": "TB",
+    "SFG": "SF",
+}
 
 
 class PlayerMatcher:
     """
     Match player data between ESPN and FanGraphs sources.
-    
+
     This class implements an efficient matching algorithm that progressively
     tries different matching strategies and tracks matched/unmatched players
     to improve performance.
     """
-    
-    def __init__(self, espn_players: List[PlayerModel], fangraphs_data: List[Dict]):
+
+    def __init__(
+        self,
+        espn_players: Sequence[EspnBatterModel | EspnPitcherModel],
+        fangraphs_data: Optional[
+            Sequence[FangraphsBatterModel | FangraphsPitcherModel]
+        ],
+        savant_data: Optional[Sequence[SavantBatterModel | SavantPitcherModel]] = None,
+    ):
         """
-        Initialize the matcher with ESPN players and FanGraphs data.
-        
+        Initialize the matcher with ESPN players, FanGraphs data, and optional Savant data.
+
         Args:
-            espn_players: List of PlayerModel instances from ESPN
-            fangraphs_data: List of FanGraphs player data dictionaries
+            espn_players: Sequence of PlayerModel instances from ESPN
+            fangraphs_data: Sequence of FanGraphs player data dictionaries
+            savant_data: Optional sequence of Savant player data dictionaries
         """
-        self.espn_players = espn_players.copy()  # Work with a copy to preserve original
-        self.fg_data = fangraphs_data
-        
-        # Results containers
-        self.matched_players: List[PlayerModel] = []
-        self.ambiguous_matches: List[Tuple[PlayerModel, List[Dict]]] = []
-        self.unmatched_players: List[PlayerModel] = []
-        
-        # Track matched FanGraphs players by ID
+        self.espn_players = list(
+            espn_players
+        )  # Convert to list and copy to preserve original
+        self.fg_data = list(fangraphs_data) if fangraphs_data else []
+        self.savant_data = list(savant_data) if savant_data else []
+
+        # Results containers (deprecated - kept for backward compatibility)
+        self.matched_players: List[MtblPlayerModel] = []
+        self.ambiguous_matches: List[Tuple[MtblPlayerModel, List[Dict]]] = []
+        self.unmatched_players: List[MtblPlayerModel] = []
+
+        # Track matched players by ID
         self.matched_fg_ids: Set[str] = set()
-        
-        # Organize FanGraphs data for efficient lookup
-        self.fg_by_last_name = self._organize_fg_data_by_last_name()
-        
-    def _organize_fg_data_by_last_name(self) -> Dict[str, List[Dict]]:
+        self.matched_savant_ids: Set[int] = set()
+
+        # FanGraphs indexes for efficient lookup
+        self.fg_by_last_name: Dict[
+            str, List[FangraphsBatterModel | FangraphsPitcherModel]
+        ] = {}
+        self.fg_by_slug: Dict[str, FangraphsBatterModel | FangraphsPitcherModel] = {}
+        self.fg_by_team: Dict[
+            str, List[FangraphsBatterModel | FangraphsPitcherModel]
+        ] = {}
+        self.fg_by_id: Dict[str, FangraphsBatterModel | FangraphsPitcherModel] = {}
+
+        # Savant indexes
+        self.savant_by_mlb_id: Dict[int, SavantBatterModel | SavantPitcherModel] = {}
+
+        # Build all indexes
+        self._build_indexes()
+
+    def _build_indexes(self) -> None:
         """
-        Organize FanGraphs data by player last name for efficient lookup.
-        
-        Returns:
-            Dictionary mapping last names to lists of FanGraphs player data
+        Build all indexes for fast lookups in a single pass.
+
+        This method indexes FanGraphs data by:
+        - Last name (for name-based matching)
+        - Slug (exact and normalized for slug-based matching)
+        - Team (for team-based disambiguation)
+        - Player ID (for quick lookup)
+
+        Also indexes Savant data by MLB ID (player_id).
         """
-        fg_by_last_name: Dict[str, List[Dict]] = {}
-        
+        # Index FanGraphs data
         for fg_player in self.fg_data:
+            playerid = fg_player.playerid
+            slug = fg_player.slug
+            team = fg_player.team
+
             # Use ascii_name instead of name to handle accented characters
-            name_field = "ascii_name" if "ascii_name" in fg_player else "name"
-            
-            if name_field not in fg_player:
-                continue
+            name = fg_player.ascii_name if fg_player.ascii_name else fg_player.name
+            last_name = self._extract_last_name(name)
 
-            # Extract last name, removing suffixes
-            last_name = self._extract_last_name(fg_player[name_field])
-            if not last_name:
-                continue
+            # Index by player ID
+            if playerid:
+                self.fg_by_id[playerid] = fg_player
 
-            if last_name not in fg_by_last_name:
-                fg_by_last_name[last_name] = []
-            fg_by_last_name[last_name].append(fg_player)
-            
-        return fg_by_last_name
-    
-    def _find_candidates_by_last_name(self, player: PlayerModel) -> List[Dict]:
+            # Index by slug (exact and normalized)
+            if slug:
+                # Also index normalized version (no periods)
+                normalized = slug.replace(".", "")
+                self.fg_by_slug[normalized] = fg_player
+
+            # Index by team, normalized for ESPN team names
+            if team:
+                normalized_team = FG_TO_ESPN_TEAM_MAPPING.get(team, team)
+                if normalized_team not in self.fg_by_team:
+                    self.fg_by_team[normalized_team] = []
+                self.fg_by_team[normalized_team].append(fg_player)
+
+            # Index by last name
+            if last_name:
+                if last_name not in self.fg_by_last_name:
+                    self.fg_by_last_name[last_name] = []
+                self.fg_by_last_name[last_name].append(fg_player)
+
+        # Index Savant data by MLB ID (player_id)
+        for savant_player in self.savant_data:
+            player_id = savant_player.player_id
+            if player_id:
+                self.savant_by_mlb_id[player_id] = savant_player
+
+    def _remove_from_indexes(
+        self, fg_player: FangraphsBatterModel | FangraphsPitcherModel
+    ) -> None:
+        """
+        Remove a matched player from all indexes to improve performance.
+
+        This shrinks the indexes as matches are found, reducing the number of
+        candidates to check for subsequent matches.
+
+        Args:
+            fg_player: FanGraphs player model to remove from indexes
+        """
+        playerid = fg_player.playerid
+        slug = fg_player.slug
+        team = fg_player.team
+        mlbid = fg_player.xmlbam_id
+
+        # Use ascii_name for consistency with indexing
+        name = fg_player.ascii_name if fg_player.ascii_name else fg_player.name
+        last_name = self._extract_last_name(name)
+
+        # Remove from last name index
+        if last_name and last_name in self.fg_by_last_name:
+            self.fg_by_last_name[last_name] = [
+                p for p in self.fg_by_last_name[last_name] if p.playerid != playerid
+            ]
+            # Clean up empty entries
+            if not self.fg_by_last_name[last_name]:
+                del self.fg_by_last_name[last_name]
+
+        # Remove from team index
+        if team and team in self.fg_by_team:
+            self.fg_by_team[team] = [
+                p for p in self.fg_by_team[team] if p.playerid != playerid
+            ]
+            if not self.fg_by_team[team]:
+                del self.fg_by_team[team]
+
+        # Remove from slug indexes (fast - O(1))
+        if slug:
+            self.fg_by_slug.pop(slug, None)
+
+        # Remove from ID index
+        if playerid:
+            self.fg_by_id.pop(playerid, None)
+
+        # Remove from Savant MLB ID index
+        if mlbid:
+            self.savant_by_mlb_id.pop(mlbid, None)
+
+    def _try_match_by_slug(
+        self, player: EspnPlayerModel
+    ) -> Optional[PlayerMatchResult]:
+        """
+        Try to match a player using slug (fastest, highest confidence).
+
+        Args:
+            player: PlayerModel instance with ESPN data
+
+        Returns:
+            PlayerMatchResult if match found, None otherwise
+        """
+        if not player.slug:
+            return None
+
+        # Try exact match first
+        fg_match = self.fg_by_slug.get(player.slug)
+
+        if fg_match:
+            # Check if already matched (shouldn't happen with index shrinking, but be safe)
+            if fg_match.playerid in self.matched_fg_ids:
+                return None
+
+            # Get Savant data using xmlbam_id from FanGraphs match
+            savant_match = None
+            xmlbam_id = fg_match.xmlbam_id
+            if xmlbam_id and self.savant_by_mlb_id:
+                savant_match = self.savant_by_mlb_id.get(xmlbam_id)
+                if savant_match and savant_match.player_id in self.matched_savant_ids:
+                    savant_match = None  # Already matched to another player
+
+            assert isinstance(player, EspnBatterModel | EspnPitcherModel)
+            return PlayerMatchResult(
+                espn_player=player,
+                fangraphs_match=fg_match,
+                savant_match=savant_match,
+                match_method=MatchMethod.SLUG,
+                confidence=MatchConfidence.HIGH,
+                candidates=[fg_match],
+                notes=f"Matched on slug: {player.slug}",
+            )
+
+        return None
+
+    def _find_candidates_by_last_name(
+        self, player: EspnBatterModel | EspnPitcherModel
+    ) -> List[FangraphsBatterModel | FangraphsPitcherModel]:
         """
         Find FanGraphs candidates with matching last name for a player.
-        
+
         Args:
             player: PlayerModel instance
-            
+
         Returns:
-            List of candidate FanGraphs players (filtered by already matched)
+            List of candidate FanGraphs player models
+
+        Note:
+            With index shrinking enabled, matched players are already removed
+            from indexes, so no filtering is needed.
         """
         if not player.last_name:
             return []
@@ -93,69 +328,78 @@ class PlayerMatcher:
             return []
 
         # Get all candidates with matching last name
-        all_candidates = self.fg_by_last_name.get(last_name, [])
-        
-        
-        # Filter out already matched players
-        return [c for c in all_candidates if c.get("playerid") not in self.matched_fg_ids]
-    
-    def _find_exact_first_name_matches(self, player: PlayerModel, candidates: List[Dict]) -> List[Dict]:
+        # Matched players are already removed from index, no filtering needed
+        return self.fg_by_last_name.get(last_name, [])
+
+    def _find_exact_first_name_matches(
+        self,
+        player: EspnBatterModel | EspnPitcherModel,
+        candidates: List[FangraphsBatterModel | FangraphsPitcherModel],
+    ) -> List[FangraphsBatterModel | FangraphsPitcherModel]:
         """
         Find candidates with exact matching first name.
-        
+
         Args:
             player: PlayerModel instance
-            candidates: List of FanGraphs player data
-            
+            candidates: List of FanGraphs player models
+
         Returns:
             List of candidates with matching first name
         """
-        exact_matches: List[Dict] = []
+        exact_matches: List[FangraphsBatterModel | FangraphsPitcherModel] = []
         if not player.first_name:
             return exact_matches
-            
+
         for candidate in candidates:
             # Use ascii_name instead of name to handle accented characters
-            name_field = "ascii_name" if "ascii_name" in candidate else "name"
-            fg_first_name = self._extract_first_name(candidate.get(name_field, ""))
+            name = candidate.ascii_name if candidate.ascii_name else candidate.name
+            fg_first_name = self._extract_first_name(name)
             if fg_first_name and fg_first_name == player.first_name:
                 exact_matches.append(candidate)
-        
+
         return exact_matches
-    
-    def _find_prefix_first_name_matches(self, player: PlayerModel, candidates: List[Dict]) -> List[Dict]:
+
+    def _find_prefix_first_name_matches(
+        self,
+        player: EspnBatterModel | EspnPitcherModel,
+        candidates: List[FangraphsBatterModel | FangraphsPitcherModel],
+    ) -> List[FangraphsBatterModel | FangraphsPitcherModel]:
         """
         Find candidates with first name prefix matching.
-        
+
         Args:
             player: PlayerModel instance
-            candidates: List of FanGraphs player data
-            
+            candidates: List of FanGraphs player models
+
         Returns:
             List of candidates with prefix-matching first name
         """
-        prefix_matches: List[Dict] = []
+        prefix_matches: List[FangraphsBatterModel | FangraphsPitcherModel] = []
         if not player.first_name:
             return prefix_matches
-            
+
         for candidate in candidates:
             # Use ascii_name instead of name to handle accented characters
-            name_field = "ascii_name" if "ascii_name" in candidate else "name"
-            fg_first_name = self._extract_first_name(candidate.get(name_field, ""))
+            name = candidate.ascii_name if candidate.ascii_name else candidate.name
+            fg_first_name = self._extract_first_name(name)
             if fg_first_name and (
                 fg_first_name.startswith(player.first_name)
                 or player.first_name.startswith(fg_first_name)
             ):
                 prefix_matches.append(candidate)
-        
+
         return prefix_matches
-    
-    def _filter_by_team(self, candidates: List[Dict], team_code: Optional[str]) -> List[Dict]:
+
+    def _filter_by_team(
+        self,
+        candidates: List[FangraphsBatterModel | FangraphsPitcherModel],
+        team_code: Optional[str],
+    ) -> List[FangraphsBatterModel | FangraphsPitcherModel]:
         """
         Filter candidates by matching team codes.
 
         Args:
-            candidates: List of candidate FanGraphs player data
+            candidates: List of candidate FanGraphs player models
             team_code: ESPN team code
 
         Returns:
@@ -168,198 +412,309 @@ class PlayerMatcher:
         fg_team_code = ESPN_TO_FG_TEAM_MAPPING.get(team_code, team_code)
 
         for candidate in candidates:
-            if candidate.get("team") == fg_team_code:
+            if candidate.team == fg_team_code:
                 results.append(candidate)
 
         return results
-    
-    def _process_match(self, player: PlayerModel, match: Dict) -> None:
+
+    def _get_savant_match(
+        self, fg_match: FangraphsBatterModel | FangraphsPitcherModel
+    ) -> Optional[SavantBatterModel | SavantPitcherModel]:
         """
-        Process a matched player by merging data and updating tracking.
-        
+        Get Savant data for a FanGraphs match using xmlbam_id.
+
         Args:
-            player: PlayerModel instance
-            match: Matching FanGraphs player data
+            fg_match: FanGraphs player model
+
+        Returns:
+            Savant player model if found and not already matched, None otherwise
         """
-        # Merge FanGraphs data into player model
-        player.merge_fangraphs_data(match)
-        
-        # Add to matched players list
-        self.matched_players.append(player)
-        
-        # Mark FanGraphs player as matched
-        if "playerid" in match:
-            fg_id = match["playerid"]
-            self.matched_fg_ids.add(fg_id)
-            
-        # Log the match
-        logger.debug(f"Matched player {player.name} with FanGraphs player {match.get('name')}")
-    
-    def _try_match_exact_first_name(self, player: PlayerModel, candidates: List[Dict]) -> bool:
+        xmlbam_id = fg_match.xmlbam_id
+        if not xmlbam_id or not self.savant_by_mlb_id:
+            return None
+
+        savant_match = self.savant_by_mlb_id.get(xmlbam_id)
+        if savant_match and savant_match.player_id in self.matched_savant_ids:
+            return None  # Already matched to another player
+
+        return savant_match
+
+    def _try_match_exact_first_name(
+        self,
+        player: EspnBatterModel | EspnPitcherModel,
+        candidates: List[FangraphsBatterModel | FangraphsPitcherModel],
+    ) -> Optional[PlayerMatchResult]:
         """
         Try to match a player using exact first name match.
-        
+
         Args:
             player: PlayerModel instance
             candidates: List of candidate FanGraphs players
-            
+
         Returns:
-            True if matched, False otherwise
+            PlayerMatchResult if match found or ambiguous, None otherwise
         """
         exact_matches = self._find_exact_first_name_matches(player, candidates)
-        
+
         if len(exact_matches) == 1:
             # Single exact match found
-            self._process_match(player, exact_matches[0])
-            return True
+            match = exact_matches[0]
+            savant_match = self._get_savant_match(match)
+
+            return PlayerMatchResult(
+                espn_player=player,
+                fangraphs_match=match,
+                savant_match=savant_match,
+                match_method=MatchMethod.EXACT_NAME,
+                confidence=MatchConfidence.MEDIUM,
+                candidates=[match],
+                notes="Single exact first name match",
+            )
+
         elif len(exact_matches) > 1:
-            # Multiple exact matches, try team matching
+            # Multiple exact matches, try team disambiguation
             team_matches = self._filter_by_team(exact_matches, player.pro_team)
+
             if len(team_matches) == 1:
-                self._process_match(player, team_matches[0])
-                return True
+                match = team_matches[0]
+                savant_match = self._get_savant_match(match)
+
+                return PlayerMatchResult(
+                    espn_player=player,
+                    fangraphs_match=match,
+                    savant_match=savant_match,
+                    match_method=MatchMethod.EXACT_NAME,
+                    confidence=MatchConfidence.HIGH,  # Name + team
+                    candidates=[match],
+                    notes="Exact name + team disambiguation",
+                )
             else:
-                self.ambiguous_matches.append((player, exact_matches))
-                return True
-                
-        return False
-    
-    def _try_match_prefix_first_name(self, player: PlayerModel, candidates: List[Dict]) -> bool:
+                # Ambiguous - multiple matches even after team filter
+                return PlayerMatchResult(
+                    espn_player=player,
+                    fangraphs_match=None,
+                    savant_match=None,
+                    match_method=MatchMethod.EXACT_NAME,
+                    confidence=MatchConfidence.AMBIGUOUS,
+                    candidates=exact_matches,
+                    notes=f"Multiple exact matches: {len(exact_matches)}",
+                )
+
+        return None
+
+    def _try_match_prefix_first_name(
+        self,
+        player: EspnBatterModel | EspnPitcherModel,
+        candidates: List[FangraphsBatterModel | FangraphsPitcherModel],
+    ) -> Optional[PlayerMatchResult]:
         """
         Try to match a player using prefix first name match.
-        
+
         Args:
             player: PlayerModel instance
             candidates: List of candidate FanGraphs players
-            
+
         Returns:
-            True if matched or ambiguous, False otherwise
+            PlayerMatchResult if match found or ambiguous, False otherwise
         """
         prefix_matches = self._find_prefix_first_name_matches(player, candidates)
-        
+
         if len(prefix_matches) == 1:
             # Single prefix match found
-            self._process_match(player, prefix_matches[0])
-            return True
+            match = prefix_matches[0]
+            savant_match = self._get_savant_match(match)
+
+            return PlayerMatchResult(
+                espn_player=player,
+                fangraphs_match=match,
+                savant_match=savant_match,
+                match_method=MatchMethod.PREFIX_NAME,
+                confidence=MatchConfidence.LOW,
+                candidates=[match],
+                notes="Single prefix first name match",
+            )
+
         elif len(prefix_matches) > 1:
-            # Multiple prefix matches, try team matching
+            # Multiple prefix matches, try team disambiguation
             team_matches = self._filter_by_team(prefix_matches, player.pro_team)
+
             if len(team_matches) == 1:
-                self._process_match(player, team_matches[0])
-                return True
+                match = team_matches[0]
+                savant_match = self._get_savant_match(match)
+
+                return PlayerMatchResult(
+                    espn_player=player,
+                    fangraphs_match=match,
+                    savant_match=savant_match,
+                    match_method=MatchMethod.PREFIX_NAME,
+                    confidence=MatchConfidence.MEDIUM,  # Prefix + team
+                    candidates=[match],
+                    notes="Prefix name + team disambiguation",
+                )
             else:
-                self.ambiguous_matches.append((player, prefix_matches))
-                return True
-                
-        return False
-    
-    def _try_match_by_team(self, player: PlayerModel, candidates: List[Dict]) -> bool:
+                # Ambiguous
+                return PlayerMatchResult(
+                    espn_player=player,
+                    fangraphs_match=None,
+                    savant_match=None,
+                    match_method=MatchMethod.PREFIX_NAME,
+                    confidence=MatchConfidence.AMBIGUOUS,
+                    candidates=prefix_matches,
+                    notes=f"Multiple prefix matches: {len(prefix_matches)}",
+                )
+
+        return None
+
+    def _try_match_by_team(
+        self,
+        player: EspnBatterModel | EspnPitcherModel,
+        candidates: List[FangraphsBatterModel | FangraphsPitcherModel],
+    ) -> Optional[PlayerMatchResult]:
         """
-        Try to match a player using team code.
-        
+        Try to match a player using team code (last resort).
+
         Args:
             player: PlayerModel instance
             candidates: List of candidate FanGraphs players
-            
+
         Returns:
-            True if handled, False otherwise
+            PlayerMatchResult - always returns a result (match or ambiguous)
         """
         team_matches = self._filter_by_team(candidates, player.pro_team)
-        
+
         if len(team_matches) == 1:
-            self._process_match(player, team_matches[0])
-            return True
+            # Single team match
+            match = team_matches[0]
+            savant_match = self._get_savant_match(match)
+
+            return PlayerMatchResult(
+                espn_player=player,
+                fangraphs_match=match,
+                savant_match=savant_match,
+                match_method=MatchMethod.TEAM,
+                confidence=MatchConfidence.LOW,
+                candidates=[match],
+                notes="Team-only match (last resort)",
+            )
+
         elif team_matches:
-            self.ambiguous_matches.append((player, team_matches))
-            return True
+            # Multiple team matches - ambiguous
+            return PlayerMatchResult(
+                espn_player=player,
+                fangraphs_match=None,
+                savant_match=None,
+                match_method=MatchMethod.TEAM,
+                confidence=MatchConfidence.AMBIGUOUS,
+                candidates=team_matches,
+                notes=f"Multiple team matches: {len(team_matches)}",
+            )
+
         else:
-            self.ambiguous_matches.append((player, candidates))
-            return True
-    
-    def _match_player(self, player: PlayerModel) -> None:
+            # No team matches, but we have candidates
+            return PlayerMatchResult(
+                espn_player=player,
+                fangraphs_match=None,
+                savant_match=None,
+                match_method=MatchMethod.NONE,
+                confidence=MatchConfidence.AMBIGUOUS,
+                candidates=candidates,
+                notes=f"Candidates exist but no definitive match: {len(candidates)}",
+            )
+
+    def _match_player(self, player: EspnPlayerModel) -> PlayerMatchResult:
         """
         Try to match a single player using progressive matching strategies.
-        
+
         Args:
             player: PlayerModel instance to match
+
+        Returns:
+            PlayerMatchResult with match information
         """
-        # Find candidates with matching last name
+        # STRATEGY 1: Slug matching (FASTEST, HIGHEST CONFIDENCE)
+        if player.slug:
+            result = self._try_match_by_slug(player)
+            if result:
+                return result
+
+        assert isinstance(player, EspnBatterModel | EspnPitcherModel)
+        # STRATEGY 2: Find candidates by last name
         candidates = self._find_candidates_by_last_name(player)
         if not candidates:
-            self.unmatched_players.append(player)
-            return
-            
-        # Try matching strategies in order of strictness
-        # 1. Exact first name match
-        if self._try_match_exact_first_name(player, candidates):
-            return
-            
-        # 2. Prefix first name match
-        if self._try_match_prefix_first_name(player, candidates):
-            return
-            
-        # 3. Team match (last resort)
-        if self._try_match_by_team(player, candidates):
-            return
-            
-        # If we get here, we couldn't match or classify the player
-        self.unmatched_players.append(player)
-    
-    def match_players(self) -> Dict[str, List]:
+            return PlayerMatchResult(
+                espn_player=player,
+                fangraphs_match=None,
+                savant_match=None,
+                match_method=MatchMethod.NONE,
+                confidence=MatchConfidence.NONE,
+                candidates=[],
+                notes="No candidates with matching last name",
+            )
+
+        # STRATEGY 3: Exact first name match
+        result = self._try_match_exact_first_name(player, candidates)
+        if result:
+            return result
+
+        # STRATEGY 4: Prefix first name match
+        result = self._try_match_prefix_first_name(player, candidates)
+        if result:
+            return result
+
+        # STRATEGY 5: Team-only match (last resort)
+        result = self._try_match_by_team(player, candidates)
+        if result:
+            return result
+
+        # Should not reach here, but just in case
+        return PlayerMatchResult(
+            espn_player=player,
+            fangraphs_match=None,
+            savant_match=None,
+            match_method=MatchMethod.NONE,
+            confidence=MatchConfidence.NONE,
+            candidates=candidates,
+            notes="No definitive match found",
+        )
+
+    def match_players(self) -> List[PlayerMatchResult]:
         """
-        Match all players using progressive matching strategies.
-        
+        Match all ESPN players against FanGraphs and Savant data.
+
         Returns:
-            Dictionary with keys:
-                - 'matched': List of PlayerModel instances that were successfully matched
-                - 'multiple_matches': List of (player, candidates) tuples for manual review
-                - 'no_matches': List of PlayerModel instances with no potential matches
+            List of PlayerMatchResult objects (one per ESPN player)
+
+        Note:
+            This method shrinks indexes as matches are found to improve performance.
+            Players are processed in their natural order since slug-first matching
+            and index shrinking handle edge cases effectively.
         """
-        # Reset the results
-        self.matched_players = []
-        self.ambiguous_matches = []
-        self.unmatched_players = []
+        # Reset tracking
         self.matched_fg_ids = set()
-        
-        # Make a copy since we'll be modifying the list as we go
-        players_to_match = self.espn_players.copy()
-        
-        # Perform specific player pre-matching first
-        # This helps with players who have common last names
-        special_players = ["Gary Sanchez", "Jose Ramirez", "Luis Garcia", "Eugenio Suarez"]
-        
-        # Process players in a strategic order to improve matching
-        # 1. First process special players (manually identified as having common names)
-        special_player_models = [p for p in players_to_match if p.name in special_players]
-        
-        # 2. Then process players who are on a team (more likely to be correctly matched)
-        remaining_players = [p for p in players_to_match if p.name not in special_players]
-        team_players = [p for p in remaining_players if p.pro_team is not None and p.pro_team != ""]
-        no_team_players = [p for p in remaining_players if p.pro_team is None or p.pro_team == ""]
-        
-        # 3. Further prioritize active players
-        active_team_players = [p for p in team_players if p.status == "active" or p.status == "injured"]
-        inactive_team_players = [p for p in team_players if p.status != "active" and p.status != "injured"]
-        
-        # 4. Process in priority order
-        for player in special_player_models:
-            self._match_player(player)
-            
-        for player in active_team_players:
-            self._match_player(player)
-            
-        for player in inactive_team_players:
-            self._match_player(player)
-            
-        for player in no_team_players:
-            self._match_player(player)
-            
-        return {
-            "matched": self.matched_players,
-            "multiple_matches": self.ambiguous_matches,
-            "no_matches": self.unmatched_players,
-        }
-    
+        self.matched_savant_ids = set()
+
+        results = []
+
+        # Process players in natural order (slug-first matching + index shrinking handles edge cases)
+        for player in self.espn_players:
+            result = self._match_player(player)
+
+            # Track matched IDs and shrink indexes
+            if result.fangraphs_match:
+                fg_id = result.fangraphs_match.playerid
+                if fg_id:
+                    self.matched_fg_ids.add(fg_id)
+                    self._remove_from_indexes(result.fangraphs_match)
+
+            if result.savant_match:
+                savant_id = result.savant_match.player_id
+                if savant_id:
+                    self.matched_savant_ids.add(savant_id)
+
+            results.append(result)
+
+        return results
+
     @staticmethod
     def _extract_last_name(full_name: str) -> str:
         """
@@ -387,7 +742,7 @@ class PlayerMatcher:
             last_name = parts[-1]
 
         return last_name
-        
+
     @staticmethod
     def _extract_first_name(full_name: str) -> str:
         """
@@ -409,76 +764,196 @@ class PlayerMatcher:
         return parts[0]
 
 
-# Legacy function that uses the new class-based implementation
-def match_player_models_on_fangraphs_data(
-    players: List[PlayerModel], data: List[Dict]
-) -> Dict[str, List]:
-    """
-    Match PlayerModel instances with FanGraphs data.
+# Helper functions for apply_matches
+def _extract_espn_current_season_stats(
+    espn_player: "EspnBatterModel | EspnPitcherModel",
+) -> Dict[str, Any]:
+    """Extract ESPN current season stats as unprefixed dictionary.
 
     Args:
-        players: List of PlayerModel instances from ESPN
-        data: List of FanGraphs player data dictionaries
+        espn_player: ESPN player model with stats container
 
     Returns:
-        Dictionary with keys:
-            - 'matched': List of PlayerModel instances that were successfully matched
-            - 'multiple_matches': List of (player, candidates) tuples for manual review
-            - 'no_matches': List of PlayerModel instances with no potential matches
+        Dictionary of current season stats (unprefixed)
     """
-    matcher = PlayerMatcher(players, data)
-    return matcher.match_players()
+    if espn_player.stats and espn_player.stats.current_season:
+        return espn_player.stats.current_season.model_dump(exclude_none=True)
+    return {}
 
 
-# For backwards compatibility, keep the standalone functions
-def extract_last_name(full_name: str) -> str:
-    """
-    Extract the last name from a full name, removing suffixes.
+def _extract_fangraphs_projections(
+    fg_match: Optional["FangraphsBatterModel | FangraphsPitcherModel"],
+) -> Dict[str, Any]:
+    """Extract FanGraphs projection stats with proj_ prefix.
 
     Args:
-        full_name: Full player name
+        fg_match: FanGraphs player model with projections
 
     Returns:
-        Last name without suffixes
+        Dictionary of projection stats (all keys prefixed with proj_)
     """
-    return PlayerMatcher._extract_last_name(full_name)
+    if not fg_match or not fg_match.projection:
+        return {}
+
+    fg_proj: Dict[str, Any] = fg_match.projection.model_dump(exclude_none=True)
+    return {f"proj_{key}": value for key, value in fg_proj.items()}
 
 
-def extract_first_name(full_name: str) -> str:
-    """
-    Extract the first name from a full name.
+def _extract_savant_stats(
+    savant_match: Optional["SavantBatterModel | SavantPitcherModel"],
+) -> Dict[str, Any]:
+    """Extract Savant sabermetric stats as unprefixed dictionary.
 
     Args:
-        full_name: Full player name
+        savant_match: Savant player model with stats
 
     Returns:
-        First name
+        Dictionary of Savant stats (unprefixed)
     """
-    return PlayerMatcher._extract_first_name(full_name)
+    if savant_match and savant_match.stats:
+        return savant_match.stats.model_dump(exclude_none=True)
+    return {}
 
 
-def filter_by_team(
-    candidates: List[Dict],
-    team_code: Optional[str],
-) -> List[Dict]:
-    """
-    Filter candidates by matching team codes.
+def _build_stats_dict(
+    result: PlayerMatchResult,
+    is_matched: bool,
+) -> Dict[str, Any]:
+    """Build combined stats dictionary from all sources.
 
     Args:
-        candidates: List of candidate FanGraphs player data
-        team_code: ESPN team code
+        result: Player match result containing ESPN, FanGraphs, and Savant data
+        is_matched: Whether player has FanGraphs/Savant matches
 
     Returns:
-        List of candidates with matching team codes
+        Dictionary combining stats from all sources
     """
-    if not team_code:
-        return []
+    stats_dict: Dict[str, Any] = {}
 
-    results = []
-    fg_team_code = ESPN_TO_FG_TEAM_MAPPING.get(team_code, team_code)
+    # 1. ESPN current season stats (unprefixed, top level)
+    espn_current: Dict[str, Any] = _extract_espn_current_season_stats(
+        result.espn_player
+    )
+    stats_dict.update(espn_current)
 
-    for candidate in candidates:
-        if candidate.get("team") == fg_team_code:
-            results.append(candidate)
+    if is_matched:
+        # 2. FanGraphs projections (prefixed with proj_)
+        fg_projections: Dict[str, Any] = _extract_fangraphs_projections(
+            result.fangraphs_match
+        )
+        stats_dict.update(fg_projections)
 
-    return results
+        # 3. Savant sabermetrics (unprefixed)
+        savant_stats: Dict[str, Any] = _extract_savant_stats(result.savant_match)
+        stats_dict.update(savant_stats)
+
+    return stats_dict
+
+
+def _create_player_model(
+    base_player: MtblPlayerModel,
+    stats_dict: Dict[str, Any],
+    espn_stats_container: Optional[EspnBatterStats | EspnPitcherStats],
+    is_batter: bool,
+) -> MtblPlayerModel:
+    """Create typed player model (batter or pitcher) with stats.
+
+    Args:
+        base_player: Base MTBL player model
+        stats_dict: Combined stats dictionary
+        espn_stats_container: ESPN stats container with all periods
+        is_batter: True for batter, False for pitcher
+
+    Returns:
+        MtblBatterModel or MtblPitcherModel with merged stats
+    """
+    base_data: Dict[str, Any] = base_player.model_dump()
+
+    if is_batter:
+        batter_stats: Optional[MtblBatterStatsModel] = None
+        if stats_dict or espn_stats_container:
+            # Type narrow the container for batters
+            batter_container: Optional[EspnBatterStats] = (
+                espn_stats_container if isinstance(espn_stats_container, EspnBatterStats) else None
+            )
+            batter_stats = MtblBatterStatsModel(**stats_dict, espn_stats=batter_container)
+        return MtblBatterModel(**base_data, stats=batter_stats)
+    else:
+        pitcher_stats: Optional[MtblPitcherStatsModel] = None
+        if stats_dict or espn_stats_container:
+            # Type narrow the container for pitchers
+            pitcher_container: Optional[EspnPitcherStats] = (
+                espn_stats_container if isinstance(espn_stats_container, EspnPitcherStats) else None
+            )
+            pitcher_stats = MtblPitcherStatsModel(**stats_dict, espn_stats=pitcher_container)
+        return MtblPitcherModel(**base_data, stats=pitcher_stats)
+
+
+# Standalone function for applying matches
+def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
+    """
+    Apply matches by merging FanGraphs and Savant data into ESPN players.
+
+    This function takes the match results from PlayerMatcher.match_players()
+    and performs the actual data merging into MtblBatterModel or MtblPitcherModel instances.
+
+    Args:
+        results: List of PlayerMatchResult objects from match_players()
+
+    Returns:
+        Dictionary with categorized results:
+        - 'matched': List of MtblBatterModel/MtblPitcherModel instances with successful matches
+        - 'ambiguous': List of (MtblPlayerModel, candidates) tuples for manual review
+        - 'unmatched': List of MtblBatterModel/MtblPitcherModel instances with no matches
+    """
+    matched: List[MtblPlayerModel] = []
+    ambiguous: List[Tuple[MtblPlayerModel, Sequence[FangraphsPlayerModel]]] = []
+    unmatched: List[MtblPlayerModel] = []
+
+    for result in results:
+        # Skip retired players (they cannot be serialized to MtblPlayerModel)
+        if result.espn_player.status == "retired":
+            continue
+
+        # Determine player type
+        is_batter: bool = isinstance(result.espn_player, EspnBatterModel)
+
+        # Convert ESPN player to base MtblPlayerModel
+        espn_data: Dict[str, Any] = result.espn_player.model_dump(exclude_none=True)
+        base_player: MtblPlayerModel = MtblPlayerModel.model_validate(espn_data)
+
+        # Handle ambiguous matches
+        if result.confidence == MatchConfidence.AMBIGUOUS:
+            ambiguous.append((base_player, result.candidates))
+            continue
+
+        # Determine if this is a matched or unmatched player
+        is_matched: bool = result.fangraphs_match is not None
+
+        # Merge FanGraphs data if matched
+        if is_matched:
+            base_player.merge_fangraphs_data(result.fangraphs_match)
+
+        # Build combined stats dictionary
+        stats_dict: Dict[str, Any] = _build_stats_dict(result, is_matched)
+
+        # Extract ESPN stats container
+        espn_stats_container: Optional[Any] = (
+            result.espn_player.stats if result.espn_player.stats else None
+        )
+
+        # Create typed player model
+        player_model: MtblPlayerModel = _create_player_model(
+            base_player=base_player,
+            stats_dict=stats_dict,
+            espn_stats_container=espn_stats_container,
+            is_batter=is_batter,
+        )
+
+        # Categorize result
+        if is_matched:
+            matched.append(player_model)
+        else:
+            unmatched.append(player_model)
+
+    return {"matched": matched, "ambiguous": ambiguous, "unmatched": unmatched}

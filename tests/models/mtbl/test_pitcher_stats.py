@@ -330,7 +330,7 @@ def test_pitcher_stats_command_control_metrics():
         proj_k_per_bb=5.39,
         # Savant discipline metrics
         swing_miss_pct=29.2,
-        BB_pct=6.8,  # type: ignore[call-arg]
+        BB_pct=6.8,
         whiffs=450,
         swings=1550,
         takes=850,
