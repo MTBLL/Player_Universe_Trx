@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from player_universe_trx.models.player import PlayerModel
+from player_universe_trx.models.mtbl import MtblPlayerModel
 
 
 @pytest.fixture
@@ -52,13 +52,13 @@ def savant_player_data(savant_fixture_path):
 
 
 @pytest.fixture
-def player_models(espn_player_data) -> List[PlayerModel]:
+def player_models(espn_player_data) -> List[MtblPlayerModel]:
     """Fixture providing PlayerModel objects created from ESPN data."""
     # Load the first 10 players to keep the test fast
     validated_models = []
     for obj in espn_player_data:
         try:
-            model = PlayerModel.model_validate(obj)
+            model = MtblPlayerModel.model_validate(obj)
             validated_models.append(model)
         except ValueError:
             continue

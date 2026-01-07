@@ -1,19 +1,19 @@
 from typing import List
 
-from player_universe_trx.models import PlayerModel
+from player_universe_trx.models.mtbl import MtblPlayerModel
 
 
-def test_player_list_creation(player_models: List[PlayerModel]):
+def test_player_list_creation(player_models: List[MtblPlayerModel]):
     """Test that we can create multiple player models from a list of player data."""
     # Check that we have players in our list
     assert len(player_models) > 0
 
     # Check that each item is a PlayerModel
     for player in player_models:
-        assert isinstance(player, PlayerModel)
+        assert isinstance(player, MtblPlayerModel)
 
 
-def test_player_list_attributes(player_models: List[PlayerModel]):
+def test_player_list_attributes(player_models: List[MtblPlayerModel]):
     """Test that player models in the list have the expected attributes."""
     for player in player_models:
         # Check that essential attributes are present
