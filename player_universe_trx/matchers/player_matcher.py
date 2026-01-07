@@ -924,7 +924,17 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
 
         # Handle ambiguous matches
         if result.confidence == MatchConfidence.AMBIGUOUS:
-            ambiguous.append((base_player, result.candidates))
+            stats_dict = _build_stats_dict(result, is_matched=False)
+            espn_stats_container: Optional[Any] = (
+                result.espn_player.stats if result.espn_player.stats else None
+            )
+            ambiguous_player: MtblPlayerModel = _create_player_model(
+                base_player=base_player,
+                stats_dict=stats_dict,
+                espn_stats_container=espn_stats_container,
+                is_batter=is_batter,
+            )
+            ambiguous.append((ambiguous_player, result.candidates))
             continue
 
         # Determine if this is a matched or unmatched player
