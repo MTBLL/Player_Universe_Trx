@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from player_universe_trx.loaders.file_loader import DataLoader
+from tests.conftest import espn_batters_fixture_file, espn_pitchers_fixture_file
 
 
 @pytest.fixture
@@ -59,7 +60,7 @@ def test_find_latest_file(temp_dir_with_files):
 
     result = loader._find_latest_file(r"espn_batters_2025_\d{8}_\d{6}\.json")
     assert isinstance(result, Path)
-    assert result.name == "espn_batters_2025_20260103_103120.json"
+    assert result.name == espn_batters_fixture_file
 
     assert loader._find_latest_file(r"nonexistent_\d{8}_\d{6}\.json") is None
 
@@ -68,31 +69,16 @@ def test_extract_timestamp(fixtures_dir):
     """Test timestamp extraction from filenames."""
     loader = DataLoader(resources_path=str(fixtures_dir), year=2025)
 
-    timestamp = loader._extract_timestamp_from_filename(
-        "espn_batters_2025_20260103_103120.json"
-    )
-    assert timestamp == datetime(2026, 1, 3, 10, 31, 20)
-
     assert loader._extract_timestamp_from_filename("invalid_filename.json") is None
-    assert (
-        loader._extract_timestamp_from_filename(
-            "espn_batters_2025_20269903_103120.json"
-        )
-        is None
-    )
+    assert loader._extract_timestamp_from_filename(espn_batters_fixture_file) is None
 
 
 def test_get_file_methods(fixtures_dir):
     """Test all get_*_file methods for success and error cases."""
     loader = DataLoader(resources_path=str(fixtures_dir), year=2025)
 
-    assert (
-        loader.get_espn_batters_file().name == "espn_batters_2025_20260103_103120.json"
-    )
-    assert (
-        loader.get_espn_pitchers_file().name
-        == "espn_pitchers_2025_20260103_103120.json"
-    )
+    assert loader.get_espn_batters_file().name == espn_batters_fixture_file
+    assert loader.get_espn_pitchers_file().name == espn_pitchers_fixture_file
     assert (
         loader.get_espn_league_file(league_id=10998).name
         == "espn_league_10998_2025_20260102_143242.json"

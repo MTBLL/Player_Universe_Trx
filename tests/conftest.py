@@ -6,13 +6,16 @@ import pytest
 
 from player_universe_trx.models.mtbl import MtblPlayerModel
 
+espn_batters_fixture_file = "espn_batters_2025_20260107_111329.json"
+espn_pitchers_fixture_file = "espn_pitchers_2025_20260107_111329.json"
+
 
 @pytest.fixture
 def espn_fixture_path():
     """Fixture providing the path to the ESPN player universe fixture file."""
     fixtures_dir = Path(__file__).parent / "fixtures"
     # Use the actual batter file (most complete for testing)
-    return fixtures_dir / "espn_batters_2025_20260103_103120.json"
+    return fixtures_dir / espn_batters_fixture_file
 
 
 @pytest.fixture
@@ -84,11 +87,9 @@ def corbin_carroll_fangraphs(fangraphs_player_data) -> Dict[str, Any]:
 
 
 @pytest.fixture
-def espn_batter_data() -> List[Dict]:
+def espn_batter_data(espn_fixture_path) -> List[Dict]:
     """Fixture providing ESPN batter data."""
-    fixtures_path = Path(__file__).parent / "fixtures"
-    with open(fixtures_path / "espn_batters_2025_20260103_103120.json") as f:
-        data = json.load(f)
+    data = json.load(espn_fixture_path)
     return data[:10]
 
 
@@ -96,7 +97,7 @@ def espn_batter_data() -> List[Dict]:
 def espn_pitcher_data() -> List[Dict]:
     """Fixture providing ESPN pitcher data."""
     fixtures_path = Path(__file__).parent / "fixtures"
-    with open(fixtures_path / "espn_pitchers_2025_20260103_103120.json") as f:
+    with open(fixtures_path / espn_pitchers_fixture_file) as f:
         data = json.load(f)
     return data[:10]
 
