@@ -89,7 +89,8 @@ def corbin_carroll_fangraphs(fangraphs_player_data) -> Dict[str, Any]:
 @pytest.fixture
 def espn_batter_data(espn_fixture_path) -> List[Dict]:
     """Fixture providing ESPN batter data."""
-    data = json.load(espn_fixture_path)
+    with open(espn_fixture_path, "r") as f:
+        data = json.load(f)
     return data[:10]
 
 

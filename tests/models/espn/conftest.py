@@ -4,6 +4,8 @@ from typing import Dict, List
 
 import pytest
 
+from tests.conftest import espn_batters_fixture_file, espn_pitchers_fixture_file
+
 
 @pytest.fixture
 def fixtures_dir():
@@ -14,7 +16,7 @@ def fixtures_dir():
 @pytest.fixture
 def espn_batter_data(fixtures_dir) -> List[Dict]:
     """Load first 3 ESPN batter records from fixture."""
-    with open(fixtures_dir / "espn_batters_2025_20260103_103120.json") as f:
+    with open(fixtures_dir / espn_batters_fixture_file) as f:
         data = json.load(f)
     return data[:3]
 
@@ -22,7 +24,7 @@ def espn_batter_data(fixtures_dir) -> List[Dict]:
 @pytest.fixture
 def espn_pitcher_data(fixtures_dir) -> List[Dict]:
     """Load first 3 ESPN pitcher records from fixture."""
-    with open(fixtures_dir / "espn_pitchers_2025_20260103_103120.json") as f:
+    with open(fixtures_dir / espn_pitchers_fixture_file) as f:
         data = json.load(f)
     return data[:3]
 

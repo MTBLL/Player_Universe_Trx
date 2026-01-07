@@ -31,10 +31,10 @@ def test_match_exact_first_and_last_name(espn_player_data, fangraphs_player_data
     corbin_espn = EspnBatterModel(
         id=corbin_espn_data["id"],
         name=corbin_espn_data["name"],
-        first_name=corbin_espn_data.get("firstName"),
-        last_name=corbin_espn_data.get("lastName"),
+        first_name=corbin_espn_data.get("first_name"),
+        last_name=corbin_espn_data.get("last_name"),
         slug=corbin_espn_data.get("slug"),
-        pro_team=corbin_espn_data.get("proTeam"),
+        pro_team=corbin_espn_data.get("pro_team"),
     )
     corbin_fg = FangraphsBatterModel(**corbin_fg_data)
 
