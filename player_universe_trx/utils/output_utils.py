@@ -15,7 +15,7 @@ logger = logging.getLogger("player_universe_trx.utils")
 def save_results(
     matched: List[MtblPlayerModel],
     unmatched: List[MtblPlayerModel],
-    multiple_matches: List[Tuple[MtblPlayerModel, List[Dict]]],
+    multiple_matches: List[Tuple[MtblPlayerModel, List[MtblPlayerModel]]],
     output_dir: str,
 ):
     """
