@@ -879,15 +879,15 @@ def _create_player_model(
             batter_container: Optional[EspnBatterStats] = (
                 espn_stats_container if isinstance(espn_stats_container, EspnBatterStats) else None
             )
-            current_season: Optional[MtblBatterSeasonStatsModel] = (
+            batter_current_season: Optional[MtblBatterSeasonStatsModel] = (
                 MtblBatterSeasonStatsModel(**stats_dict) if stats_dict else None
             )
-            projections: Optional[FangraphsBatterStatsModel] = (
+            batter_projections: Optional[FangraphsBatterStatsModel] = (
                 FangraphsBatterStatsModel(**projections_dict) if projections_dict else None
             )
             batter_stats = MtblBatterStatsModel(
-                current_season=current_season,
-                projections=projections,
+                current_season=batter_current_season,
+                projections=batter_projections,
                 espn_stats=batter_container,
             )
         return MtblBatterModel(**base_data, stats=batter_stats)
@@ -898,15 +898,15 @@ def _create_player_model(
             pitcher_container: Optional[EspnPitcherStats] = (
                 espn_stats_container if isinstance(espn_stats_container, EspnPitcherStats) else None
             )
-            current_season: Optional[MtblPitcherSeasonStatsModel] = (
+            pitcher_current_season: Optional[MtblPitcherSeasonStatsModel] = (
                 MtblPitcherSeasonStatsModel(**stats_dict) if stats_dict else None
             )
-            projections: Optional[FangraphsPitcherStatsModel] = (
+            pitcher_projections: Optional[FangraphsPitcherStatsModel] = (
                 FangraphsPitcherStatsModel(**projections_dict) if projections_dict else None
             )
             pitcher_stats = MtblPitcherStatsModel(
-                current_season=current_season,
-                projections=projections,
+                current_season=pitcher_current_season,
+                projections=pitcher_projections,
                 espn_stats=pitcher_container,
             )
         return MtblPitcherModel(**base_data, stats=pitcher_stats)
@@ -947,16 +947,16 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
 
         # Handle ambiguous matches
         if result.confidence == MatchConfidence.AMBIGUOUS:
-            stats_dict = _build_stats_dict(result, is_matched=False)
-            projections_dict: Dict[str, Any] = {}
-            espn_stats_container: Optional[Any] = (
+            ambiguous_stats_dict = _build_stats_dict(result, is_matched=False)
+            ambiguous_projections_dict: Dict[str, Any] = {}
+            ambiguous_espn_stats_container: Optional[Any] = (
                 result.espn_player.stats if result.espn_player.stats else None
             )
             ambiguous_player: MtblPlayerModel = _create_player_model(
                 base_player=base_player,
-                stats_dict=stats_dict,
-                projections_dict=projections_dict,
-                espn_stats_container=espn_stats_container,
+                stats_dict=ambiguous_stats_dict,
+                projections_dict=ambiguous_projections_dict,
+                espn_stats_container=ambiguous_espn_stats_container,
                 is_batter=is_batter,
             )
             ambiguous.append((ambiguous_player, result.candidates))
