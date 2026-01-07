@@ -478,9 +478,9 @@ def test_apply_matches_espn_stats_batters_matched():
 
     matched = mtbl_players["matched"]
     assert len(matched) == 1
-    # Verify ESPN current season stats are at top level
-    assert matched[0].stats.AB == 500
-    assert matched[0].stats.HR == 30
+    # Verify ESPN current season stats are nested under current_season
+    assert matched[0].stats.current_season.AB == 500
+    assert matched[0].stats.current_season.HR == 30
 
 
 def test_apply_matches_espn_stats_pitchers_matched():
@@ -513,9 +513,9 @@ def test_apply_matches_espn_stats_pitchers_matched():
 
     matched = mtbl_players["matched"]
     assert len(matched) == 1
-    # Verify ESPN current season stats are at top level
-    assert matched[0].stats.W == 15
-    assert matched[0].stats.K == 215
+    # Verify ESPN current season stats are nested under current_season
+    assert matched[0].stats.current_season.W == 15
+    assert matched[0].stats.current_season.K == 215
 
 
 def test_apply_matches_espn_stats_batters_unmatched():
@@ -540,9 +540,9 @@ def test_apply_matches_espn_stats_batters_unmatched():
 
     unmatched = mtbl_players["unmatched"]
     assert len(unmatched) == 1
-    # Verify ESPN current season stats are at top level
-    assert unmatched[0].stats.AB == 100
-    assert unmatched[0].stats.HR == 5
+    # Verify ESPN current season stats are nested under current_season
+    assert unmatched[0].stats.current_season.AB == 100
+    assert unmatched[0].stats.current_season.HR == 5
 
 
 def test_apply_matches_espn_stats_pitchers_unmatched():
@@ -567,6 +567,6 @@ def test_apply_matches_espn_stats_pitchers_unmatched():
 
     unmatched = mtbl_players["unmatched"]
     assert len(unmatched) == 1
-    # Verify ESPN current season stats are at top level
-    assert unmatched[0].stats.W == 5
-    assert unmatched[0].stats.K == 50
+    # Verify ESPN current season stats are nested under current_season
+    assert unmatched[0].stats.current_season.W == 5
+    assert unmatched[0].stats.current_season.K == 50
