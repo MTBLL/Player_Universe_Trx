@@ -45,6 +45,14 @@ python -m player_universe_trx.main
 python -m player_universe_trx.main --espn-file /path/to/espn.json --fangraphs-file /path/to/fangraphs.json --output-dir /path/to/output
 ```
 
+### Output Files
+
+The pipeline writes separate batter and pitcher output files in the output directory:
+
+- `batters_matched.json` / `pitchers_matched.json`
+- `batters_unmatched.json` / `pitchers_unmatched.json`
+- `batters_ambiguous.json` / `pitchers_ambiguous.json`
+
 ## Development
 
 ### Setup
