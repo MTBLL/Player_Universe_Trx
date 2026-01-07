@@ -6,13 +6,17 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from player_universe_trx.models.espn.batter import EspnBatterStats
 from player_universe_trx.models.espn.pitcher import EspnPitcherStats
+from player_universe_trx.models.fangraphs.stats import (
+    FangraphsBatterStatsModel,
+    FangraphsPitcherStatsModel,
+)
 
 
-class MtblBatterStatsModel(BaseModel):
+class MtblBatterSeasonStatsModel(BaseModel):
     """
-    MTBL batter statistics combining ESPN current stats, FanGraphs projections, and Savant sabermetrics.
+    MTBL batter stats for the current season, including projections and sabermetrics.
 
-    This model holds all three stat types in a single object since each source provides unique data:
+    This model holds all stat types in a single object since each source provides unique data:
     - ESPN: Current season statistics (actual performance)
     - FanGraphs: Projections (expected future performance)
     - Savant: Sabermetrics (advanced metrics like exit velocity, barrel rate, etc.)
@@ -56,56 +60,6 @@ class MtblBatterStatsModel(BaseModel):
     GDP: Optional[float] = Field(default=None, description="Grounded Into Double Play (ESPN)")
     B_SO: Optional[float] = Field(default=None, description="Strikeouts (ESPN)")
     G: Optional[float] = Field(default=None, description="Games (ESPN)")
-
-    # ========== FanGraphs Projections ==========
-    # Counting stats
-    proj_pa: Optional[float] = Field(default=None, description="Projected Plate Appearances (FG)")
-    proj_ab: Optional[float] = Field(default=None, description="Projected At Bats (FG)")
-    proj_h: Optional[float] = Field(default=None, description="Projected Hits (FG)")
-    proj_singles: Optional[float] = Field(default=None, description="Projected Singles (FG)")
-    proj_doubles: Optional[float] = Field(default=None, description="Projected Doubles (FG)")
-    proj_triples: Optional[float] = Field(default=None, description="Projected Triples (FG)")
-    proj_hr: Optional[float] = Field(default=None, description="Projected Home Runs (FG)")
-    proj_r: Optional[float] = Field(default=None, description="Projected Runs (FG)")
-    proj_rbi: Optional[float] = Field(default=None, description="Projected RBIs (FG)")
-    proj_bb: Optional[float] = Field(default=None, description="Projected Walks (FG)")
-    proj_ibb: Optional[float] = Field(default=None, description="Projected Intentional Walks (FG)")
-    proj_so: Optional[float] = Field(default=None, description="Projected Strikeouts (FG)")
-    proj_hbp: Optional[float] = Field(default=None, description="Projected Hit By Pitch (FG)")
-    proj_sf: Optional[float] = Field(default=None, description="Projected Sacrifice Flies (FG)")
-    proj_sh: Optional[float] = Field(default=None, description="Projected Sacrifice Hits (FG)")
-    proj_sb: Optional[float] = Field(default=None, description="Projected Stolen Bases (FG)")
-    proj_cs: Optional[float] = Field(default=None, description="Projected Caught Stealing (FG)")
-
-    # Rate stats
-    proj_avg: Optional[float] = Field(default=None, description="Projected Batting Average (FG)")
-    proj_obp: Optional[float] = Field(default=None, description="Projected On-Base Percentage (FG)")
-    proj_slg: Optional[float] = Field(default=None, description="Projected Slugging (FG)")
-    proj_ops: Optional[float] = Field(default=None, description="Projected OPS (FG)")
-    proj_iso: Optional[float] = Field(default=None, description="Projected Isolated Power (FG)")
-    proj_woba: Optional[float] = Field(default=None, description="Projected wOBA (FG)")
-    proj_wrc_plus: Optional[float] = Field(default=None, description="Projected wRC+ (FG)")
-    proj_bb_k: Optional[float] = Field(default=None, description="Projected BB/K (FG)")
-
-    # Advanced metrics
-    proj_w_bsr: Optional[float] = Field(default=None, description="Projected Weighted Base Running (FG)")
-    proj_spd: Optional[float] = Field(default=None, description="Projected Speed Score (FG)")
-    proj_wraa: Optional[float] = Field(default=None, description="Projected wRAA (FG)")
-    proj_wrc: Optional[float] = Field(default=None, description="Projected wRC (FG)")
-    proj_ubr: Optional[float] = Field(default=None, description="Projected UBR (FG)")
-    proj_off: Optional[float] = Field(default=None, description="Projected Offensive Value (FG)")
-    proj_def: Optional[float] = Field(default=None, description="Projected Defensive Value (FG)")
-    proj_uzr: Optional[float] = Field(default=None, description="Projected UZR (FG)")
-    proj_base_running: Optional[float] = Field(default=None, description="Projected Base Running Value (FG)")
-
-    # Fantasy and uncertainty metrics
-    proj_fpts_g: Optional[float] = Field(default=None, description="Projected Fantasy Pts/G (FG)")
-    proj_spts_g: Optional[float] = Field(default=None, description="Projected Standard Pts/G (FG)")
-    proj_woba_sd: Optional[float] = Field(default=None, description="Projected wOBA SD (FG)")
-    proj_truetalent_sd: Optional[float] = Field(default=None, description="Projected True Talent SD (FG)")
-    proj_woba_sd_book: Optional[float] = Field(default=None, description="Projected wOBA SD Book (FG)")
-    proj_woba_se: Optional[float] = Field(default=None, description="Projected wOBA SE (FG)")
-    proj_total_se: Optional[float] = Field(default=None, description="Projected Total SE (FG)")
 
     # ========== Savant Sabermetrics ==========
     # Contact metrics
@@ -162,16 +116,36 @@ class MtblBatterStatsModel(BaseModel):
     rate_ideal_attack_angle: Optional[float] = Field(default=None, description="Rate Ideal Attack Angle (Savant)")
     pitch_velo: Optional[float] = Field(default=None, description="Avg Pitch Velocity Faced (Savant)")
 
-    # ========== ESPN Stats Container ==========
-    # Holds all ESPN stat periods: projections, last_7_games, last_15_games, last_30_games, previous_season_24
-    espn_stats: Optional[EspnBatterStats] = Field(default=None, description="ESPN stats container with all periods")
 
-
-class MtblPitcherStatsModel(BaseModel):
+class MtblBatterStatsModel(BaseModel):
     """
-    MTBL pitcher statistics combining ESPN current stats, FanGraphs projections, and Savant sabermetrics.
+    MTBL batter statistics container with current season stats and ESPN periods.
 
-    This model holds all three stat types in a single object since each source provides unique data:
+    Current season stats contain ESPN current season data and Savant sabermetrics, while
+    FanGraphs projections live in the projections object and ESPN historical periods are
+    preserved in espn_stats.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    current_season: Optional[MtblBatterSeasonStatsModel] = Field(
+        default=None,
+        description="Combined current season stats (ESPN current + Savant)",
+    )
+    projections: Optional[FangraphsBatterStatsModel] = Field(
+        default=None,
+        description="FanGraphs projection stats",
+    )
+    espn_stats: Optional[EspnBatterStats] = Field(
+        default=None, description="ESPN stats container with all periods"
+    )
+
+
+class MtblPitcherSeasonStatsModel(BaseModel):
+    """
+    MTBL pitcher stats for the current season, including projections and sabermetrics.
+
+    This model holds all stat types in a single object since each source provides unique data:
     - ESPN: Current season statistics (actual performance)
     - FanGraphs: Projections (expected future performance)
     - Savant: Sabermetrics (advanced metrics like spin rate, velocity, etc.)
@@ -201,48 +175,6 @@ class MtblPitcherStatsModel(BaseModel):
     WPCT: Optional[float] = Field(default=None, description="Win Percentage (ESPN)")
     QS: Optional[float] = Field(default=None, description="Quality Starts (ESPN)")
     k_bb_ratio: Optional[float] = Field(default=None, alias="K/BB", description="K/BB Ratio (ESPN)")
-
-    # ========== FanGraphs Projections ==========
-    # Counting stats
-    proj_wins: Optional[float] = Field(default=None, description="Projected Wins (FG)")
-    proj_losses: Optional[float] = Field(default=None, description="Projected Losses (FG)")
-    proj_games_started: Optional[float] = Field(default=None, description="Projected GS (FG)")
-    proj_saves: Optional[float] = Field(default=None, description="Projected Saves (FG)")
-    proj_holds: Optional[float] = Field(default=None, description="Projected Holds (FG)")
-    proj_innings_pitched: Optional[float] = Field(default=None, description="Projected IP (FG)")
-    proj_total_batters_faced: Optional[float] = Field(default=None, description="Projected TBF (FG)")
-    proj_hits: Optional[float] = Field(default=None, description="Projected Hits Allowed (FG)")
-    proj_runs: Optional[float] = Field(default=None, description="Projected Runs Allowed (FG)")
-    proj_earned_runs: Optional[float] = Field(default=None, description="Projected ER (FG)")
-    proj_home_runs: Optional[float] = Field(default=None, description="Projected HR Allowed (FG)")
-    proj_strikeouts: Optional[float] = Field(default=None, description="Projected Strikeouts (FG)")
-    proj_walks: Optional[float] = Field(default=None, description="Projected Walks (FG)")
-    proj_intentional_walks: Optional[float] = Field(default=None, description="Projected IBB (FG)")
-    proj_hit_by_pitch: Optional[float] = Field(default=None, description="Projected HBP (FG)")
-    proj_quality_starts: Optional[float] = Field(default=None, description="Projected QS (FG)")
-
-    # Rate stats
-    proj_era: Optional[float] = Field(default=None, description="Projected ERA (FG)")
-    proj_whip: Optional[float] = Field(default=None, description="Projected WHIP (FG)")
-    proj_k_per_9: Optional[float] = Field(default=None, description="Projected K/9 (FG)")
-    proj_bb_per_9: Optional[float] = Field(default=None, description="Projected BB/9 (FG)")
-    proj_k_per_bb: Optional[float] = Field(default=None, description="Projected K/BB (FG)")
-    proj_hr_per_9: Optional[float] = Field(default=None, description="Projected HR/9 (FG)")
-    proj_k_bb_percent: Optional[float] = Field(default=None, description="Projected K-BB% (FG)")
-    proj_gb_percent: Optional[float] = Field(default=None, description="Projected GB% (FG)")
-    proj_avg_against: Optional[float] = Field(default=None, description="Projected AVG Against (FG)")
-    proj_lob_percent: Optional[float] = Field(default=None, description="Projected LOB% (FG)")
-
-    # Advanced metrics
-    proj_fip: Optional[float] = Field(default=None, description="Projected FIP (FG)")
-    proj_ra9_war: Optional[float] = Field(default=None, description="Projected RA9-WAR (FG)")
-
-    # Fantasy and uncertainty metrics
-    proj_fpts_ip: Optional[float] = Field(default=None, description="Projected Fantasy Pts/IP (FG)")
-    proj_spts_ip: Optional[float] = Field(default=None, description="Projected Standard Pts/IP (FG)")
-    proj_ra_talent_sd: Optional[float] = Field(default=None, description="Projected RA Talent SD (FG)")
-    proj_chance_ra_se: Optional[float] = Field(default=None, description="Projected Chance RA SE (FG)")
-    proj_total_ra_se: Optional[float] = Field(default=None, description="Projected Total RA SE (FG)")
 
     # ========== Savant Sabermetrics ==========
     # Pitch characteristics
@@ -303,6 +235,26 @@ class MtblPitcherStatsModel(BaseModel):
     barrels_total: Optional[int] = Field(default=None, description="Barrels Allowed (Savant)")
     rate_ideal_attack_angle: Optional[float] = Field(default=None, description="Rate Ideal Attack Angle (Savant)")
 
-    # ========== ESPN Stats Container ==========
-    # Holds all ESPN stat periods: projections, last_7_games, last_15_games, last_30_games, previous_season_24
-    espn_stats: Optional[EspnPitcherStats] = Field(default=None, description="ESPN stats container with all periods")
+
+class MtblPitcherStatsModel(BaseModel):
+    """
+    MTBL pitcher statistics container with current season stats and ESPN periods.
+
+    Current season stats contain ESPN current season data and Savant sabermetrics, while
+    FanGraphs projections live in the projections object and ESPN historical periods are
+    preserved in espn_stats.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    current_season: Optional[MtblPitcherSeasonStatsModel] = Field(
+        default=None,
+        description="Combined current season stats (ESPN current + Savant)",
+    )
+    projections: Optional[FangraphsPitcherStatsModel] = Field(
+        default=None,
+        description="FanGraphs projection stats",
+    )
+    espn_stats: Optional[EspnPitcherStats] = Field(
+        default=None, description="ESPN stats container with all periods"
+    )

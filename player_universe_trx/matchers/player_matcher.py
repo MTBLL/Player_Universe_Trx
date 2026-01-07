@@ -18,10 +18,16 @@ from player_universe_trx.models.fangraphs import (
     FangraphsPitcherModel,
     FangraphsPlayerModel,
 )
+from player_universe_trx.models.fangraphs.stats import (
+    FangraphsBatterStatsModel,
+    FangraphsPitcherStatsModel,
+)
 from player_universe_trx.models.mtbl import (
     MtblBatterModel,
+    MtblBatterSeasonStatsModel,
     MtblBatterStatsModel,
     MtblPitcherModel,
+    MtblPitcherSeasonStatsModel,
     MtblPitcherStatsModel,
     MtblPlayerModel,
 )
@@ -784,19 +790,18 @@ def _extract_espn_current_season_stats(
 def _extract_fangraphs_projections(
     fg_match: Optional["FangraphsBatterModel | FangraphsPitcherModel"],
 ) -> Dict[str, Any]:
-    """Extract FanGraphs projection stats with proj_ prefix.
+    """Extract FanGraphs projection stats.
 
     Args:
         fg_match: FanGraphs player model with projections
 
     Returns:
-        Dictionary of projection stats (all keys prefixed with proj_)
+        Dictionary of projection stats
     """
     if not fg_match or not fg_match.projection:
         return {}
 
-    fg_proj: Dict[str, Any] = fg_match.projection.model_dump(exclude_none=True)
-    return {f"proj_{key}": value for key, value in fg_proj.items()}
+    return fg_match.projection.model_dump(exclude_none=True)
 
 
 def _extract_savant_stats(
@@ -819,33 +824,29 @@ def _build_stats_dict(
     result: PlayerMatchResult,
     is_matched: bool,
 ) -> Dict[str, Any]:
-    """Build combined stats dictionary from all sources.
+    """Build combined current-season stats dictionary from all sources.
 
     Args:
         result: Player match result containing ESPN, FanGraphs, and Savant data
         is_matched: Whether player has FanGraphs/Savant matches
 
     Returns:
-        Dictionary combining stats from all sources
+        Dictionary combining current-season stats from ESPN and Savant
     """
     stats_dict: Dict[str, Any] = {}
 
-    # 1. ESPN current season stats (unprefixed, top level)
+    # 1. ESPN current season stats (unprefixed)
     espn_current: Dict[str, Any] = _extract_espn_current_season_stats(
         result.espn_player
     )
     stats_dict.update(espn_current)
 
     if is_matched:
-        # 2. FanGraphs projections (prefixed with proj_)
-        fg_projections: Dict[str, Any] = _extract_fangraphs_projections(
-            result.fangraphs_match
-        )
-        stats_dict.update(fg_projections)
-
-        # 3. Savant sabermetrics (unprefixed)
+        # 2. Savant sabermetrics (unprefixed), keep ESPN values on collision
         savant_stats: Dict[str, Any] = _extract_savant_stats(result.savant_match)
-        stats_dict.update(savant_stats)
+        for key, value in savant_stats.items():
+            if key not in stats_dict:
+                stats_dict[key] = value
 
     return stats_dict
 
@@ -853,6 +854,7 @@ def _build_stats_dict(
 def _create_player_model(
     base_player: MtblPlayerModel,
     stats_dict: Dict[str, Any],
+    projections_dict: Dict[str, Any],
     espn_stats_container: Optional[EspnBatterStats | EspnPitcherStats],
     is_batter: bool,
 ) -> MtblPlayerModel:
@@ -860,7 +862,8 @@ def _create_player_model(
 
     Args:
         base_player: Base MTBL player model
-        stats_dict: Combined stats dictionary
+        stats_dict: Combined current season stats dictionary
+        projections_dict: FanGraphs projections dictionary
         espn_stats_container: ESPN stats container with all periods
         is_batter: True for batter, False for pitcher
 
@@ -871,21 +874,41 @@ def _create_player_model(
 
     if is_batter:
         batter_stats: Optional[MtblBatterStatsModel] = None
-        if stats_dict or espn_stats_container:
+        if stats_dict or projections_dict or espn_stats_container:
             # Type narrow the container for batters
             batter_container: Optional[EspnBatterStats] = (
                 espn_stats_container if isinstance(espn_stats_container, EspnBatterStats) else None
             )
-            batter_stats = MtblBatterStatsModel(**stats_dict, espn_stats=batter_container)
+            current_season: Optional[MtblBatterSeasonStatsModel] = (
+                MtblBatterSeasonStatsModel(**stats_dict) if stats_dict else None
+            )
+            projections: Optional[FangraphsBatterStatsModel] = (
+                FangraphsBatterStatsModel(**projections_dict) if projections_dict else None
+            )
+            batter_stats = MtblBatterStatsModel(
+                current_season=current_season,
+                projections=projections,
+                espn_stats=batter_container,
+            )
         return MtblBatterModel(**base_data, stats=batter_stats)
     else:
         pitcher_stats: Optional[MtblPitcherStatsModel] = None
-        if stats_dict or espn_stats_container:
+        if stats_dict or projections_dict or espn_stats_container:
             # Type narrow the container for pitchers
             pitcher_container: Optional[EspnPitcherStats] = (
                 espn_stats_container if isinstance(espn_stats_container, EspnPitcherStats) else None
             )
-            pitcher_stats = MtblPitcherStatsModel(**stats_dict, espn_stats=pitcher_container)
+            current_season: Optional[MtblPitcherSeasonStatsModel] = (
+                MtblPitcherSeasonStatsModel(**stats_dict) if stats_dict else None
+            )
+            projections: Optional[FangraphsPitcherStatsModel] = (
+                FangraphsPitcherStatsModel(**projections_dict) if projections_dict else None
+            )
+            pitcher_stats = MtblPitcherStatsModel(
+                current_season=current_season,
+                projections=projections,
+                espn_stats=pitcher_container,
+            )
         return MtblPitcherModel(**base_data, stats=pitcher_stats)
 
 
@@ -925,12 +948,14 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
         # Handle ambiguous matches
         if result.confidence == MatchConfidence.AMBIGUOUS:
             stats_dict = _build_stats_dict(result, is_matched=False)
+            projections_dict: Dict[str, Any] = {}
             espn_stats_container: Optional[Any] = (
                 result.espn_player.stats if result.espn_player.stats else None
             )
             ambiguous_player: MtblPlayerModel = _create_player_model(
                 base_player=base_player,
                 stats_dict=stats_dict,
+                projections_dict=projections_dict,
                 espn_stats_container=espn_stats_container,
                 is_batter=is_batter,
             )
@@ -944,8 +969,12 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
         if is_matched:
             base_player.merge_fangraphs_data(result.fangraphs_match)
 
-        # Build combined stats dictionary
+        # Build combined current-season stats dictionary
         stats_dict: Dict[str, Any] = _build_stats_dict(result, is_matched)
+
+        projections_dict: Dict[str, Any] = (
+            _extract_fangraphs_projections(result.fangraphs_match) if is_matched else {}
+        )
 
         # Extract ESPN stats container
         espn_stats_container: Optional[Any] = (
@@ -956,6 +985,7 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
         player_model: MtblPlayerModel = _create_player_model(
             base_player=base_player,
             stats_dict=stats_dict,
+            projections_dict=projections_dict,
             espn_stats_container=espn_stats_container,
             is_batter=is_batter,
         )

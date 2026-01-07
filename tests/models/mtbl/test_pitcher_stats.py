@@ -1,404 +1,446 @@
 """Tests for MtblPitcherStatsModel combining ESPN, FanGraphs, and Savant data."""
 
-from player_universe_trx.models.mtbl import MtblPitcherStatsModel
+import pytest
+
+from player_universe_trx.models.fangraphs.stats import FangraphsPitcherStatsModel
+from player_universe_trx.models.mtbl import (
+    MtblPitcherSeasonStatsModel,
+    MtblPitcherStatsModel,
+)
 
 
 def test_pitcher_stats_model_creation_empty():
     """Test creating an empty pitcher stats model."""
     stats = MtblPitcherStatsModel()
     assert stats is not None
-    assert stats.W is None
-    assert stats.proj_wins is None
-    assert stats.velo is None
+    assert stats.current_season is None
+    assert stats.espn_stats is None
 
 
 def test_pitcher_stats_espn_only():
     """Test pitcher stats with only ESPN current season data."""
     stats = MtblPitcherStatsModel(
-        W=12,
-        L=8,
-        ERA=3.45,
-        WHIP=1.15,
-        GP=28,
-        GS=28,
-        K=195,
-        P_BB=45,
-        P_H=160,
-        P_HR=20,
-        QS=18,
-        WPCT=0.600,
+        current_season=MtblPitcherSeasonStatsModel(
+            W=15,
+            L=6,
+            ERA=3.25,
+            WHIP=1.12,
+            K=180,
+            QS=20,
+        )
     )
 
+    assert stats.current_season is not None
+
     # ESPN stats should be populated
-    assert stats.W == 12
-    assert stats.L == 8
-    assert stats.ERA == 3.45
-    assert stats.WHIP == 1.15
-    assert stats.GP == 28
-    assert stats.GS == 28
-    assert stats.K == 195
-    assert stats.P_BB == 45
-    assert stats.P_H == 160
-    assert stats.P_HR == 20
-    assert stats.QS == 18
-    assert stats.WPCT == 0.600
+    assert stats.current_season.W == 15
+    assert stats.current_season.L == 6
+    assert stats.current_season.ERA == 3.25
+    assert stats.current_season.WHIP == 1.12
+    assert stats.current_season.K == 180
+    assert stats.current_season.QS == 20
 
     # FanGraphs and Savant should be None
-    assert stats.proj_wins is None
-    assert stats.velo is None
+    assert stats.projections is None
+    assert stats.current_season.velo is None
 
 
 def test_pitcher_stats_fangraphs_projections_only():
     """Test pitcher stats with only FanGraphs projection data."""
     stats = MtblPitcherStatsModel(
-        proj_wins=13,
-        proj_losses=7,
-        proj_era=3.35,
-        proj_whip=1.12,
-        proj_innings_pitched=185.0,
-        proj_strikeouts=200,
-        proj_walks=42,
-        proj_hits=155,
-        proj_home_runs=18,
-        proj_saves=0,
-        proj_k_per_9=9.73,
-        proj_bb_per_9=2.05,
-        proj_hr_per_9=0.88,
-        proj_fip=3.25,
-        proj_ra9_war=4.2,
+        projections=FangraphsPitcherStatsModel(
+            wins=16,
+            losses=7,
+            era=3.50,
+            whip=1.18,
+            strikeouts=195,
+            k_per_9=9.5,
+            bb_per_9=2.8,
+            fip=3.60,
+            ra9_war=4.2,
+        )
     )
 
     # FanGraphs projections should be populated
-    assert stats.proj_wins == 13
-    assert stats.proj_losses == 7
-    assert stats.proj_era == 3.35
-    assert stats.proj_whip == 1.12
-    assert stats.proj_innings_pitched == 185.0
-    assert stats.proj_strikeouts == 200
-    assert stats.proj_walks == 42
-    assert stats.proj_hits == 155
-    assert stats.proj_home_runs == 18
-    assert stats.proj_saves == 0
-    assert stats.proj_k_per_9 == 9.73
-    assert stats.proj_bb_per_9 == 2.05
-    assert stats.proj_hr_per_9 == 0.88
-    assert stats.proj_fip == 3.25
-    assert stats.proj_ra9_war == 4.2
+    assert stats.projections is not None
+    assert stats.projections.wins == 16
+    assert stats.projections.losses == 7
+    assert stats.projections.era == 3.50
+    assert stats.projections.whip == 1.18
+    assert stats.projections.strikeouts == 195
+    assert stats.projections.k_per_9 == 9.5
+    assert stats.projections.bb_per_9 == 2.8
+    assert stats.projections.fip == 3.60
+    assert stats.projections.ra9_war == 4.2
 
     # ESPN and Savant should be None
-    assert stats.W is None
-    assert stats.velo is None
+    assert stats.current_season is None
 
 
 def test_pitcher_stats_savant_sabermetrics_only():
     """Test pitcher stats with only Savant sabermetric data."""
     stats = MtblPitcherStatsModel(
-        velo=94.5,
-        spin_rate=2450,
-        swing_miss_pct=28.5,
-        xwoba=0.305,
-        xavg=0.235,
-        xslg=0.395,
-        xwOBA=0.305,
-        xAVG=0.235,
-        xSLG=0.395,
-        exit_velo=88.3,
-        release_extension=6.2,
-        break_z=18.5,
-        break_x_arm_side=12.3,
+        current_season=MtblPitcherSeasonStatsModel(
+            velo=96.5,
+            spin_rate=2450,
+            release_extension=6.5,
+            break_z=15.2,
+            break_x_arm_side=6.8,
+            swing_miss_pct=30.5,
+            xwoba=0.285,
+            xavg=0.215,
+        )
     )
 
+    assert stats.current_season is not None
+
     # Savant sabermetrics should be populated
-    assert stats.velo == 94.5
-    assert stats.spin_rate == 2450
-    assert stats.swing_miss_pct == 28.5
-    assert stats.xwoba == 0.305
-    assert stats.xavg == 0.235
-    assert stats.xslg == 0.395
-    assert stats.xwOBA == 0.305
-    assert stats.xAVG == 0.235
-    assert stats.xSLG == 0.395
-    assert stats.exit_velo == 88.3
-    assert stats.release_extension == 6.2
-    assert stats.break_z == 18.5
-    assert stats.break_x_arm_side == 12.3
+    assert stats.current_season.velo == 96.5
+    assert stats.current_season.spin_rate == 2450
+    assert stats.current_season.release_extension == 6.5
+    assert stats.current_season.break_z == 15.2
+    assert stats.current_season.break_x_arm_side == 6.8
+    assert stats.current_season.swing_miss_pct == 30.5
+    assert stats.current_season.xwoba == 0.285
+    assert stats.current_season.xavg == 0.215
 
     # ESPN and FanGraphs should be None
-    assert stats.W is None
-    assert stats.proj_wins is None
+    assert stats.current_season.W is None
+    assert stats.projections is None
 
 
 def test_pitcher_stats_all_sources_combined():
     """Test pitcher stats with data from all three sources combined."""
     stats = MtblPitcherStatsModel(
-        # ESPN current season
-        W=15,
-        L=6,
-        ERA=3.15,
-        WHIP=1.08,
-        GP=30,
-        GS=30,
-        K=215,
-        P_BB=38,
-        P_H=165,
-        P_HR=18,
-        QS=22,
-        # FanGraphs projections
-        proj_wins=14,
-        proj_losses=7,
-        proj_era=3.25,
-        proj_whip=1.10,
-        proj_innings_pitched=190.0,
-        proj_strikeouts=210,
-        proj_walks=40,
-        proj_fip=3.10,
-        proj_ra9_war=4.5,
-        # Savant sabermetrics
-        velo=95.2,
-        spin_rate=2485,
-        swing_miss_pct=29.8,
-        xwoba=0.298,
-        xavg=0.228,
-        xslg=0.385,
-        xwOBA=0.298,
-        xAVG=0.228,
-        xSLG=0.385,
-        exit_velo=87.8,
-        release_extension=6.3,
+        current_season=MtblPitcherSeasonStatsModel(
+            # ESPN current season
+            W=18,
+            L=7,
+            ERA=2.95,
+            WHIP=1.05,
+            K=210,
+            QS=22,
+
+            # Savant sabermetrics
+            velo=97.2,
+            spin_rate=2500,
+            release_extension=6.8,
+            break_z=16.0,
+            swing_miss_pct=32.0,
+            xwoba=0.280,
+        ),
+        projections=FangraphsPitcherStatsModel(
+            wins=17,
+            era=3.10,
+            strikeouts=200,
+            whip=1.10,
+            fip=3.20,
+            ra9_war=5.0,
+        ),
     )
 
+    assert stats.current_season is not None
+
     # Verify ESPN stats
-    assert stats.W == 15
-    assert stats.ERA == 3.15
-    assert stats.K == 215
-    assert stats.WHIP == 1.08
+    assert stats.current_season.W == 18
+    assert stats.current_season.ERA == 2.95
+    assert stats.current_season.K == 210
+    assert stats.current_season.QS == 22
 
     # Verify FanGraphs projections
-    assert stats.proj_wins == 14
-    assert stats.proj_era == 3.25
-    assert stats.proj_strikeouts == 210
-    assert stats.proj_ra9_war == 4.5
+    assert stats.projections.wins == 17
+    assert stats.projections.era == 3.10
+    assert stats.projections.strikeouts == 200
+    assert stats.projections.ra9_war == 5.0
 
     # Verify Savant sabermetrics
-    assert stats.velo == 95.2
-    assert stats.swing_miss_pct == 29.8
-    assert stats.xwOBA == 0.298
-    assert stats.exit_velo == 87.8
+    assert stats.current_season.velo == 97.2
+    assert stats.current_season.spin_rate == 2500
+    assert stats.current_season.swing_miss_pct == 32.0
+    assert stats.current_season.xwoba == 0.280
 
 
 def test_pitcher_stats_partial_data_from_each_source():
     """Test pitcher stats with partial data from each source."""
     stats = MtblPitcherStatsModel(
-        # Partial ESPN
-        W=10,
-        ERA=3.50,
-        # Partial FanGraphs
-        proj_wins=12,
-        proj_fip=3.25,
-        # Partial Savant
-        velo=93.5,
-        swing_miss_pct=27.5,
+        current_season=MtblPitcherSeasonStatsModel(
+            # Partial ESPN
+            W=12,
+            ERA=3.75,
+
+            # Partial Savant
+            velo=95.0,
+            spin_rate=2400,
+        ),
+        projections=FangraphsPitcherStatsModel(
+            era=3.60,
+            fip=3.70,
+        ),
     )
 
+    assert stats.current_season is not None
+
     # Verify provided ESPN stats
-    assert stats.W == 10
-    assert stats.ERA == 3.50
-    assert stats.K is None  # Not provided
+    assert stats.current_season.W == 12
+    assert stats.current_season.ERA == 3.75
+    assert stats.current_season.WHIP is None  # Not provided
 
     # Verify provided FanGraphs stats
-    assert stats.proj_wins == 12
-    assert stats.proj_fip == 3.25
-    assert stats.proj_era is None  # Not provided
+    assert stats.projections.era == 3.60
+    assert stats.projections.fip == 3.70
+    assert stats.projections.wins is None  # Not provided
 
     # Verify provided Savant stats
-    assert stats.velo == 93.5
-    assert stats.swing_miss_pct == 27.5
-    assert stats.xwOBA is None  # Not provided
+    assert stats.current_season.velo == 95.0
+    assert stats.current_season.spin_rate == 2400
+    assert stats.current_season.swing_miss_pct is None  # Not provided
 
 
 def test_pitcher_stats_expected_vs_actual_comparison():
     """Test that we can compare expected (xStats) vs actual performance."""
     stats = MtblPitcherStatsModel(
-        # Actual (ESPN)
-        ERA=3.80,
-        OBA=0.265,  # Opponent batting average
-        # Expected (Savant)
-        xwOBA=0.310,
-        xAVG=0.240,
-        xSLG=0.395,
-        xAVGdiff=0.025,
-        xSLGdiff=0.030,
+        current_season=MtblPitcherSeasonStatsModel(
+            # Actual (ESPN)
+            ERA=3.50,
+            WHIP=1.15,
+
+            # Expected (Savant)
+            xAVG=0.230,
+            xSLG=0.380,
+            xAVGdiff=0.010,
+            xSLGdiff=0.020,
+        )
     )
 
-    # Verify we can track both actual and expected
-    assert stats.ERA == 3.80
-    assert stats.OBA == 0.265
+    assert stats.current_season is not None
 
-    assert stats.xAVG == 0.240
-    assert stats.xSLG == 0.395
-    assert stats.xAVGdiff == 0.025
-    assert stats.xSLGdiff == 0.030
+    # Verify we can track both actual and expected
+    assert stats.current_season.ERA == 3.50
+    assert stats.current_season.xAVG == 0.230
+    assert stats.current_season.xAVGdiff == 0.010
+
+    assert stats.current_season.WHIP == 1.15
+    assert stats.current_season.xSLG == 0.380
+    assert stats.current_season.xSLGdiff == 0.020
 
 
 def test_pitcher_stats_current_vs_projected_comparison():
     """Test that we can compare current performance vs projections."""
     stats = MtblPitcherStatsModel(
-        # Current (ESPN) - through half season
-        W=8,
-        K=105,
-        # Projected (FanGraphs) - full season
-        proj_wins=15,
-        proj_strikeouts=210,
-        proj_innings_pitched=190.0,
+        current_season=MtblPitcherSeasonStatsModel(
+            # Current (ESPN)
+            K=90,  # Through half season
+            OUTS=480,  # 160 IP (3 outs per inning)
+        ),
+        projections=FangraphsPitcherStatsModel(
+            strikeouts=180,  # Full season projection
+            innings_pitched=190,
+        ),
     )
 
+    assert stats.current_season is not None
+
     # Verify we can track both current and projected
-    assert stats.W == 8
-    assert stats.proj_wins == 15
-    assert stats.K == 105
-    assert stats.proj_strikeouts == 210
+    assert stats.current_season.K == 90
+    assert stats.projections.strikeouts == 180
+
+    # Can calculate K/9 pace
+    if stats.current_season.OUTS and stats.current_season.OUTS > 0:
+        innings = stats.current_season.OUTS / 3
+        k_per_9 = (stats.current_season.K / innings) * 9
+        assert k_per_9 == pytest.approx(5.06, abs=0.1)
 
 
 def test_pitcher_stats_model_dump():
     """Test that model_dump works correctly with all stats."""
     stats = MtblPitcherStatsModel(
-        W=12, ERA=3.45, proj_wins=13, proj_fip=3.25, velo=94.5
+        current_season=MtblPitcherSeasonStatsModel(
+            W=15,
+            ERA=3.25,
+            velo=96.0,
+        ),
+        projections=FangraphsPitcherStatsModel(
+            era=3.10,
+        ),
     )
 
     dumped = stats.model_dump(exclude_none=True)
 
-    assert dumped["W"] == 12
-    assert dumped["ERA"] == 3.45
-    assert dumped["proj_wins"] == 13
-    assert dumped["proj_fip"] == 3.25
-    assert dumped["velo"] == 94.5
+    assert dumped["current_season"]["W"] == 15
+    assert dumped["current_season"]["ERA"] == 3.25
+    assert dumped["current_season"]["velo"] == 96.0
+    assert dumped["projections"]["era"] == 3.10
 
     # None values should be excluded
-    assert "L" not in dumped
-    assert "proj_era" not in dumped
-    assert "spin_rate" not in dumped
+    assert "WHIP" not in dumped["current_season"]
+    assert "proj_whip" not in dumped["current_season"]
+    assert "spin_rate" not in dumped["current_season"]
 
 
-def test_pitcher_stats_starter_metrics():
-    """Test metrics specific to starting pitchers."""
+def test_pitcher_stats_plate_discipline_metrics():
+    """Test plate discipline metrics from all sources."""
     stats = MtblPitcherStatsModel(
-        # ESPN starter metrics
-        W=14,
-        L=7,
-        QS=20,
-        GS=28,
-        GP=28,
-        # FanGraphs starter projections
-        proj_wins=13,
-        proj_quality_starts=18,
-        proj_games_started=30,
-        proj_innings_pitched=190.0,
-        # Savant pitch characteristics
-        velo=93.5,
-        spin_rate=2425,
-        release_extension=6.1,
+        current_season=MtblPitcherSeasonStatsModel(
+            # ESPN plate discipline
+            P_BB=45,
+            K=190,
+            TBF=750,
+
+            # Savant plate discipline
+            swing_miss_pct=31.0,
+            swings=520,
+            whiffs=160,
+            takes=180,
+        ),
+        projections=FangraphsPitcherStatsModel(
+            walks=50,
+            strikeouts=185,
+            k_per_bb=3.8,
+        ),
     )
+
+    assert stats.current_season is not None
 
     # ESPN
-    assert stats.W == 14
-    assert stats.QS == 20
-    assert stats.GS == 28
+    assert stats.current_season.P_BB == 45
+    assert stats.current_season.K == 190
+    assert stats.current_season.TBF == 750
 
     # FanGraphs
-    assert stats.proj_wins == 13
-    assert stats.proj_quality_starts == 18
-    assert stats.proj_games_started == 30
+    assert stats.projections.walks == 50
+    assert stats.projections.strikeouts == 185
+    assert stats.projections.k_per_bb == 3.8
 
     # Savant
-    assert stats.velo == 93.5
-    assert stats.spin_rate == 2425
-    assert stats.release_extension == 6.1
+    assert stats.current_season.swing_miss_pct == 31.0
+    assert stats.current_season.swings == 520
+    assert stats.current_season.whiffs == 160
+    assert stats.current_season.takes == 180
 
 
-def test_pitcher_stats_command_control_metrics():
-    """Test command and control metrics from all sources."""
+def test_pitcher_stats_pitch_characteristics_metrics():
+    """Test pitch characteristics metrics from Savant."""
     stats = MtblPitcherStatsModel(
-        # ESPN command metrics
-        P_BB=42,
-        K=195,
-        WHIP=1.15,
-        # FanGraphs command projections
-        proj_walks=38,
-        proj_strikeouts=205,
-        proj_bb_per_9=1.90,
-        proj_k_per_9=10.25,
-        proj_k_per_bb=5.39,
-        # Savant discipline metrics
-        swing_miss_pct=29.2,
-        BB_pct=6.8,
-        whiffs=450,
-        swings=1550,
-        takes=850,
+        current_season=MtblPitcherSeasonStatsModel(
+            velo=98.1,
+            spin_rate=2550,
+            eff_min_vel=95.3,
+            percieved_velo=97.0,
+            release_extension=7.0,
+            release_pos_x=1.2,
+            release_pos_z=5.8,
+        )
     )
 
-    # ESPN
-    assert stats.P_BB == 42
-    assert stats.K == 195
-    assert stats.WHIP == 1.15
-
-    # FanGraphs
-    assert stats.proj_walks == 38
-    assert stats.proj_strikeouts == 205
-    assert stats.proj_bb_per_9 == 1.90
-    assert stats.proj_k_per_9 == 10.25
-    assert stats.proj_k_per_bb == 5.39
-
-    # Savant
-    assert stats.swing_miss_pct == 29.2
-    assert stats.BB_pct == 6.8
-    assert stats.whiffs == 450
-    assert stats.swings == 1550
-    assert stats.takes == 850
+    assert stats.current_season is not None
+    assert stats.current_season.velo == 98.1
+    assert stats.current_season.spin_rate == 2550
+    assert stats.current_season.eff_min_vel == 95.3
+    assert stats.current_season.percieved_velo == 97.0
+    assert stats.current_season.release_extension == 7.0
+    assert stats.current_season.release_pos_x == 1.2
+    assert stats.current_season.release_pos_z == 5.8
 
 
-def test_pitcher_stats_contact_quality_allowed():
-    """Test contact quality metrics allowed from Savant."""
+def test_pitcher_stats_movement_metrics():
+    """Test pitch movement metrics from Savant."""
     stats = MtblPitcherStatsModel(
-        exit_velo=87.5,
-        adj_exit_velo=87.8,
-        launch_angle=12.5,
-        xavg=0.235,
-        xslg=0.395,
-        xwoba=0.305,
-        BABIP=0.285,
-        ISO=0.160,
+        current_season=MtblPitcherSeasonStatsModel(
+            break_z=15.8,
+            induced_break_z=12.4,
+            break_x_arm_side=7.2,
+            break_x_batter_in=5.5,
+        )
     )
 
-    assert stats.exit_velo == 87.5
-    assert stats.adj_exit_velo == 87.8
-    assert stats.launch_angle == 12.5
-    assert stats.xavg == 0.235
-    assert stats.xslg == 0.395
-    assert stats.xwoba == 0.305
-    assert stats.BABIP == 0.285
-    assert stats.ISO == 0.160
+    assert stats.current_season is not None
+    assert stats.current_season.break_z == 15.8
+    assert stats.current_season.induced_break_z == 12.4
+    assert stats.current_season.break_x_arm_side == 7.2
+    assert stats.current_season.break_x_batter_in == 5.5
 
 
-def test_pitcher_stats_pitch_arsenal():
-    """Test pitch arsenal metrics from Savant."""
+def test_pitcher_stats_mechanics_and_performance_metrics():
+    """Test mechanics and performance metrics from Savant."""
     stats = MtblPitcherStatsModel(
-        velo=94.2,
-        spin_rate=2425,
-        release_extension=6.3,
-        break_z=18.5,
-        break_x_arm_side=-8.2,
-        induced_break_z=16.8,
-        arm_angle=42.5,
-        release_pos_x=-2.1,
-        release_pos_z=5.8,
+        current_season=MtblPitcherSeasonStatsModel(
+            arm_angle=45.5,
+            pitcher_run_exp=1.2,
+            pitcher_run_value_per_100=5.8,
+        )
     )
 
-    assert stats.velo == 94.2
-    assert stats.spin_rate == 2425
-    assert stats.release_extension == 6.3
-    assert stats.break_z == 18.5
-    assert stats.break_x_arm_side == -8.2
-    assert stats.induced_break_z == 16.8
-    assert stats.arm_angle == 42.5
-    assert stats.release_pos_x == -2.1
-    assert stats.release_pos_z == 5.8
+    assert stats.current_season is not None
+    assert stats.current_season.arm_angle == 45.5
+    assert stats.current_season.pitcher_run_exp == 1.2
+    assert stats.current_season.pitcher_run_value_per_100 == 5.8
+
+
+def test_pitcher_stats_contact_metrics():
+    """Test contact/batted ball metrics from Savant."""
+    stats = MtblPitcherStatsModel(
+        current_season=MtblPitcherSeasonStatsModel(
+            exit_velo=88.5,
+            adj_exit_velo=89.2,
+            launch_angle=12.8,
+        )
+    )
+
+    assert stats.current_season is not None
+    assert stats.current_season.exit_velo == 88.5
+    assert stats.current_season.adj_exit_velo == 89.2
+    assert stats.current_season.launch_angle == 12.8
+
+
+def test_pitcher_stats_expected_stats():
+    """Test expected stats from Savant."""
+    stats = MtblPitcherStatsModel(
+        current_season=MtblPitcherSeasonStatsModel(
+            xwoba=0.290,
+            xavg=0.225,
+            xslg=0.375,
+            xAVG=0.225,
+            xSLG=0.375,
+            xSLGdiff=0.015,
+        )
+    )
+
+    assert stats.current_season is not None
+    assert stats.current_season.xwoba == 0.290
+    assert stats.current_season.xavg == 0.225
+    assert stats.current_season.xslg == 0.375
+    assert stats.current_season.xAVG == 0.225
+    assert stats.current_season.xSLG == 0.375
+    assert stats.current_season.xSLGdiff == 0.015
+
+
+def test_pitcher_stats_other_savant_stats():
+    """Test other Savant stats for pitchers."""
+    stats = MtblPitcherStatsModel(
+        current_season=MtblPitcherSeasonStatsModel(
+            BABIP=0.290,
+            BB=45,
+            BB_pct=8.5,
+            BBdist=32,
+            BIP=420,
+            ISO=0.165,
+            wOBA=0.315,
+            wOBAdiff=0.010,
+            run_exp=1.5,
+            barrels_total=18,
+            rate_ideal_attack_angle=12.5,
+        )
+    )
+
+    assert stats.current_season is not None
+    assert stats.current_season.BABIP == 0.290
+    assert stats.current_season.BB == 45
+    assert stats.current_season.BB_pct == 8.5
+    assert stats.current_season.BBdist == 32
+    assert stats.current_season.BIP == 420
+    assert stats.current_season.ISO == 0.165
+    assert stats.current_season.wOBA == 0.315
+    assert stats.current_season.wOBAdiff == 0.010
+    assert stats.current_season.run_exp == 1.5
+    assert stats.current_season.barrels_total == 18
+    assert stats.current_season.rate_ideal_attack_angle == 12.5

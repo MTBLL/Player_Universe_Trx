@@ -1,7 +1,7 @@
 """Tests for ESPN stats handling in apply_matches function.
 
 These tests verify that ESPN stats are correctly structured:
-- current_season stats are unprefixed at top level
+- current_season stats live under stats.current_season
 - ESPN stats container is nested under espn_stats field
 - All ESPN periods are preserved (projections, last_7/15/30_games, previous_season_24)
 """
@@ -21,7 +21,7 @@ from player_universe_trx.models.savant.pitcher import SavantPitcherStatsModel
 # ========== Basic Tests - Current Season Only ==========
 
 def test_espn_batter_current_season_only():
-    """Test that ESPN current_season stats are unprefixed at top level."""
+    """Test that ESPN current_season stats are stored under stats.current_season."""
     espn_player = EspnBatterModel(
         id=1,
         name="Aaron Judge",
@@ -56,12 +56,12 @@ def test_espn_batter_current_season_only():
     assert len(matched) == 1
 
     player = matched[0]
-    # Verify current season stats are at top level (unprefixed)
-    assert player.stats.AB == 500
-    assert player.stats.H == 150
-    assert player.stats.HR == 30
-    assert player.stats.RBI == 85
-    assert player.stats.AVG == 0.300
+    # Verify current season stats are nested under current_season
+    assert player.stats.current_season.AB == 500
+    assert player.stats.current_season.H == 150
+    assert player.stats.current_season.HR == 30
+    assert player.stats.current_season.RBI == 85
+    assert player.stats.current_season.AVG == 0.300
 
 
 def test_espn_batter_with_nested_container():
@@ -116,7 +116,7 @@ def test_espn_batter_with_nested_container():
 
 
 def test_espn_batter_both_current_and_nested():
-    """Test that both top-level current stats and nested container work together."""
+    """Test that both current season stats and nested container work together."""
     espn_player = EspnBatterModel(
         id=1,
         name="Aaron Judge",
@@ -145,9 +145,9 @@ def test_espn_batter_both_current_and_nested():
     matched = mtbl_players["matched"]
     player = matched[0]
 
-    # Top-level current season stats
-    assert player.stats.AB == 500
-    assert player.stats.HR == 30
+    # Current season stats
+    assert player.stats.current_season.AB == 500
+    assert player.stats.current_season.HR == 30
 
     # Nested container with projections
     assert player.stats.espn_stats.projections.AB == 550
@@ -159,7 +159,7 @@ def test_espn_batter_both_current_and_nested():
 
 
 def test_espn_pitcher_current_season_only():
-    """Test that ESPN pitcher current_season stats are unprefixed at top level."""
+    """Test that ESPN pitcher current_season stats are stored under stats.current_season."""
     espn_player = EspnPitcherModel(
         id=1,
         name="Gerrit Cole",
@@ -194,12 +194,12 @@ def test_espn_pitcher_current_season_only():
     assert len(matched) == 1
 
     player = matched[0]
-    # Verify current season stats are at top level (unprefixed)
-    assert player.stats.W == 15
-    assert player.stats.L == 6
-    assert player.stats.ERA == 3.15
-    assert player.stats.WHIP == 1.08
-    assert player.stats.K == 215
+    # Verify current season stats are nested under current_season
+    assert player.stats.current_season.W == 15
+    assert player.stats.current_season.L == 6
+    assert player.stats.current_season.ERA == 3.15
+    assert player.stats.current_season.WHIP == 1.08
+    assert player.stats.current_season.K == 215
 
 
 def test_espn_pitcher_with_nested_container():
@@ -249,7 +249,7 @@ def test_espn_pitcher_with_nested_container():
 
 
 def test_espn_pitcher_both_current_and_nested():
-    """Test that pitcher top-level current stats and nested container work together."""
+    """Test that pitcher current season stats and nested container work together."""
     espn_player = EspnPitcherModel(
         id=1,
         name="Gerrit Cole",
@@ -278,9 +278,9 @@ def test_espn_pitcher_both_current_and_nested():
     matched = mtbl_players["matched"]
     player = matched[0]
 
-    # Top-level current season stats
-    assert player.stats.W == 15
-    assert player.stats.ERA == 3.15
+    # Current season stats
+    assert player.stats.current_season.W == 15
+    assert player.stats.current_season.ERA == 3.15
 
     # Nested container with projections
     assert player.stats.espn_stats.projections.W == 16
@@ -346,19 +346,19 @@ def test_all_sources_batters_matched():
     matched = mtbl_players["matched"]
     player = matched[0]
 
-    # ESPN current season (top level, unprefixed)
-    assert player.stats.AB == 500
-    assert player.stats.HR == 30
-    assert player.stats.RBI == 85
+    # ESPN current season (nested under current_season)
+    assert player.stats.current_season.AB == 500
+    assert player.stats.current_season.HR == 30
+    assert player.stats.current_season.RBI == 85
 
-    # FanGraphs projections (top level, proj_ prefix)
-    assert player.stats.proj_ab == 575
-    assert player.stats.proj_hr == 38
-    assert player.stats.proj_rbi == 100
+    # FanGraphs projections (nested under projections)
+    assert player.stats.projections.ab == 575
+    assert player.stats.projections.hr == 38
+    assert player.stats.projections.rbi == 100
 
-    # Savant (top level, unprefixed)
-    assert player.stats.exit_velo == 95.5
-    assert player.stats.xwOBA == 0.420
+    # Savant (nested under current_season, unprefixed)
+    assert player.stats.current_season.exit_velo == 95.5
+    assert player.stats.current_season.xwOBA == 0.420
 
     # ESPN container (nested)
     assert player.stats.espn_stats.projections.HR == 35
@@ -421,19 +421,19 @@ def test_all_sources_pitchers_matched():
     matched = mtbl_players["matched"]
     player = matched[0]
 
-    # ESPN current season (top level, unprefixed)
-    assert player.stats.W == 15
-    assert player.stats.K == 215
-    assert player.stats.ERA == 3.15
+    # ESPN current season (nested under current_season)
+    assert player.stats.current_season.W == 15
+    assert player.stats.current_season.K == 215
+    assert player.stats.current_season.ERA == 3.15
 
-    # FanGraphs projections (top level, proj_ prefix)
-    assert player.stats.proj_wins == 17
-    assert player.stats.proj_strikeouts == 230
-    assert player.stats.proj_era == 3.00
+    # FanGraphs projections (nested under projections)
+    assert player.stats.projections.wins == 17
+    assert player.stats.projections.strikeouts == 230
+    assert player.stats.projections.era == 3.00
 
-    # Savant (top level, unprefixed)
-    assert player.stats.velo == 97.2
-    assert player.stats.swing_miss_pct == 32.5
+    # Savant (nested under current_season, unprefixed)
+    assert player.stats.current_season.velo == 97.2
+    assert player.stats.current_season.swing_miss_pct == 32.5
 
     # ESPN container (nested)
     assert player.stats.espn_stats.projections.W == 16
@@ -463,9 +463,9 @@ def test_espn_stats_unmatched_players():
     assert len(unmatched) == 1
 
     player = unmatched[0]
-    # Current season at top level
-    assert player.stats.AB == 100
-    assert player.stats.HR == 5
+    # Current season under current_season
+    assert player.stats.current_season.AB == 100
+    assert player.stats.current_season.HR == 5
 
     # ESPN container nested
     assert player.stats.espn_stats.projections.AB == 400
@@ -584,5 +584,5 @@ def test_access_nested_espn_projections():
     assert player.stats.espn_stats.last_7_games.AVG == 0.357
     assert player.stats.espn_stats.previous_season_24.AVG == 0.285
 
-    # Top level should have current season
-    assert player.stats.AVG == 0.300
+    # Current season should be nested under current_season
+    assert player.stats.current_season.AVG == 0.300
