@@ -38,4 +38,5 @@ testpaths = ["tests"]
 [tool.coverage.run]
 omit = [
     "tests/*",
+    "player_universe_trx/__main__.py"
 ]

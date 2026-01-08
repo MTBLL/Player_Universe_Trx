@@ -166,3 +166,18 @@ def test_load_methods(fixtures_dir):
 
     sv_pitchers = loader_2026.load_savant_pitchers()
     assert isinstance(sv_pitchers, list) and len(sv_pitchers) > 0
+
+
+def test_get_savant_files_not_found(tmp_path):
+    """Test Savant file methods raise when no matching files exist."""
+    loader = DataLoader(resources_path=str(tmp_path), year=2099)
+
+    with pytest.raises(
+        FileNotFoundError, match="No Savant batters file found"
+    ):
+        loader.get_savant_batters_file()
+
+    with pytest.raises(
+        FileNotFoundError, match="No Savant pitchers file found"
+    ):
+        loader.get_savant_pitchers_file()
