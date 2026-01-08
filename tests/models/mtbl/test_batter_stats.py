@@ -195,6 +195,7 @@ def test_batter_stats_all_sources_combined():
     assert stats.current_season.OPS == 0.923
 
     # Verify FanGraphs projections
+    assert stats.projections is not None
     assert stats.projections.ab == 540
     assert stats.projections.avg == 0.300
     assert stats.projections.hr == 30
@@ -232,6 +233,7 @@ def test_batter_stats_partial_data_from_each_source():
     assert stats.current_season.AVG is None  # Not provided
 
     # Verify provided FanGraphs stats
+    assert stats.projections is not None
     assert stats.projections.hr == 28
     assert stats.projections.woba == 0.360
     assert stats.projections.avg is None  # Not provided
@@ -287,7 +289,9 @@ def test_batter_stats_current_vs_projected_comparison():
 
     # Verify we can track both current and projected
     assert stats.current_season.HR == 15
+    assert stats.projections is not None
     assert stats.projections.hr == 32
+    assert stats.projections.ab == 520
 
     # Can calculate pace: (15 / 250) * 520 = 31.2 HR pace
     if stats.current_season.AB and stats.current_season.AB > 0:
@@ -352,6 +356,7 @@ def test_batter_stats_plate_discipline_metrics():
     assert stats.current_season.PA == 550
 
     # FanGraphs
+    assert stats.projections is not None
     assert stats.projections.bb == 68
     assert stats.projections.so == 115
     assert stats.projections.bb_k == 0.59
