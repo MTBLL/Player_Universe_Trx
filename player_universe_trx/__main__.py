@@ -65,12 +65,19 @@ def main(
     fangraphs_pitchers = create_fangraphs_pitcher_models(fangraphs_pitchers_raw)
 
     # Load Savant player data (raw dicts for matching)
+    # Note: Savant data may be from a different year
     logger.info("Loading Savant player data...")
-    savant_batters_raw = loader.load_savant_batters()
-    savant_pitchers_raw = loader.load_savant_pitchers()
-    logger.info("Creating player models from Savant data...")
-    savant_batters = create_savant_batter_models(savant_batters_raw)
-    savant_pitchers = create_savant_pitcher_models(savant_pitchers_raw)
+    try:
+        savant_batters_raw = loader.load_savant_batters()
+        savant_pitchers_raw = loader.load_savant_pitchers()
+        logger.info("Creating player models from Savant data...")
+        savant_batters = create_savant_batter_models(savant_batters_raw)
+        savant_pitchers = create_savant_pitcher_models(savant_pitchers_raw)
+    except FileNotFoundError as e:
+        logger.warning(f"Savant data not found: {e}")
+        logger.warning("Continuing without Savant data...")
+        savant_batters = []
+        savant_pitchers = []
 
     # Match batters
     logger.info("Matching batters across ESPN, FanGraphs, and Savant...")
@@ -179,4 +186,4 @@ def _report_match_statistics(batter_results, pitcher_results):
 
 if __name__ == "__main__":
     # Default to 2025 for now since that's the latest data we have
-    main(year=2025)
+    main(year=2025, output_dir=".temp")
