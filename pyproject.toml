@@ -1,6 +1,6 @@
 [project]
 name = "player-universe-trx"
-version = "0.1.0"
+version = "0.2.0"
 description = "Player Universe Transformer"
 authors = [{ name = "Taylor \"TP\" Pubins", email = "tpubz@icloud.com" }]
 readme = "README.md"
@@ -28,3 +28,11 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["mypy>=1.15.0", "pdbpp>=0.11.6", "pytest-cov>=6.1.1", "pytest>=8.3.5"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
+]

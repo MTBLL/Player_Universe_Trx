@@ -45,36 +45,13 @@ python -m player_universe_trx.main
 python -m player_universe_trx.main --espn-file /path/to/espn.json --fangraphs-file /path/to/fangraphs.json --output-dir /path/to/output
 ```
 
-### As a Python Module
+### Output Files
 
-```python
-from player_universe_trx.main import main
-from player_universe_trx.models.player import PlayerModel
-from player_universe_trx.matchers.player_matcher import PlayerMatcher, match_player_models_on_fangraphs_data
-from player_universe_trx.utils.file_utils import load_json_data
-from player_universe_trx.utils.model_utils import create_player_models
+The pipeline writes separate batter and pitcher output files in the output directory:
 
-# Run the full transformation pipeline
-result = main(espn_file="/path/to/espn.json", 
-              fangraphs_file="/path/to/fangraphs.json",
-              output_dir="/path/to/output")
-
-# Or perform steps individually
-# 1. Load data
-espn_data = load_json_data("/path/to/espn.json")
-fangraphs_data = load_json_data("/path/to/fangraphs.json")
-
-# 2. Create player models
-player_models = create_player_models(espn_data)
-
-# 3. Match players using the function interface (recommended for most cases)
-matching_result = match_player_models_on_fangraphs_data(player_models, fangraphs_data)
-matched_players = matching_result["matched"]
-
-# Or use the class interface for more control
-matcher = PlayerMatcher(player_models, fangraphs_data)
-matcher_result = matcher.match_players()
-```
+- `batters_matched.json` / `pitchers_matched.json`
+- `batters_unmatched.json` / `pitchers_unmatched.json`
+- `batters_ambiguous.json` / `pitchers_ambiguous.json`
 
 ## Development
 
@@ -86,32 +63,6 @@ uv sync
 
 # Run tests
 uv run pytest
-```
-
-### Project Structure
-
-```
-player_universe_trx/
-   __init__.py          # Package initialization
-   main.py              # Main entry point
-   matchers/            # Player matching algorithms
-      __init__.py
-      player_matcher.py # Player matching between data sources
-   models/              # Pydantic data models
-      player.py         # Player model definition
-   projections/         # Projections handling modules
-      __init__.py
-      manager.py        # Manages player projections data
-   transformers/        # Data transformation modules
-       __init__.py
-       espn_universe_trx.py  # ESPN data transformer
-       fangraphs_trx.py      # FanGraphs data transformer
-   utils/               # Utility functions
-       __init__.py
-       constants.py     # Constants used throughout the app
-       file_utils.py    # Functions for file operations
-       model_utils.py   # Utility functions for models
-       output_utils.py  # Functions for saving output
 ```
 
 ## Testing
