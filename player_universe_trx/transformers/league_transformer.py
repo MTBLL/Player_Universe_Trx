@@ -1,0 +1,442 @@
+"""Transform ESPN league data to MTBL format."""
+
+import logging
+from collections import defaultdict
+from datetime import datetime
+from typing import Dict, List, Optional
+
+from player_universe_trx.constants import (
+    ESPN_LINEUP_SLOT_MAP,
+    ESPN_POSITION_MAP,
+    ESPN_PRO_TEAM_MAP,
+    ROSTER_FIELD_MAP,
+)
+from player_universe_trx.models.espn import (
+    EspnLeagueModel,
+    EspnRosterEntryModel,
+    EspnTeamModel,
+)
+from player_universe_trx.models.mtbl import (
+    MtblLeagueModel,
+    MtblScheduleModel,
+    MtblTeamRosterModel,
+    RosterSettingsModel,
+    RosterSlotPlayer,
+    ScheduleMatchupModel,
+    ScoringCategoriesModel,
+    ScoringCategoryModel,
+    TeamRecordModel,
+    TransactionSummaryModel,
+)
+
+logger = logging.getLogger(__name__)
+
+
+class LeagueTransformer:
+    """
+    Transform ESPN league data to MTBL format.
+
+    Handles mapping of position IDs to names, pro team IDs to abbreviations,
+    and organizing players by roster slot type.
+    """
+
+    @staticmethod
+    def _get_position_name(position_id: int) -> str:
+        """
+        Convert ESPN position ID to position name.
+
+        Args:
+            position_id: ESPN position ID
+
+        Returns:
+            Position name (e.g., "C", "1B", "OF", "SP")
+        """
+        return ESPN_POSITION_MAP.get(position_id, f"POS_{position_id}")
+
+    @staticmethod
+    def _get_lineup_slot_name(slot_id: int) -> str:
+        """
+        Convert ESPN lineup slot ID to slot name.
+
+        Args:
+            slot_id: ESPN lineup slot ID
+
+        Returns:
+            Lineup slot name (e.g., "C", "OF", "SP", "BENCH", "IL")
+        """
+        return ESPN_LINEUP_SLOT_MAP.get(slot_id, f"SLOT_{slot_id}")
+
+    @staticmethod
+    def _get_pro_team_abbrev(team_id: int) -> str:
+        """
+        Convert ESPN pro team ID to MLB team abbreviation.
+
+        Args:
+            team_id: ESPN pro team ID
+
+        Returns:
+            MLB team abbreviation (e.g., "NYY", "LAD", "BOS")
+        """
+        return ESPN_PRO_TEAM_MAP.get(team_id, f"TEAM_{team_id}")
+
+    @staticmethod
+    def _get_eligible_positions(eligible_slot_ids: List[int]) -> List[str]:
+        """
+        Convert list of ESPN eligible slot IDs to position names.
+
+        Args:
+            eligible_slot_ids: List of ESPN slot IDs
+
+        Returns:
+            List of position names
+        """
+        positions = []
+        for slot_id in eligible_slot_ids:
+            pos = ESPN_LINEUP_SLOT_MAP.get(slot_id)
+            if pos and pos not in positions:
+                positions.append(pos)
+        return positions
+
+    @staticmethod
+    def _format_acquisition_date(timestamp: int) -> str:
+        """
+        Convert Unix timestamp (milliseconds) to ISO format date string.
+
+        Args:
+            timestamp: Unix timestamp in milliseconds
+
+        Returns:
+            ISO format date string
+        """
+        try:
+            dt = datetime.fromtimestamp(timestamp / 1000)
+            return dt.isoformat() + "Z"
+        except (ValueError, OSError):
+            return ""
+
+    @classmethod
+    def _create_roster_slot_player(
+        cls, entry: EspnRosterEntryModel
+    ) -> RosterSlotPlayer:
+        """
+        Create a RosterSlotPlayer from an ESPN roster entry.
+
+        Args:
+            entry: ESPN roster entry
+
+        Returns:
+            RosterSlotPlayer with minimal player data
+        """
+        player = entry.playerPoolEntry.player
+        lineup_slot = cls._get_lineup_slot_name(entry.lineupSlotId)
+
+        # Split full name into first and last (simple split on space)
+        name_parts = player.fullName.split(" ", 1)
+        first_name = name_parts[0] if len(name_parts) > 0 else None
+        last_name = name_parts[1] if len(name_parts) > 1 else None
+
+        return RosterSlotPlayer(
+            player_id=player.id,
+            name=player.fullName,
+            first_name=first_name,
+            last_name=last_name,
+            pro_team=cls._get_pro_team_abbrev(player.proTeamId),
+            primary_position=cls._get_position_name(player.defaultPositionId),
+            eligible_positions=cls._get_eligible_positions(player.eligibleSlots),
+            lineup_slot=lineup_slot,
+            acquisition_type=entry.acquisitionType,
+            acquisition_date=(
+                cls._format_acquisition_date(entry.acquisitionDate)
+                if entry.acquisitionDate
+                else None
+            ),
+            injury_status=player.injuryStatus,
+            active=player.active,
+            keeper_value=entry.playerPoolEntry.keeperValue,
+        )
+
+    @classmethod
+    def _organize_roster_by_slots(
+        cls, roster_entries: List[EspnRosterEntryModel]
+    ) -> Dict[str, List[RosterSlotPlayer]]:
+        """
+        Organize roster entries by position slot type.
+
+        Args:
+            roster_entries: List of ESPN roster entries
+
+        Returns:
+            Dictionary mapping slot names to lists of players
+        """
+        # Group players by lineup slot type
+        roster_by_slot: Dict[str, List[RosterSlotPlayer]] = defaultdict(list)
+
+        for entry in roster_entries:
+            slot_name = cls._get_lineup_slot_name(entry.lineupSlotId)
+            player = cls._create_roster_slot_player(entry)
+            roster_by_slot[slot_name].append(player)
+
+        return roster_by_slot
+
+    @classmethod
+    def _create_team_record(cls, espn_team: EspnTeamModel) -> TeamRecordModel:
+        """
+        Create a TeamRecordModel from ESPN team record.
+
+        Args:
+            espn_team: ESPN team model
+
+        Returns:
+            TeamRecordModel with record summary
+        """
+        if not espn_team.record or not espn_team.record.overall:
+            return TeamRecordModel()
+
+        overall = espn_team.record.overall
+        return TeamRecordModel(
+            wins=overall.wins,
+            losses=overall.losses,
+            ties=overall.ties,
+            percentage=overall.percentage,
+            games_back=overall.gamesBack,
+        )
+
+    @classmethod
+    def _create_transaction_summary(
+        cls,
+        espn_team: EspnTeamModel,
+        league_budget: Optional[int] = None,
+    ) -> Optional[TransactionSummaryModel]:
+        """
+        Create transaction summary from ESPN team.
+
+        Args:
+            espn_team: ESPN team model
+            league_budget: League acquisition budget
+
+        Returns:
+            TransactionSummaryModel or None
+        """
+        if not espn_team.transactionCounter:
+            return None
+
+        tc = espn_team.transactionCounter
+        budget_remaining = None
+        if league_budget is not None:
+            budget_remaining = league_budget - tc.acquisitionBudgetSpent
+
+        return TransactionSummaryModel(
+            budget_spent=tc.acquisitionBudgetSpent,
+            budget_remaining=budget_remaining,
+            acquisitions=tc.acquisitions,
+            drops=tc.drops,
+            trades=tc.trades,
+            waiver_rank=espn_team.waiverRank,
+        )
+
+    @classmethod
+    def transform_team(
+        cls,
+        espn_team: EspnTeamModel,
+        league_id: int,
+        season_id: int,
+        league_budget: Optional[int] = None,
+    ) -> MtblTeamRosterModel:
+        """
+        Transform an ESPN team to MTBL team roster model.
+
+        Args:
+            espn_team: ESPN team model
+            league_id: League ID
+            season_id: Season ID
+            league_budget: League acquisition budget
+
+        Returns:
+            MtblTeamRosterModel with organized roster
+        """
+        # Organize roster by slot type
+        roster_by_slot = cls._organize_roster_by_slots(espn_team.roster.entries)
+
+        # Extract team record
+        record = cls._create_team_record(espn_team)
+
+        # Extract transaction summary
+        transactions = cls._create_transaction_summary(espn_team, league_budget)
+
+        # Build the team roster model with explicit position fields
+        team_roster = MtblTeamRosterModel(
+            league_id=league_id,
+            season_id=season_id,
+            team_id=espn_team.id,
+            team_name=espn_team.name,
+            team_abbrev=espn_team.abbrev,
+            team_logo=espn_team.logo,
+            owners=espn_team.owners,
+            primary_owner=espn_team.primaryOwner,
+            record=record,
+            transactions=transactions,
+            # Single-player positions (take first player if multiple)
+            c=roster_by_slot.get("C", [None])[0],
+            first_base=roster_by_slot.get("1B", [None])[0],
+            second_base=roster_by_slot.get("2B", [None])[0],
+            third_base=roster_by_slot.get("3B", [None])[0],
+            shortstop=roster_by_slot.get("SS", [None])[0],
+            util=roster_by_slot.get("UTIL", [None])[0],
+            # Multi-player positions (arrays)
+            outfield=roster_by_slot.get("OF", []),
+            sp=roster_by_slot.get("SP", []),
+            rp=roster_by_slot.get("RP", []),
+            bench=roster_by_slot.get("BENCH", []),
+            injured_list=roster_by_slot.get("IL", []),
+        )
+
+        logger.info(
+            f"Transformed team {espn_team.id} ({espn_team.name}) with {len(espn_team.roster.entries)} roster entries"
+        )
+        return team_roster
+
+    @classmethod
+    def transform_league(
+        cls, espn_league: EspnLeagueModel
+    ) -> List[MtblTeamRosterModel]:
+        """
+        Transform ESPN league to list of MTBL team roster models.
+
+        Args:
+            espn_league: ESPN league model
+
+        Returns:
+            List of MtblTeamRosterModel, one per team
+        """
+        logger.info(
+            f"Transforming league {espn_league.id} with {len(espn_league.teams)} teams"
+        )
+
+        # Get league budget if available
+        league_budget = None
+        if espn_league.settings and espn_league.settings.acquisitionSettings:
+            league_budget = espn_league.settings.acquisitionSettings.acquisitionBudget
+
+        team_rosters = []
+        for espn_team in espn_league.teams:
+            team_roster = cls.transform_team(
+                espn_team, espn_league.id, espn_league.seasonId, league_budget
+            )
+            team_rosters.append(team_roster)
+
+        logger.info(f"Successfully transformed {len(team_rosters)} teams")
+        return team_rosters
+
+    @classmethod
+    def create_league_summary(cls, espn_league: EspnLeagueModel) -> MtblLeagueModel:
+        """
+        Create a league summary model from ESPN league.
+
+        Args:
+            espn_league: ESPN league model
+
+        Returns:
+            MtblLeagueModel with league summary
+        """
+        roster_settings = None
+        if espn_league.settings and espn_league.settings.rosterSettings:
+            roster_settings = RosterSettingsModel(
+                lineup_slot_counts=espn_league.settings.rosterSettings.lineupSlotCounts,
+                roster_size=espn_league.settings.rosterSettings.rosterSize,
+            )
+
+        # Extract scoring categories
+        scoring_categories = None
+        if espn_league.settings and espn_league.settings.scoringSettings:
+            scoring_settings = espn_league.settings.scoringSettings
+            batting_cats = [
+                ScoringCategoryModel(
+                    stat_id=cat.statId,
+                    name=cat.name,
+                    is_reverse=cat.isReverseItem,
+                )
+                for cat in scoring_settings.categories.batting
+            ]
+            pitching_cats = [
+                ScoringCategoryModel(
+                    stat_id=cat.statId,
+                    name=cat.name,
+                    is_reverse=cat.isReverseItem,
+                )
+                for cat in scoring_settings.categories.pitching
+            ]
+            scoring_categories = ScoringCategoriesModel(
+                batting=batting_cats, pitching=pitching_cats
+            )
+
+        # Get acquisition budget
+        acquisition_budget = None
+        if espn_league.settings and espn_league.settings.acquisitionSettings:
+            acquisition_budget = espn_league.settings.acquisitionSettings.acquisitionBudget
+
+        # Get draft auction budget
+        draft_auction_budget = None
+        if espn_league.settings and espn_league.settings.draftSettings:
+            draft_auction_budget = espn_league.settings.draftSettings.auctionBudget
+
+        return MtblLeagueModel(
+            league_id=espn_league.id,
+            season_id=espn_league.seasonId,
+            scoring_period_id=espn_league.scoringPeriodId,
+            num_teams=len(espn_league.teams),
+            roster_settings=roster_settings,
+            scoring_categories=scoring_categories,
+            acquisition_budget=acquisition_budget,
+            draft_auction_budget=draft_auction_budget,
+        )
+
+    @classmethod
+    def transform_schedule(cls, espn_league: EspnLeagueModel) -> MtblScheduleModel:
+        """
+        Transform ESPN schedule to MTBL schedule model.
+
+        Args:
+            espn_league: ESPN league model
+
+        Returns:
+            MtblScheduleModel with matchups
+        """
+        matchups = []
+        for matchup in espn_league.schedule:
+            # Determine if this is a playoff matchup
+            is_playoff = matchup.playoffTierType != "NONE" if matchup.playoffTierType else False
+
+            # Parse teams
+            team_ids = list(matchup.teams.keys())
+            is_bye = matchup.winner == "BYE WEEK"
+
+            team1_id = int(team_ids[0]) if team_ids else None
+            team1_score = matchup.teams.get(team_ids[0]) if team_ids else None
+            team2_id = int(team_ids[1]) if len(team_ids) > 1 else None
+            team2_score = matchup.teams.get(team_ids[1]) if len(team_ids) > 1 else None
+
+            # Parse winner
+            winner_id = None
+            if not is_bye and matchup.winner and isinstance(matchup.winner, int):
+                winner_id = matchup.winner
+
+            matchups.append(
+                ScheduleMatchupModel(
+                    matchup_id=matchup.id,
+                    period_id=matchup.matchupPeriodId,
+                    is_playoff=is_playoff,
+                    team1_id=team1_id,
+                    team1_score=team1_score,
+                    team2_id=team2_id,
+                    team2_score=team2_score,
+                    winner_id=winner_id,
+                    is_bye_week=is_bye,
+                )
+            )
+
+        logger.info(f"Transformed {len(matchups)} schedule matchups")
+        return MtblScheduleModel(
+            league_id=espn_league.id,
+            season_id=espn_league.seasonId,
+            matchups=matchups,
+        )
