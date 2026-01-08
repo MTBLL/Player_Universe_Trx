@@ -6,19 +6,29 @@ These tests verify that ESPN stats are correctly structured:
 - All ESPN periods are preserved (projections, last_7/15/30_games, previous_season_24)
 """
 
-from player_universe_trx.matchers.player_matcher import PlayerMatcher, apply_matches
+from player_universe_trx.matchers.player_matcher import PlayerMatcher
+from player_universe_trx.matchers.transformation import apply_matches
 from player_universe_trx.models.espn import EspnBatterModel, EspnPitcherModel
 from player_universe_trx.models.espn.batter import EspnBatterStatsGroupModel
 from player_universe_trx.models.espn.pitcher import EspnPitcherStatsGroupModel
-from player_universe_trx.models.espn.stats import EspnBatterStatsModel, EspnPitcherStatsModel
-from player_universe_trx.models.fangraphs import FangraphsBatterModel, FangraphsPitcherModel
-from player_universe_trx.models.fangraphs.stats import FangraphsBatterStatsModel, FangraphsPitcherStatsModel
+from player_universe_trx.models.espn.stats import (
+    EspnBatterStatsModel,
+    EspnPitcherStatsModel,
+)
+from player_universe_trx.models.fangraphs import (
+    FangraphsBatterModel,
+    FangraphsPitcherModel,
+)
+from player_universe_trx.models.fangraphs.stats import (
+    FangraphsBatterStatsModel,
+    FangraphsPitcherStatsModel,
+)
 from player_universe_trx.models.savant import SavantBatterModel, SavantPitcherModel
 from player_universe_trx.models.savant.batter import SavantBatterStatsModel
 from player_universe_trx.models.savant.pitcher import SavantPitcherStatsModel
 
-
 # ========== Basic Tests - Current Season Only ==========
+
 
 def test_espn_batter_current_season_only():
     """Test that ESPN current_season stats are stored under stats.current_season."""
@@ -30,14 +40,8 @@ def test_espn_batter_current_season_only():
         slug="aaron-judge",
         pro_team="NYY",
         stats=EspnBatterStatsGroupModel(
-            current_season=EspnBatterStatsModel(
-                AB=500,
-                H=150,
-                HR=30,
-                RBI=85,
-                AVG=0.300
-            )
-        )
+            current_season=EspnBatterStatsModel(AB=500, H=150, HR=30, RBI=85, AVG=0.300)
+        ),
     )
 
     fg_player = FangraphsBatterModel(
@@ -45,7 +49,7 @@ def test_espn_batter_current_season_only():
         name="Aaron Judge",
         ascii_name="Aaron Judge",
         slug="aaron-judge",
-        team="NYY"
+        team="NYY",
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -79,8 +83,8 @@ def test_espn_batter_with_nested_container():
             last_7_games=EspnBatterStatsModel(AB=28, H=10, HR=3),
             last_15_games=EspnBatterStatsModel(AB=60, H=18, HR=5),
             last_30_games=EspnBatterStatsModel(AB=120, H=38, HR=10),
-            previous_season_24=EspnBatterStatsModel(AB=480, H=140, HR=28)
-        )
+            previous_season_24=EspnBatterStatsModel(AB=480, H=140, HR=28),
+        ),
     )
 
     fg_player = FangraphsBatterModel(
@@ -88,7 +92,7 @@ def test_espn_batter_with_nested_container():
         name="Aaron Judge",
         ascii_name="Aaron Judge",
         slug="aaron-judge",
-        team="NYY"
+        team="NYY",
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -126,8 +130,8 @@ def test_espn_batter_both_current_and_nested():
         pro_team="NYY",
         stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(AB=500, H=150, HR=30),
-            projections=EspnBatterStatsModel(AB=550, H=165, HR=35)
-        )
+            projections=EspnBatterStatsModel(AB=550, H=165, HR=35),
+        ),
     )
 
     fg_player = FangraphsBatterModel(
@@ -135,7 +139,7 @@ def test_espn_batter_both_current_and_nested():
         name="Aaron Judge",
         ascii_name="Aaron Judge",
         slug="aaron-judge",
-        team="NYY"
+        team="NYY",
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -168,14 +172,8 @@ def test_espn_pitcher_current_season_only():
         slug="gerrit-cole",
         pro_team="NYY",
         stats=EspnPitcherStatsGroupModel(
-            current_season=EspnPitcherStatsModel(
-                W=15,
-                L=6,
-                ERA=3.15,
-                WHIP=1.08,
-                K=215
-            )
-        )
+            current_season=EspnPitcherStatsModel(W=15, L=6, ERA=3.15, WHIP=1.08, K=215)
+        ),
     )
 
     fg_player = FangraphsPitcherModel(
@@ -183,7 +181,7 @@ def test_espn_pitcher_current_season_only():
         name="Gerrit Cole",
         ascii_name="Gerrit Cole",
         slug="gerrit-cole",
-        team="NYY"
+        team="NYY",
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -217,8 +215,8 @@ def test_espn_pitcher_with_nested_container():
             last_7_games=EspnPitcherStatsModel(W=2, K=25, ERA=2.50),
             last_15_games=EspnPitcherStatsModel(W=4, K=50, ERA=2.80),
             last_30_games=EspnPitcherStatsModel(W=7, K=105, ERA=3.00),
-            previous_season_24=EspnPitcherStatsModel(W=14, K=200, ERA=3.25)
-        )
+            previous_season_24=EspnPitcherStatsModel(W=14, K=200, ERA=3.25),
+        ),
     )
 
     fg_player = FangraphsPitcherModel(
@@ -226,7 +224,7 @@ def test_espn_pitcher_with_nested_container():
         name="Gerrit Cole",
         ascii_name="Gerrit Cole",
         slug="gerrit-cole",
-        team="NYY"
+        team="NYY",
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -259,8 +257,8 @@ def test_espn_pitcher_both_current_and_nested():
         pro_team="NYY",
         stats=EspnPitcherStatsGroupModel(
             current_season=EspnPitcherStatsModel(W=15, ERA=3.15),
-            projections=EspnPitcherStatsModel(W=16, ERA=3.05)
-        )
+            projections=EspnPitcherStatsModel(W=16, ERA=3.05),
+        ),
     )
 
     fg_player = FangraphsPitcherModel(
@@ -268,7 +266,7 @@ def test_espn_pitcher_both_current_and_nested():
         name="Gerrit Cole",
         ascii_name="Gerrit Cole",
         slug="gerrit-cole",
-        team="NYY"
+        team="NYY",
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -289,6 +287,7 @@ def test_espn_pitcher_both_current_and_nested():
 
 # ========== Integration Tests - All Sources ==========
 
+
 def test_all_sources_batters_matched():
     """Test combining ESPN current + ESPN container + FG projections + Savant."""
     espn_player = EspnBatterModel(
@@ -301,8 +300,8 @@ def test_all_sources_batters_matched():
         stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(AB=500, H=150, HR=30, RBI=85),
             projections=EspnBatterStatsModel(AB=550, H=165, HR=35, RBI=95),
-            last_7_games=EspnBatterStatsModel(AB=28, HR=3)
-        )
+            last_7_games=EspnBatterStatsModel(AB=28, HR=3),
+        ),
     )
 
     fg_player = FangraphsBatterModel(
@@ -312,13 +311,7 @@ def test_all_sources_batters_matched():
         slug="aaron-judge",
         team="NYY",
         xmlbam_id=592450,
-        projection=FangraphsBatterStatsModel(
-            ab=575,
-            h=170,
-            hr=38,
-            rbi=100,
-            avg=0.296
-        )
+        projections=FangraphsBatterStatsModel(ab=575, h=170, hr=38, rbi=100, avg=0.296),
     )
 
     savant_player = SavantBatterModel(
@@ -332,11 +325,8 @@ def test_all_sources_batters_matched():
         total_pitches=2000,
         pitch_percent=100.0,
         stats=SavantBatterStatsModel(
-            exit_velo=95.5,
-            xwOBA=0.420,
-            xAVG=0.310,
-            xSLG=0.625
-        )
+            exit_velo=95.5, xwOBA=0.420, xAVG=0.310, xSLG=0.625
+        ),
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player], [savant_player])
@@ -377,8 +367,8 @@ def test_all_sources_pitchers_matched():
         stats=EspnPitcherStatsGroupModel(
             current_season=EspnPitcherStatsModel(W=15, K=215, ERA=3.15),
             projections=EspnPitcherStatsModel(W=16, K=225, ERA=3.05),
-            last_30_games=EspnPitcherStatsModel(W=7, K=105)
-        )
+            last_30_games=EspnPitcherStatsModel(W=7, K=105),
+        ),
     )
 
     fg_player = FangraphsPitcherModel(
@@ -388,12 +378,9 @@ def test_all_sources_pitchers_matched():
         slug="gerrit-cole",
         team="NYY",
         xmlbam_id=543037,
-        projection=FangraphsPitcherStatsModel(
-            wins=17,
-            strikeouts=230,
-            era=3.00,
-            whip=1.05
-        )
+        projections=FangraphsPitcherStatsModel(
+            wins=17, strikeouts=230, era=3.00, whip=1.05
+        ),
     )
 
     savant_player = SavantPitcherModel(
@@ -407,11 +394,8 @@ def test_all_sources_pitchers_matched():
         total_pitches=3000,
         pitch_percent=100.0,
         stats=SavantPitcherStatsModel(
-            velo=97.2,
-            spin_rate=2550,
-            xwoba=0.285,
-            swing_miss_pct=32.5
-        )
+            velo=97.2, spin_rate=2550, xwoba=0.285, swing_miss_pct=32.5
+        ),
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player], [savant_player])
@@ -451,8 +435,8 @@ def test_espn_stats_unmatched_players():
         pro_team="NYY",
         stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(AB=100, H=25, HR=5),
-            projections=EspnBatterStatsModel(AB=400, H=100, HR=20)
-        )
+            projections=EspnBatterStatsModel(AB=400, H=100, HR=20),
+        ),
     )
 
     matcher = PlayerMatcher([espn_batter], [], [])
@@ -474,6 +458,7 @@ def test_espn_stats_unmatched_players():
 
 # ========== Edge Cases ==========
 
+
 def test_espn_stats_container_none():
     """Test handling when ESPN stats container is None."""
     espn_player = EspnBatterModel(
@@ -483,7 +468,7 @@ def test_espn_stats_container_none():
         last_name="Judge",
         slug="aaron-judge",
         pro_team="NYY",
-        stats=None
+        stats=None,
     )
 
     fg_player = FangraphsBatterModel(
@@ -491,7 +476,7 @@ def test_espn_stats_container_none():
         name="Aaron Judge",
         ascii_name="Aaron Judge",
         slug="aaron-judge",
-        team="NYY"
+        team="NYY",
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -520,8 +505,8 @@ def test_espn_stats_empty_container():
             last_7_games=None,
             last_15_games=None,
             last_30_games=None,
-            previous_season_24=None
-        )
+            previous_season_24=None,
+        ),
     )
 
     fg_player = FangraphsBatterModel(
@@ -529,7 +514,7 @@ def test_espn_stats_empty_container():
         name="Aaron Judge",
         ascii_name="Aaron Judge",
         slug="aaron-judge",
-        team="NYY"
+        team="NYY",
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -559,8 +544,8 @@ def test_access_nested_espn_projections():
             current_season=EspnBatterStatsModel(AB=500, AVG=0.300),
             projections=EspnBatterStatsModel(AB=550, AVG=0.310),
             last_7_games=EspnBatterStatsModel(AB=28, AVG=0.357),
-            previous_season_24=EspnBatterStatsModel(AB=480, AVG=0.285)
-        )
+            previous_season_24=EspnBatterStatsModel(AB=480, AVG=0.285),
+        ),
     )
 
     fg_player = FangraphsBatterModel(
@@ -568,7 +553,7 @@ def test_access_nested_espn_projections():
         name="Aaron Judge",
         ascii_name="Aaron Judge",
         slug="aaron-judge",
-        team="NYY"
+        team="NYY",
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])

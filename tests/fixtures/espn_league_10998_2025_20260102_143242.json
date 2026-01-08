@@ -1096,19 +1096,7 @@
       "keeperOrderType": "TRADITIONAL",
       "leagueSubType": "NONE",
       "orderType": "DRAFT_START",
-      "pickOrder": [
-        7,
-        1,
-        36,
-        18,
-        41,
-        8,
-        40,
-        31,
-        17,
-        39,
-        35
-      ],
+      "pickOrder": [7, 1, 36, 18, 41, 8, 40, 31, 17, 39, 35],
       "timePerSelection": 120,
       "type": "AUCTION"
     },
@@ -1164,9 +1152,7 @@
         "13": 0
       },
       "rosterLocktimeType": "FIRSTGAME_SCORINGPERIOD",
-      "universeIds": [
-        0
-      ]
+      "universeIds": [0]
     },
     "scheduleSettings": {
       "consolationLadderDisabled": false,
@@ -1180,64 +1166,24 @@
       "matchupPeriodCount": 14,
       "matchupPeriodLength": 1,
       "matchupPeriods": {
-        "1": [
-          1
-        ],
-        "2": [
-          2
-        ],
-        "3": [
-          3
-        ],
-        "4": [
-          4
-        ],
-        "5": [
-          5
-        ],
-        "6": [
-          6
-        ],
-        "7": [
-          7
-        ],
-        "8": [
-          8
-        ],
-        "9": [
-          9
-        ],
-        "10": [
-          10
-        ],
-        "11": [
-          11
-        ],
-        "12": [
-          12
-        ],
-        "13": [
-          13
-        ],
-        "14": [
-          14
-        ],
-        "15": [
-          16,
-          15
-        ],
-        "16": [
-          17,
-          18
-        ],
-        "17": [
-          19,
-          20
-        ],
-        "18": [
-          21,
-          22
-        ]
+        "1": [1],
+        "2": [2],
+        "3": [3],
+        "4": [4],
+        "5": [5],
+        "6": [6],
+        "7": [7],
+        "8": [8],
+        "9": [9],
+        "10": [10],
+        "11": [11],
+        "12": [12],
+        "13": [13],
+        "14": [14],
+        "15": [16, 15],
+        "16": [17, 18],
+        "17": [19, 20],
+        "18": [21, 22]
       },
       "periodTypeId": 2,
       "playoffMatchupPeriodLength": 2,
@@ -1353,18 +1299,7 @@
     "isWaiverOrderEdited": false,
     "latestScoringPeriod": 196,
     "previousSeasons": [
-      2013,
-      2014,
-      2015,
-      2016,
-      2017,
-      2018,
-      2019,
-      2020,
-      2021,
-      2022,
-      2023,
-      2024
+      2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
     ],
     "standingsUpdateDate": 1767122707150,
     "teamsJoined": 11,
@@ -1390,9 +1325,7 @@
       "logo": "https://i.imgur.com/EhYdq2q.jpg",
       "logoType": "CUSTOM_VALID",
       "name": "Hader's Gon Hate",
-      "owners": [
-        "{3D596368-E046-4194-8C20-C0CB4F2E8BBD}"
-      ],
+      "owners": ["{3D596368-E046-4194-8C20-C0CB4F2E8BBD}"],
       "playoffSeed": 11,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -1465,15 +1398,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  10,
-                  5,
-                  12,
-                  16,
-                  17,
-                  9
-                ],
+                "eligibleSlots": [8, 10, 5, 12, 16, 17, 9],
                 "firstName": "Jackson",
                 "fullName": "Jackson Chourio",
                 "gamesPlayedByPosition": {
@@ -1522,14 +1447,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": false,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Francisco",
                 "fullName": "Francisco Lindor",
                 "gamesPlayedByPosition": {
@@ -1577,14 +1495,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Trea",
                 "fullName": "Trea Turner",
                 "gamesPlayedByPosition": {
@@ -1632,13 +1543,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  9,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [9, 5, 12, 16, 17],
                 "firstName": "Jackson",
                 "fullName": "Jackson Merrill",
                 "gamesPlayedByPosition": {
@@ -1684,15 +1589,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  11,
-                  12,
-                  16,
-                  17,
-                  9
-                ],
+                "eligibleSlots": [8, 5, 11, 12, 16, 17, 9],
                 "firstName": "Wyatt",
                 "fullName": "Wyatt Langford",
                 "gamesPlayedByPosition": {
@@ -1739,14 +1636,7 @@
                 "active": true,
                 "defaultPositionId": 10,
                 "droppable": true,
-                "eligibleSlots": [
-                  11,
-                  12,
-                  16,
-                  17,
-                  5,
-                  10
-                ],
+                "eligibleSlots": [11, 12, 16, 17, 5, 10],
                 "firstName": "Brent",
                 "fullName": "Brent Rooker",
                 "gamesPlayedByPosition": {
@@ -1794,12 +1684,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Aaron",
                 "fullName": "Aaron Nola",
                 "gamesPlayedByPosition": {
@@ -1863,12 +1748,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Bryce",
                 "fullName": "Bryce Miller",
                 "gamesPlayedByPosition": {
@@ -1933,12 +1813,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Shota",
                 "fullName": "Shota Imanaga",
                 "gamesPlayedByPosition": {
@@ -2010,12 +1885,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "George",
                 "fullName": "George Kirby",
                 "gamesPlayedByPosition": {
@@ -2085,13 +1955,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [0, 11, 12, 16, 17],
                 "firstName": "Yainer",
                 "fullName": "Yainer Diaz",
                 "gamesPlayedByPosition": {
@@ -2139,12 +2003,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Raisel",
                 "fullName": "Raisel Iglesias",
                 "gamesPlayedByPosition": {
@@ -2190,12 +2049,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Max",
                 "fullName": "Max Fried",
                 "gamesPlayedByPosition": {
@@ -2274,12 +2128,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Kevin",
                 "fullName": "Kevin Gausman",
                 "gamesPlayedByPosition": {
@@ -2358,12 +2207,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Ryan",
                 "fullName": "Ryan Walker",
                 "gamesPlayedByPosition": {
@@ -2409,15 +2253,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17,
-                  4
-                ],
+                "eligibleSlots": [2, 6, 19, 12, 16, 17, 4],
                 "firstName": "Bryson",
                 "fullName": "Bryson Stott",
                 "gamesPlayedByPosition": {
@@ -2465,14 +2301,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [8, 5, 12, 16, 17, 11],
                 "firstName": "Jasson",
                 "fullName": "Jasson Dominguez",
                 "gamesPlayedByPosition": {
@@ -2520,17 +2349,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  3,
-                  6,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  5
-                ],
+                "eligibleSlots": [2, 3, 6, 7, 19, 12, 16, 17, 5],
                 "firstName": "Luis",
                 "fullName": "Luis Rengifo",
                 "gamesPlayedByPosition": {
@@ -2583,14 +2402,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17],
                 "firstName": "Michael",
                 "fullName": "Michael Toglia",
                 "gamesPlayedByPosition": {
@@ -2636,14 +2448,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Jeremy",
                 "fullName": "Jeremy Pena",
                 "gamesPlayedByPosition": {
@@ -2690,14 +2495,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Zach",
                 "fullName": "Zach Neto",
                 "gamesPlayedByPosition": {
@@ -2788,9 +2586,7 @@
       "logo": "https://ssl.c.photoshelter.com/img-get2/I00004ntiCbTZgIo/fit=1000x750/Puckett-Kirby-1991-WS-05.jpg",
       "logoType": "CUSTOM_VALID",
       "name": "Puckett, We'll  Do it Live",
-      "owners": [
-        "{F1A298C3-795F-4024-A298-C3795F702437}"
-      ],
+      "owners": ["{F1A298C3-795F-4024-A298-C3795F702437}"],
       "playoffSeed": 2,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -2863,15 +2659,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  9,
-                  5,
-                  11,
-                  12,
-                  16,
-                  17,
-                  10
-                ],
+                "eligibleSlots": [9, 5, 11, 12, 16, 17, 10],
                 "firstName": "Aaron",
                 "fullName": "Aaron Judge",
                 "gamesPlayedByPosition": {
@@ -2919,14 +2707,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": false,
-                "eligibleSlots": [
-                  10,
-                  5,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [10, 5, 12, 16, 17, 11],
                 "firstName": "Kyle",
                 "fullName": "Kyle Tucker",
                 "gamesPlayedByPosition": {
@@ -2974,15 +2755,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": false,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 11, 12, 16, 17],
                 "firstName": "Vladimir",
                 "fullName": "Vladimir Guerrero Jr.",
                 "gamesPlayedByPosition": {
@@ -3030,14 +2803,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Gunnar",
                 "fullName": "Gunnar Henderson",
                 "gamesPlayedByPosition": {
@@ -3085,15 +2851,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": false,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [3, 7, 19, 11, 12, 16, 17],
                 "firstName": "Manny",
                 "fullName": "Manny Machado",
                 "gamesPlayedByPosition": {
@@ -3140,12 +2898,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Kodai",
                 "fullName": "Kodai Senga",
                 "gamesPlayedByPosition": {
@@ -3214,12 +2967,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Trevor",
                 "fullName": "Trevor Megill",
                 "gamesPlayedByPosition": {
@@ -3265,12 +3013,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Ryan",
                 "fullName": "Ryan Pepiot",
                 "gamesPlayedByPosition": {
@@ -3348,13 +3091,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [0, 12, 16, 17, 11],
                 "firstName": "Shea",
                 "fullName": "Shea Langeliers",
                 "gamesPlayedByPosition": {
@@ -3402,13 +3139,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17,
-                  14
-                ],
+                "eligibleSlots": [13, 15, 16, 17, 14],
                 "firstName": "Kris",
                 "fullName": "Kris Bubic",
                 "gamesPlayedByPosition": {
@@ -3474,13 +3205,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 5, 12, 16, 17],
                 "firstName": "Taylor",
                 "fullName": "Taylor Ward",
                 "gamesPlayedByPosition": {
@@ -3528,15 +3253,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [2, 6, 19, 12, 16, 17, 11],
                 "firstName": "Gleyber",
                 "fullName": "Gleyber Torres",
                 "gamesPlayedByPosition": {
@@ -3583,12 +3300,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Justin",
                 "fullName": "Justin Martinez",
                 "gamesPlayedByPosition": {
@@ -3634,12 +3346,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Jeremiah",
                 "fullName": "Jeremiah Estrada",
                 "gamesPlayedByPosition": {
@@ -3685,12 +3392,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Eury",
                 "fullName": "Eury Perez",
                 "gamesPlayedByPosition": {
@@ -3756,12 +3458,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Will",
                 "fullName": "Will Warren",
                 "gamesPlayedByPosition": {
@@ -3840,12 +3537,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Clarke",
                 "fullName": "Clarke Schmidt",
                 "gamesPlayedByPosition": {
@@ -3906,13 +3598,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 15, 16, 17],
                 "firstName": "Michael",
                 "fullName": "Michael Soroka",
                 "gamesPlayedByPosition": {
@@ -3978,15 +3664,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 11, 12, 16, 17],
                 "firstName": "Andrew",
                 "fullName": "Andrew Vaughn",
                 "gamesPlayedByPosition": {
@@ -4035,12 +3713,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Will",
                 "fullName": "Will Vest",
                 "gamesPlayedByPosition": {
@@ -4085,12 +3758,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Noah",
                 "fullName": "Noah Cameron",
                 "gamesPlayedByPosition": {
@@ -4160,14 +3828,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  9,
-                  5,
-                  12,
-                  16,
-                  17,
-                  8
-                ],
+                "eligibleSlots": [9, 5, 12, 16, 17, 8],
                 "firstName": "Jakob",
                 "fullName": "Jakob Marsee",
                 "gamesPlayedByPosition": {
@@ -4214,12 +3875,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Cam",
                 "fullName": "Cam Schlittler",
                 "gamesPlayedByPosition": {
@@ -4279,12 +3935,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Spencer",
                 "fullName": "Spencer Arrighetti",
                 "gamesPlayedByPosition": {
@@ -4338,13 +3989,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17,
-                  15
-                ],
+                "eligibleSlots": [13, 14, 16, 17, 15],
                 "firstName": "Garrett",
                 "fullName": "Garrett Whitlock",
                 "gamesPlayedByPosition": {
@@ -4389,12 +4034,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Tomoyuki",
                 "fullName": "Tomoyuki Sugano",
                 "gamesPlayedByPosition": {
@@ -4532,9 +4172,7 @@
       "logo": "https://pbs.twimg.com/profile_images/437098266979627008/fMSRJa_q.jpeg",
       "logoType": "CUSTOM_VALID",
       "name": "Pablo Sanchez's",
-      "owners": [
-        "{19DDD560-4104-46DA-9DD5-60410426DAAE}"
-      ],
+      "owners": ["{19DDD560-4104-46DA-9DD5-60410426DAAE}"],
       "playoffSeed": 1,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -4607,14 +4245,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": false,
-                "eligibleSlots": [
-                  9,
-                  10,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [9, 10, 5, 12, 16, 17],
                 "firstName": "Corbin",
                 "fullName": "Corbin Carroll",
                 "gamesPlayedByPosition": {
@@ -4663,13 +4294,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": true,
-                "eligibleSlots": [
-                  10,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [10, 5, 12, 16, 17],
                 "firstName": "Fernando",
                 "fullName": "Fernando Tatis Jr.",
                 "gamesPlayedByPosition": {
@@ -4716,12 +4341,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Garrett",
                 "fullName": "Garrett Crochet",
                 "gamesPlayedByPosition": {
@@ -4800,16 +4420,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": false,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  11,
-                  1
-                ],
+                "eligibleSlots": [3, 7, 19, 12, 16, 17, 11, 1],
                 "firstName": "Rafael",
                 "fullName": "Rafael Devers",
                 "gamesPlayedByPosition": {
@@ -4860,13 +4471,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": true,
-                "eligibleSlots": [
-                  10,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [10, 5, 12, 16, 17],
                 "firstName": "Ronald",
                 "fullName": "Ronald Acuna Jr.",
                 "gamesPlayedByPosition": {
@@ -4913,12 +4518,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Jacob",
                 "fullName": "Jacob deGrom",
                 "gamesPlayedByPosition": {
@@ -4995,12 +4595,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Brandon",
                 "fullName": "Brandon Woodruff",
                 "gamesPlayedByPosition": {
@@ -5059,12 +4654,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Jeff",
                 "fullName": "Jeff Hoffman",
                 "gamesPlayedByPosition": {
@@ -5110,12 +4700,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Tanner",
                 "fullName": "Tanner Bibee",
                 "gamesPlayedByPosition": {
@@ -5193,12 +4778,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Aroldis",
                 "fullName": "Aroldis Chapman",
                 "gamesPlayedByPosition": {
@@ -5244,12 +4824,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Nick",
                 "fullName": "Nick Pivetta",
                 "gamesPlayedByPosition": {
@@ -5327,16 +4902,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  11,
-                  12,
-                  16,
-                  17,
-                  1,
-                  7,
-                  19
-                ],
+                "eligibleSlots": [0, 11, 12, 16, 17, 1, 7, 19],
                 "firstName": "Willson",
                 "fullName": "Willson Contreras",
                 "gamesPlayedByPosition": {
@@ -5383,16 +4949,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  8,
-                  5
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17, 8, 5],
                 "firstName": "Tyler",
                 "fullName": "Tyler Soderstrom",
                 "gamesPlayedByPosition": {
@@ -5440,16 +4997,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": true,
-                "eligibleSlots": [
-                  10,
-                  5,
-                  11,
-                  12,
-                  16,
-                  17,
-                  9,
-                  8
-                ],
+                "eligibleSlots": [10, 5, 11, 12, 16, 17, 9, 8],
                 "firstName": "George",
                 "fullName": "George Springer",
                 "gamesPlayedByPosition": {
@@ -5499,14 +5047,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Trevor",
                 "fullName": "Trevor Story",
                 "gamesPlayedByPosition": {
@@ -5551,14 +5092,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [2, 6, 19, 12, 16, 17],
                 "firstName": "Luke",
                 "fullName": "Luke Keaschall",
                 "gamesPlayedByPosition": {
@@ -5604,13 +5138,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 15, 16, 17],
                 "firstName": "Andre",
                 "fullName": "Andre Pallante",
                 "gamesPlayedByPosition": {
@@ -5688,12 +5216,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Justin",
                 "fullName": "Justin Verlander",
                 "gamesPlayedByPosition": {
@@ -5768,12 +5291,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Martin",
                 "fullName": "Martin Perez",
                 "gamesPlayedByPosition": {
@@ -5830,13 +5348,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17,
-                  15
-                ],
+                "eligibleSlots": [13, 14, 16, 17, 15],
                 "firstName": "Brad",
                 "fullName": "Brad Lord",
                 "gamesPlayedByPosition": {
@@ -5902,12 +5414,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Edward",
                 "fullName": "Edward Cabrera",
                 "gamesPlayedByPosition": {
@@ -6041,9 +5548,7 @@
       "logo": "http://images.livemixtapes.com/artists/ovo/drake-6_god/cover.jpg",
       "logoType": "CUSTOM_VALID",
       "name": "October's  Very Own",
-      "owners": [
-        "{F1061681-A897-4ECE-8616-81A8979ECE9C}"
-      ],
+      "owners": ["{F1061681-A897-4ECE-8616-81A8979ECE9C}"],
       "playoffSeed": 3,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -6116,14 +5621,7 @@
                 "active": true,
                 "defaultPositionId": 10,
                 "droppable": false,
-                "eligibleSlots": [
-                  11,
-                  12,
-                  16,
-                  17,
-                  13,
-                  14
-                ],
+                "eligibleSlots": [11, 12, 16, 17, 13, 14],
                 "firstName": "Shohei",
                 "fullName": "Shohei Ohtani",
                 "gamesPlayedByPosition": {
@@ -6185,14 +5683,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": false,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Bobby",
                 "fullName": "Bobby Witt Jr.",
                 "gamesPlayedByPosition": {
@@ -6239,13 +5730,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": false,
-                "eligibleSlots": [
-                  10,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [10, 5, 12, 16, 17],
                 "firstName": "Juan",
                 "fullName": "Juan Soto",
                 "gamesPlayedByPosition": {
@@ -6292,12 +5777,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Robbie",
                 "fullName": "Robbie Ray",
                 "gamesPlayedByPosition": {
@@ -6376,12 +5856,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Chris",
                 "fullName": "Chris Sale",
                 "gamesPlayedByPosition": {
@@ -6449,15 +5924,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": false,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [2, 6, 19, 11, 12, 16, 17],
                 "firstName": "Ketel",
                 "fullName": "Ketel Marte",
                 "gamesPlayedByPosition": {
@@ -6505,13 +5972,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  9,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [9, 5, 12, 16, 17],
                 "firstName": "Byron",
                 "fullName": "Byron Buxton",
                 "gamesPlayedByPosition": {
@@ -6558,12 +6019,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Cole",
                 "fullName": "Cole Ragans",
                 "gamesPlayedByPosition": {
@@ -6623,16 +6079,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  1,
-                  7,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [0, 1, 7, 19, 11, 12, 16, 17],
                 "firstName": "Salvador",
                 "fullName": "Salvador Perez",
                 "gamesPlayedByPosition": {
@@ -6680,14 +6127,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [3, 7, 19, 12, 16, 17],
                 "firstName": "Max",
                 "fullName": "Max Muncy",
                 "gamesPlayedByPosition": {
@@ -6734,13 +6174,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  9,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [9, 5, 12, 16, 17],
                 "firstName": "Julio",
                 "fullName": "Julio Rodriguez",
                 "gamesPlayedByPosition": {
@@ -6787,15 +6221,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 11, 12, 16, 17],
                 "firstName": "Yandy",
                 "fullName": "Yandy Diaz",
                 "gamesPlayedByPosition": {
@@ -6842,12 +6268,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Kyle",
                 "fullName": "Kyle Bradish",
                 "gamesPlayedByPosition": {
@@ -6899,12 +6320,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Jason",
                 "fullName": "Jason Adam",
                 "gamesPlayedByPosition": {
@@ -6950,12 +6366,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Luke",
                 "fullName": "Luke Weaver",
                 "gamesPlayedByPosition": {
@@ -7001,12 +6412,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Orion",
                 "fullName": "Orion Kerkering",
                 "gamesPlayedByPosition": {
@@ -7052,13 +6458,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 15, 16, 17],
                 "firstName": "Jared",
                 "fullName": "Jared Koenig",
                 "gamesPlayedByPosition": {
@@ -7103,12 +6503,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Sandy",
                 "fullName": "Sandy Alcantara",
                 "gamesPlayedByPosition": {
@@ -7186,12 +6581,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Lucas",
                 "fullName": "Lucas Giolito",
                 "gamesPlayedByPosition": {
@@ -7263,12 +6653,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Sean",
                 "fullName": "Sean Manaea",
                 "gamesPlayedByPosition": {
@@ -7328,15 +6713,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [3, 7, 19, 12, 16, 17, 11],
                 "firstName": "Mark",
                 "fullName": "Mark Vientos",
                 "gamesPlayedByPosition": {
@@ -7385,13 +6762,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17,
-                  15
-                ],
+                "eligibleSlots": [13, 14, 16, 17, 15],
                 "firstName": "Ian",
                 "fullName": "Ian Seymour",
                 "gamesPlayedByPosition": {
@@ -7443,12 +6814,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Michael",
                 "fullName": "Michael Wacha",
                 "gamesPlayedByPosition": {
@@ -7596,9 +6962,7 @@
       "logo": "http://content.sportslogos.net/logos/53/65/full/h7yvwsji2bngl8v6n0o4o3x9k.gif",
       "logoType": "CUSTOM_VALID",
       "name": "Toner from Minnesota",
-      "owners": [
-        "{C5F77F3F-DAC8-4789-90C9-FFA32717D186}"
-      ],
+      "owners": ["{C5F77F3F-DAC8-4789-90C9-FFA32717D186}"],
       "playoffSeed": 7,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -7671,16 +7035,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  10,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 10, 5, 12, 16, 17],
                 "firstName": "Mookie",
                 "fullName": "Mookie Betts",
                 "gamesPlayedByPosition": {
@@ -7728,14 +7083,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": false,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17],
                 "firstName": "Freddie",
                 "fullName": "Freddie Freeman",
                 "gamesPlayedByPosition": {
@@ -7782,14 +7130,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Corey",
                 "fullName": "Corey Seager",
                 "gamesPlayedByPosition": {
@@ -7836,13 +7177,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [0, 11, 12, 16, 17],
                 "firstName": "William",
                 "fullName": "William Contreras",
                 "gamesPlayedByPosition": {
@@ -7891,12 +7226,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Michael",
                 "fullName": "Michael King",
                 "gamesPlayedByPosition": {
@@ -7958,12 +7288,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Luis",
                 "fullName": "Luis Castillo",
                 "gamesPlayedByPosition": {
@@ -8042,15 +7367,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [3, 7, 19, 12, 16, 17, 11],
                 "firstName": "Isaac",
                 "fullName": "Isaac Paredes",
                 "gamesPlayedByPosition": {
@@ -8098,12 +7415,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Jesus",
                 "fullName": "Jesus Luzardo",
                 "gamesPlayedByPosition": {
@@ -8181,12 +7493,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Freddy",
                 "fullName": "Freddy Peralta",
                 "gamesPlayedByPosition": {
@@ -8266,12 +7573,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Shane",
                 "fullName": "Shane McClanahan",
                 "id": 41199,
@@ -8314,12 +7616,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Griffin",
                 "fullName": "Griffin Jax",
                 "gamesPlayedByPosition": {
@@ -8369,12 +7666,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Luis",
                 "fullName": "Luis Gil",
                 "gamesPlayedByPosition": {
@@ -8432,17 +7724,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17,
-                  8,
-                  5,
-                  11
-                ],
+                "eligibleSlots": [2, 6, 19, 12, 16, 17, 8, 5, 11],
                 "firstName": "Jose",
                 "fullName": "Jose Altuve",
                 "gamesPlayedByPosition": {
@@ -8490,12 +7772,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Bryan",
                 "fullName": "Bryan Abreu",
                 "gamesPlayedByPosition": {
@@ -8541,12 +7818,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Daniel",
                 "fullName": "Daniel Palencia",
                 "gamesPlayedByPosition": {
@@ -8591,15 +7863,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  9,
-                  5,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 9, 5, 11, 12, 16, 17],
                 "firstName": "Riley",
                 "fullName": "Riley Greene",
                 "gamesPlayedByPosition": {
@@ -8649,12 +7913,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Shane",
                 "fullName": "Shane Baz",
                 "gamesPlayedByPosition": {
@@ -8732,12 +7991,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Michael",
                 "fullName": "Michael Kopech",
                 "gamesPlayedByPosition": {
@@ -8783,14 +8037,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17],
                 "firstName": "Nick",
                 "fullName": "Nick Kurtz",
                 "gamesPlayedByPosition": {
@@ -8836,13 +8083,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17,
-                  15
-                ],
+                "eligibleSlots": [13, 14, 16, 17, 15],
                 "firstName": "Reid",
                 "fullName": "Reid Detmers",
                 "gamesPlayedByPosition": {
@@ -8888,12 +8129,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Seranthony",
                 "fullName": "Seranthony Dominguez",
                 "gamesPlayedByPosition": {
@@ -8938,15 +8174,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [3, 7, 19, 11, 12, 16, 17],
                 "firstName": "Royce",
                 "fullName": "Royce Lewis",
                 "gamesPlayedByPosition": {
@@ -8994,12 +8222,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Mick",
                 "fullName": "Mick Abel",
                 "gamesPlayedByPosition": {
@@ -9056,12 +8279,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Taj",
                 "fullName": "Taj Bradley",
                 "gamesPlayedByPosition": {
@@ -9137,17 +8355,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  4,
-                  6,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  2
-                ],
+                "eligibleSlots": [3, 4, 6, 7, 19, 12, 16, 17, 2],
                 "firstName": "Brooks",
                 "fullName": "Brooks Lee",
                 "gamesPlayedByPosition": {
@@ -9197,15 +8405,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  10,
-                  5,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [8, 10, 5, 12, 16, 17, 11],
                 "firstName": "Matt",
                 "fullName": "Matt Wallner",
                 "gamesPlayedByPosition": {
@@ -9310,9 +8510,7 @@
       "logo": "https://g.espncdn.com/lm-static/logo-packs/core/BobsBurgers/Teddy_OnModel.svg",
       "logoType": "VECTOR",
       "name": "Bucco Bandwagon",
-      "owners": [
-        "{F31FB5F9-495B-48FF-91A4-60C72ED1BACA}"
-      ],
+      "owners": ["{F31FB5F9-495B-48FF-91A4-60C72ED1BACA}"],
       "playoffSeed": 9,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -9385,15 +8583,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": false,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [3, 7, 19, 11, 12, 16, 17],
                 "firstName": "Jose",
                 "fullName": "Jose Ramirez",
                 "gamesPlayedByPosition": {
@@ -9440,14 +8630,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [8, 5, 12, 16, 17, 11],
                 "firstName": "James",
                 "fullName": "James Wood",
                 "gamesPlayedByPosition": {
@@ -9495,12 +8678,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Logan",
                 "fullName": "Logan Gilbert",
                 "gamesPlayedByPosition": {
@@ -9572,12 +8750,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Zac",
                 "fullName": "Zac Gallen",
                 "gamesPlayedByPosition": {
@@ -9657,12 +8830,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Logan",
                 "fullName": "Logan Webb",
                 "gamesPlayedByPosition": {
@@ -9743,14 +8911,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17],
                 "firstName": "Matt",
                 "fullName": "Matt Olson",
                 "gamesPlayedByPosition": {
@@ -9796,14 +8957,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  10,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 10, 5, 12, 16, 17],
                 "firstName": "Teoscar",
                 "fullName": "Teoscar Hernandez",
                 "gamesPlayedByPosition": {
@@ -9850,14 +9004,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [2, 6, 19, 12, 16, 17],
                 "firstName": "Ozzie",
                 "fullName": "Ozzie Albies",
                 "gamesPlayedByPosition": {
@@ -9903,15 +9050,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  10,
-                  5,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 10, 5, 11, 12, 16, 17],
                 "firstName": "Bryan",
                 "fullName": "Bryan Reynolds",
                 "gamesPlayedByPosition": {
@@ -9959,12 +9098,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Kenley",
                 "fullName": "Kenley Jansen",
                 "gamesPlayedByPosition": {
@@ -10009,12 +9143,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [0, 12, 16, 17],
                 "firstName": "Logan",
                 "fullName": "Logan O'Hoppe",
                 "gamesPlayedByPosition": {
@@ -10062,12 +9191,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Joe",
                 "fullName": "Joe Ryan",
                 "gamesPlayedByPosition": {
@@ -10145,12 +9269,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Dennis",
                 "fullName": "Dennis Santana",
                 "gamesPlayedByPosition": {
@@ -10195,13 +9314,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  9,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [9, 5, 12, 16, 17],
                 "firstName": "Pete",
                 "fullName": "Pete Crow-Armstrong",
                 "gamesPlayedByPosition": {
@@ -10248,12 +9361,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Jhoan",
                 "fullName": "Jhoan Duran",
                 "gamesPlayedByPosition": {
@@ -10299,12 +9407,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Brendon",
                 "fullName": "Brendon Little",
                 "gamesPlayedByPosition": {
@@ -10349,12 +9452,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Andrew",
                 "fullName": "Andrew Abbott",
                 "gamesPlayedByPosition": {
@@ -10430,17 +9528,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  3,
-                  6,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  4
-                ],
+                "eligibleSlots": [2, 3, 6, 7, 19, 12, 16, 17, 4],
                 "firstName": "Maikel",
                 "fullName": "Maikel Garcia",
                 "gamesPlayedByPosition": {
@@ -10491,16 +9579,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17,
-                  3,
-                  7
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17, 3, 7],
                 "firstName": "Carlos",
                 "fullName": "Carlos Correa",
                 "gamesPlayedByPosition": {
@@ -10548,13 +9627,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 15, 16, 17],
                 "firstName": "Jacob",
                 "fullName": "Jacob Misiorowski",
                 "gamesPlayedByPosition": {
@@ -10615,19 +9688,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  4,
-                  6,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  1,
-                  11,
-                  5
-                ],
+                "eligibleSlots": [3, 4, 6, 7, 19, 12, 16, 17, 1, 11, 5],
                 "firstName": "Josh",
                 "fullName": "Josh Smith",
                 "gamesPlayedByPosition": {
@@ -10732,9 +9793,7 @@
       "logo": "https://images.thestar.com/CNReGkpfAWxBv1qtQ0t8gzkOQpY=/1200x943/smart/filters:cb(1618587876855)/https://www.thestar.com/content/dam/thestar/sports/baseball/2021/04/16/ronald-acua-jr-is-a-new-terrifying-type-of-leadoff-hitter/ronald_acuna.jpg",
       "logoType": "CUSTOM_VALID",
       "name": "Acuna Matata",
-      "owners": [
-        "{0EB8972F-5410-438E-8EA2-C9EC084EE00D}"
-      ],
+      "owners": ["{0EB8972F-5410-438E-8EA2-C9EC084EE00D}"],
       "playoffSeed": 5,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -10807,14 +9866,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": true,
-                "eligibleSlots": [
-                  10,
-                  5,
-                  12,
-                  16,
-                  17,
-                  9
-                ],
+                "eligibleSlots": [10, 5, 12, 16, 17, 9],
                 "firstName": "Dylan",
                 "fullName": "Dylan Crews",
                 "gamesPlayedByPosition": {
@@ -10862,14 +9914,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [3, 7, 19, 12, 16, 17],
                 "firstName": "Austin",
                 "fullName": "Austin Riley",
                 "gamesPlayedByPosition": {
@@ -10915,14 +9960,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": false,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17],
                 "firstName": "Pete",
                 "fullName": "Pete Alonso",
                 "gamesPlayedByPosition": {
@@ -10969,14 +10007,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": true,
-                "eligibleSlots": [
-                  10,
-                  5,
-                  12,
-                  16,
-                  17,
-                  9
-                ],
+                "eligibleSlots": [10, 5, 12, 16, 17, 9],
                 "firstName": "Lawrence",
                 "fullName": "Lawrence Butler",
                 "gamesPlayedByPosition": {
@@ -11024,14 +10055,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Willy",
                 "fullName": "Willy Adames",
                 "gamesPlayedByPosition": {
@@ -11078,15 +10102,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  9,
-                  5,
-                  12,
-                  16,
-                  17,
-                  10,
-                  11
-                ],
+                "eligibleSlots": [9, 5, 12, 16, 17, 10, 11],
                 "firstName": "Mike",
                 "fullName": "Mike Trout",
                 "gamesPlayedByPosition": {
@@ -11134,14 +10150,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [2, 6, 19, 12, 16, 17],
                 "firstName": "Marcus",
                 "fullName": "Marcus Semien",
                 "gamesPlayedByPosition": {
@@ -11187,13 +10196,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": false,
-                "eligibleSlots": [
-                  0,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [0, 12, 16, 17, 11],
                 "firstName": "Cal",
                 "fullName": "Cal Raleigh",
                 "gamesPlayedByPosition": {
@@ -11241,12 +10244,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Bailey",
                 "fullName": "Bailey Ober",
                 "gamesPlayedByPosition": {
@@ -11319,12 +10317,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Spencer",
                 "fullName": "Spencer Schwellenbach",
                 "gamesPlayedByPosition": {
@@ -11388,12 +10381,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Spencer",
                 "fullName": "Spencer Strider",
                 "gamesPlayedByPosition": {
@@ -11463,19 +10451,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  9,
-                  10,
-                  5,
-                  11,
-                  12,
-                  16,
-                  17,
-                  8
-                ],
+                "eligibleSlots": [1, 7, 19, 9, 10, 5, 11, 12, 16, 17, 8],
                 "firstName": "Cody",
                 "fullName": "Cody Bellinger",
                 "gamesPlayedByPosition": {
@@ -11525,12 +10501,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Robert",
                 "fullName": "Robert Suarez",
                 "gamesPlayedByPosition": {
@@ -11576,12 +10547,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Andres",
                 "fullName": "Andres Munoz",
                 "gamesPlayedByPosition": {
@@ -11627,12 +10593,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Bryan",
                 "fullName": "Bryan Woo",
                 "gamesPlayedByPosition": {
@@ -11709,13 +10670,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 5, 12, 16, 17],
                 "firstName": "Ian",
                 "fullName": "Ian Happ",
                 "gamesPlayedByPosition": {
@@ -11762,12 +10717,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Tanner",
                 "fullName": "Tanner Scott",
                 "gamesPlayedByPosition": {
@@ -11813,12 +10763,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Pete",
                 "fullName": "Pete Fairbanks",
                 "gamesPlayedByPosition": {
@@ -11864,12 +10809,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Cristopher",
                 "fullName": "Cristopher Sanchez",
                 "gamesPlayedByPosition": {
@@ -11948,14 +10888,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Jacob",
                 "fullName": "Jacob Wilson",
                 "gamesPlayedByPosition": {
@@ -12002,13 +10935,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17,
-                  14
-                ],
+                "eligibleSlots": [13, 15, 16, 17, 14],
                 "firstName": "Clay",
                 "fullName": "Clay Holmes",
                 "gamesPlayedByPosition": {
@@ -12086,12 +11013,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Jake",
                 "fullName": "Jake Irvin",
                 "gamesPlayedByPosition": {
@@ -12171,12 +11093,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Casey",
                 "fullName": "Casey Mize",
                 "gamesPlayedByPosition": {
@@ -12250,12 +11167,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "David",
                 "fullName": "David Peterson",
                 "gamesPlayedByPosition": {
@@ -12331,12 +11243,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Adrian",
                 "fullName": "Adrian Morejon",
                 "gamesPlayedByPosition": {
@@ -12381,14 +11288,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "J.P.",
                 "fullName": "J.P. Crawford",
                 "gamesPlayedByPosition": {
@@ -12487,9 +11387,7 @@
       "logo": "https://i.postimg.cc/1XFVrSgx/IMG-2153.jpg",
       "logoType": "CUSTOM_VALID",
       "name": "Campus  Popo",
-      "owners": [
-        "{8022B53E-AAEA-476E-A2B5-3EAAEAD76ED8}"
-      ],
+      "owners": ["{8022B53E-AAEA-476E-A2B5-3EAAEAD76ED8}"],
       "playoffSeed": 4,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -12562,12 +11460,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Zack",
                 "fullName": "Zack Wheeler",
                 "gamesPlayedByPosition": {
@@ -12638,16 +11531,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  9,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 9, 5, 12, 16, 17],
                 "firstName": "Oneil",
                 "fullName": "Oneil Cruz",
                 "gamesPlayedByPosition": {
@@ -12695,15 +11579,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17, 11],
                 "firstName": "Josh",
                 "fullName": "Josh Naylor",
                 "gamesPlayedByPosition": {
@@ -12751,12 +11627,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Nathan",
                 "fullName": "Nathan Eovaldi",
                 "gamesPlayedByPosition": {
@@ -12825,12 +11696,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Yoshinobu",
                 "fullName": "Yoshinobu Yamamoto",
                 "gamesPlayedByPosition": {
@@ -12907,12 +11773,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Emilio",
                 "fullName": "Emilio Pagan",
                 "gamesPlayedByPosition": {
@@ -12957,12 +11818,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Abner",
                 "fullName": "Abner Uribe",
                 "gamesPlayedByPosition": {
@@ -13007,14 +11863,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [3, 7, 19, 12, 16, 17],
                 "firstName": "Eugenio",
                 "fullName": "Eugenio Suarez",
                 "gamesPlayedByPosition": {
@@ -13062,12 +11911,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Merrill",
                 "fullName": "Merrill Kelly",
                 "gamesPlayedByPosition": {
@@ -13148,15 +11992,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [2, 6, 19, 11, 12, 16, 17],
                 "firstName": "Brandon",
                 "fullName": "Brandon Lowe",
                 "gamesPlayedByPosition": {
@@ -13205,13 +12041,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 15, 16, 17],
                 "firstName": "Grant",
                 "fullName": "Grant Holmes",
                 "gamesPlayedByPosition": {
@@ -13280,14 +12110,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17],
                 "firstName": "Michael",
                 "fullName": "Michael Busch",
                 "gamesPlayedByPosition": {
@@ -13335,15 +12158,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  12,
-                  16,
-                  17,
-                  10,
-                  9
-                ],
+                "eligibleSlots": [8, 5, 12, 16, 17, 10, 9],
                 "firstName": "Kyle",
                 "fullName": "Kyle Stowers",
                 "gamesPlayedByPosition": {
@@ -13392,12 +12207,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [0, 12, 16, 17],
                 "firstName": "Carson",
                 "fullName": "Carson Kelly",
                 "gamesPlayedByPosition": {
@@ -13444,15 +12254,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  10,
-                  5,
-                  12,
-                  16,
-                  17,
-                  9
-                ],
+                "eligibleSlots": [8, 10, 5, 12, 16, 17, 9],
                 "firstName": "Ramon",
                 "fullName": "Ramon Laureano",
                 "gamesPlayedByPosition": {
@@ -13501,12 +12303,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Gavin",
                 "fullName": "Gavin Williams",
                 "gamesPlayedByPosition": {
@@ -13584,12 +12381,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Brady",
                 "fullName": "Brady Singer",
                 "gamesPlayedByPosition": {
@@ -13667,17 +12459,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  12,
-                  16,
-                  17,
-                  3,
-                  7,
-                  19,
-                  11
-                ],
+                "eligibleSlots": [8, 5, 12, 16, 17, 3, 7, 19, 11],
                 "firstName": "Miguel",
                 "fullName": "Miguel Andujar",
                 "gamesPlayedByPosition": {
@@ -13727,12 +12509,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Gabe",
                 "fullName": "Gabe Speier",
                 "gamesPlayedByPosition": {
@@ -13777,18 +12554,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  3,
-                  6,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  1,
-                  11
-                ],
+                "eligibleSlots": [2, 3, 6, 7, 19, 12, 16, 17, 1, 11],
                 "firstName": "Lenyn",
                 "fullName": "Lenyn Sosa",
                 "gamesPlayedByPosition": {
@@ -13837,13 +12603,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 5, 12, 16, 17],
                 "firstName": "Isaac",
                 "fullName": "Isaac Collins",
                 "gamesPlayedByPosition": {
@@ -13893,13 +12653,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 15, 16, 17],
                 "firstName": "Drew",
                 "fullName": "Drew Rasmussen",
                 "gamesPlayedByPosition": {
@@ -13977,12 +12731,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Andrew",
                 "fullName": "Andrew Kittredge",
                 "gamesPlayedByPosition": {
@@ -14027,14 +12776,7 @@
                 "active": true,
                 "defaultPositionId": 10,
                 "droppable": true,
-                "eligibleSlots": [
-                  11,
-                  12,
-                  16,
-                  17,
-                  10,
-                  5
-                ],
+                "eligibleSlots": [11, 12, 16, 17, 10, 5],
                 "firstName": "Giancarlo",
                 "fullName": "Giancarlo Stanton",
                 "gamesPlayedByPosition": {
@@ -14149,9 +12891,7 @@
       "logo": "https://g.espncdn.com/lm-static/logo-packs/flb/Sheilds-of-Glory-L-Dopa/L-Dopa_FantasyBasebal-11.svg",
       "logoType": "VECTOR",
       "name": "Wolfey's Miracle Makers",
-      "owners": [
-        "{BB088355-F395-4C3E-B7E7-A2D475B80F8F}"
-      ],
+      "owners": ["{BB088355-F395-4C3E-B7E7-A2D475B80F8F}"],
       "playoffSeed": 6,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -14224,12 +12964,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [0, 12, 16, 17],
                 "firstName": "Will",
                 "fullName": "Will Smith",
                 "gamesPlayedByPosition": {
@@ -14277,14 +13012,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  9,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 9, 5, 12, 16, 17],
                 "firstName": "Jarren",
                 "fullName": "Jarren Duran",
                 "gamesPlayedByPosition": {
@@ -14333,12 +13061,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "David",
                 "fullName": "David Bednar",
                 "gamesPlayedByPosition": {
@@ -14384,13 +13107,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  9,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [9, 5, 12, 16, 17],
                 "firstName": "Michael",
                 "fullName": "Michael Harris II",
                 "gamesPlayedByPosition": {
@@ -14436,14 +13153,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "CJ",
                 "fullName": "CJ Abrams",
                 "gamesPlayedByPosition": {
@@ -14491,12 +13201,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Devin",
                 "fullName": "Devin Williams",
                 "gamesPlayedByPosition": {
@@ -14542,12 +13247,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Pablo",
                 "fullName": "Pablo Lopez",
                 "gamesPlayedByPosition": {
@@ -14608,12 +13308,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Hunter",
                 "fullName": "Hunter Greene",
                 "gamesPlayedByPosition": {
@@ -14679,12 +13374,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Felix",
                 "fullName": "Felix Bautista",
                 "gamesPlayedByPosition": {
@@ -14730,12 +13420,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Carlos",
                 "fullName": "Carlos Rodon",
                 "gamesPlayedByPosition": {
@@ -14815,14 +13500,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 5, 11, 12, 16, 17],
                 "firstName": "Christian",
                 "fullName": "Christian Yelich",
                 "gamesPlayedByPosition": {
@@ -14870,12 +13548,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Roki",
                 "fullName": "Roki Sasaki",
                 "gamesPlayedByPosition": {
@@ -14931,15 +13604,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": true,
-                "eligibleSlots": [
-                  10,
-                  5,
-                  11,
-                  12,
-                  16,
-                  17,
-                  8
-                ],
+                "eligibleSlots": [10, 5, 11, 12, 16, 17, 8],
                 "firstName": "Seiya",
                 "fullName": "Seiya Suzuki",
                 "gamesPlayedByPosition": {
@@ -14989,14 +13654,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [3, 7, 19, 12, 16, 17],
                 "firstName": "Matt",
                 "fullName": "Matt Chapman",
                 "gamesPlayedByPosition": {
@@ -15042,12 +13700,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Hunter",
                 "fullName": "Hunter Brown",
                 "gamesPlayedByPosition": {
@@ -15125,14 +13778,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [2, 6, 19, 12, 16, 17],
                 "firstName": "Brice",
                 "fullName": "Brice Turang",
                 "gamesPlayedByPosition": {
@@ -15180,14 +13826,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17],
                 "firstName": "Paul",
                 "fullName": "Paul Goldschmidt",
                 "gamesPlayedByPosition": {
@@ -15236,12 +13875,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [0, 12, 16, 17],
                 "firstName": "Keibert",
                 "fullName": "Keibert Ruiz",
                 "gamesPlayedByPosition": {
@@ -15288,14 +13922,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Geraldo",
                 "fullName": "Geraldo Perdomo",
                 "gamesPlayedByPosition": {
@@ -15340,12 +13967,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Walker",
                 "fullName": "Walker Buehler",
                 "gamesPlayedByPosition": {
@@ -15417,12 +14039,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Jose",
                 "fullName": "Jose Berrios",
                 "gamesPlayedByPosition": {
@@ -15500,17 +14117,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  3,
-                  4,
-                  6,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [2, 3, 4, 6, 7, 19, 12, 16, 17],
                 "firstName": "Matt",
                 "fullName": "Matt Shaw",
                 "gamesPlayedByPosition": {
@@ -15558,15 +14165,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 11, 12, 16, 17],
                 "firstName": "Vinnie",
                 "fullName": "Vinnie Pasquantino",
                 "gamesPlayedByPosition": {
@@ -15613,12 +14212,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Brandon",
                 "fullName": "Brandon Pfaadt",
                 "gamesPlayedByPosition": {
@@ -15747,9 +14341,7 @@
       "logo": "https://g.espncdn.com/lm-static/logo-packs/flb/team-kinney-martin-laksman/kinny_Baseball-01.svg",
       "logoType": "VECTOR",
       "name": "john's Finest Team",
-      "owners": [
-        "{987E572A-5B28-4A44-BE57-2A5B28EA44D4}"
-      ],
+      "owners": ["{987E572A-5B28-4A44-BE57-2A5B28EA44D4}"],
       "playoffSeed": 10,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -15822,14 +14414,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": false,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17],
                 "firstName": "Bryce",
                 "fullName": "Bryce Harper",
                 "gamesPlayedByPosition": {
@@ -15876,12 +14461,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Dylan",
                 "fullName": "Dylan Cease",
                 "gamesPlayedByPosition": {
@@ -15960,12 +14540,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Emmanuel",
                 "fullName": "Emmanuel Clase",
                 "gamesPlayedByPosition": {
@@ -16011,12 +14586,7 @@
                 "active": true,
                 "defaultPositionId": 10,
                 "droppable": true,
-                "eligibleSlots": [
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [11, 12, 16, 17],
                 "firstName": "Kyle",
                 "fullName": "Kyle Schwarber",
                 "gamesPlayedByPosition": {
@@ -16063,12 +14633,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Josh",
                 "fullName": "Josh Hader",
                 "gamesPlayedByPosition": {
@@ -16114,14 +14679,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [3, 7, 19, 12, 16, 17],
                 "firstName": "Junior",
                 "fullName": "Junior Caminero",
                 "gamesPlayedByPosition": {
@@ -16170,12 +14728,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Edwin",
                 "fullName": "Edwin Diaz",
                 "gamesPlayedByPosition": {
@@ -16221,12 +14774,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Tyler",
                 "fullName": "Tyler Glasnow",
                 "gamesPlayedByPosition": {
@@ -16291,14 +14839,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": true,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Bo",
                 "fullName": "Bo Bichette",
                 "gamesPlayedByPosition": {
@@ -16345,12 +14886,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Blake",
                 "fullName": "Blake Snell",
                 "gamesPlayedByPosition": {
@@ -16408,12 +14944,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Mason",
                 "fullName": "Mason Miller",
                 "gamesPlayedByPosition": {
@@ -16459,13 +14990,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 5, 12, 16, 17],
                 "firstName": "Steven",
                 "fullName": "Steven Kwan",
                 "gamesPlayedByPosition": {
@@ -16513,12 +15038,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Jose",
                 "fullName": "Jose Soriano",
                 "gamesPlayedByPosition": {
@@ -16595,16 +15115,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  8,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [2, 6, 19, 8, 5, 12, 16, 17],
                 "firstName": "Brendan",
                 "fullName": "Brendan Donovan",
                 "gamesPlayedByPosition": {
@@ -16653,12 +15164,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Jack",
                 "fullName": "Jack Flaherty",
                 "gamesPlayedByPosition": {
@@ -16736,12 +15242,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Matthew",
                 "fullName": "Matthew Boyd",
                 "gamesPlayedByPosition": {
@@ -16819,12 +15320,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Tyler",
                 "fullName": "Tyler Mahle",
                 "gamesPlayedByPosition": {
@@ -16886,15 +15382,7 @@
                 "active": true,
                 "defaultPositionId": 9,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  10,
-                  5,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [0, 10, 5, 12, 16, 17, 11],
                 "firstName": "Hunter",
                 "fullName": "Hunter Goodman",
                 "gamesPlayedByPosition": {
@@ -16941,13 +15429,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  9,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [9, 5, 12, 16, 17],
                 "firstName": "TJ",
                 "fullName": "TJ Friedl",
                 "gamesPlayedByPosition": {
@@ -16994,12 +15476,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Mitch",
                 "fullName": "Mitch Keller",
                 "gamesPlayedByPosition": {
@@ -17078,15 +15555,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [2, 4, 6, 19, 12, 16, 17],
                 "firstName": "Xander",
                 "fullName": "Xander Bogaerts",
                 "gamesPlayedByPosition": {
@@ -17134,15 +15603,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  9,
-                  5,
-                  12,
-                  16,
-                  17,
-                  10
-                ],
+                "eligibleSlots": [8, 9, 5, 12, 16, 17, 10],
                 "firstName": "Jake",
                 "fullName": "Jake Mangum",
                 "gamesPlayedByPosition": {
@@ -17190,12 +15651,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Hunter",
                 "fullName": "Hunter Gaddis",
                 "gamesPlayedByPosition": {
@@ -17240,14 +15696,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  9,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 9, 5, 12, 16, 17],
                 "firstName": "Chandler",
                 "fullName": "Chandler Simpson",
                 "gamesPlayedByPosition": {
@@ -17356,9 +15805,7 @@
       "logo": "https://www-tubefilter-com.cdn.ampproject.org/i/s/www.tubefilter.com/wp-content/uploads/2024/08/costco-guys.jpg",
       "logoType": "CUSTOM_VALID",
       "name": "We Bring The Boom-bas ",
-      "owners": [
-        "{7DD46215-145A-49A6-928A-2C124E71304D}"
-      ],
+      "owners": ["{7DD46215-145A-49A6-928A-2C124E71304D}"],
       "playoffSeed": 8,
       "points": 0.0,
       "pointsAdjusted": 0.0,
@@ -17431,12 +15878,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Tarik",
                 "fullName": "Tarik Skubal",
                 "gamesPlayedByPosition": {
@@ -17513,14 +15955,7 @@
                 "active": true,
                 "defaultPositionId": 6,
                 "droppable": false,
-                "eligibleSlots": [
-                  4,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [4, 6, 19, 12, 16, 17],
                 "firstName": "Elly",
                 "fullName": "Elly De La Cruz",
                 "gamesPlayedByPosition": {
@@ -17567,18 +16002,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  9,
-                  5,
-                  12,
-                  16,
-                  17,
-                  2,
-                  6
-                ],
+                "eligibleSlots": [3, 7, 19, 9, 5, 12, 16, 17, 2, 6],
                 "firstName": "Jazz",
                 "fullName": "Jazz Chisholm Jr.",
                 "gamesPlayedByPosition": {
@@ -17625,12 +16049,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Paul",
                 "fullName": "Paul Skenes",
                 "gamesPlayedByPosition": {
@@ -17709,13 +16128,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [0, 11, 12, 16, 17],
                 "firstName": "Adley",
                 "fullName": "Adley Rutschman",
                 "gamesPlayedByPosition": {
@@ -17763,14 +16176,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [3, 7, 19, 12, 16, 17],
                 "firstName": "Alex",
                 "fullName": "Alex Bregman",
                 "gamesPlayedByPosition": {
@@ -17817,13 +16223,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [8, 5, 12, 16, 17],
                 "firstName": "Randy",
                 "fullName": "Randy Arozarena",
                 "gamesPlayedByPosition": {
@@ -17870,17 +16270,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  2,
-                  6,
-                  7,
-                  19,
-                  11,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [1, 2, 6, 7, 19, 11, 12, 16, 17],
                 "firstName": "Luis",
                 "fullName": "Luis Arraez",
                 "gamesPlayedByPosition": {
@@ -17929,14 +16319,7 @@
                 "active": true,
                 "defaultPositionId": 4,
                 "droppable": true,
-                "eligibleSlots": [
-                  2,
-                  6,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [2, 6, 19, 12, 16, 17],
                 "firstName": "Nico",
                 "fullName": "Nico Hoerner",
                 "gamesPlayedByPosition": {
@@ -17983,15 +16366,7 @@
                 "active": true,
                 "defaultPositionId": 3,
                 "droppable": true,
-                "eligibleSlots": [
-                  1,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [1, 7, 19, 12, 16, 17, 11],
                 "firstName": "Spencer",
                 "fullName": "Spencer Torkelson",
                 "gamesPlayedByPosition": {
@@ -18037,12 +16412,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Carlos",
                 "fullName": "Carlos Estevez",
                 "gamesPlayedByPosition": {
@@ -18088,16 +16458,7 @@
                 "active": true,
                 "defaultPositionId": 8,
                 "droppable": true,
-                "eligibleSlots": [
-                  9,
-                  5,
-                  12,
-                  16,
-                  17,
-                  10,
-                  11,
-                  8
-                ],
+                "eligibleSlots": [9, 5, 12, 16, 17, 10, 11, 8],
                 "firstName": "Roman",
                 "fullName": "Roman Anthony",
                 "gamesPlayedByPosition": {
@@ -18145,12 +16506,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Trevor",
                 "fullName": "Trevor Rogers",
                 "gamesPlayedByPosition": {
@@ -18214,12 +16570,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "Kyle",
                 "fullName": "Kyle Finnegan",
                 "gamesPlayedByPosition": {
@@ -18265,12 +16616,7 @@
                 "active": true,
                 "defaultPositionId": 11,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  15,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 15, 16, 17],
                 "firstName": "JoJo",
                 "fullName": "JoJo Romero",
                 "gamesPlayedByPosition": {
@@ -18315,12 +16661,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Hurston",
                 "fullName": "Hurston Waldrep",
                 "gamesPlayedByPosition": {
@@ -18376,14 +16717,7 @@
                 "active": true,
                 "defaultPositionId": 7,
                 "droppable": true,
-                "eligibleSlots": [
-                  8,
-                  5,
-                  12,
-                  16,
-                  17,
-                  11
-                ],
+                "eligibleSlots": [8, 5, 12, 16, 17, 11],
                 "firstName": "Lourdes",
                 "fullName": "Lourdes Gurriel Jr.",
                 "gamesPlayedByPosition": {
@@ -18430,12 +16764,7 @@
                 "active": true,
                 "defaultPositionId": 2,
                 "droppable": true,
-                "eligibleSlots": [
-                  0,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [0, 12, 16, 17],
                 "firstName": "J.T.",
                 "fullName": "J.T. Realmuto",
                 "gamesPlayedByPosition": {
@@ -18483,14 +16812,7 @@
                 "active": true,
                 "defaultPositionId": 5,
                 "droppable": true,
-                "eligibleSlots": [
-                  3,
-                  7,
-                  19,
-                  12,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [3, 7, 19, 12, 16, 17],
                 "firstName": "Ke'Bryan",
                 "fullName": "Ke'Bryan Hayes",
                 "gamesPlayedByPosition": {
@@ -18538,12 +16860,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Emmet",
                 "fullName": "Emmet Sheehan",
                 "gamesPlayedByPosition": {
@@ -18602,12 +16919,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Michael",
                 "fullName": "Michael McGreevy",
                 "gamesPlayedByPosition": {
@@ -18670,12 +16982,7 @@
                 "active": true,
                 "defaultPositionId": 1,
                 "droppable": true,
-                "eligibleSlots": [
-                  13,
-                  14,
-                  16,
-                  17
-                ],
+                "eligibleSlots": [13, 14, 16, 17],
                 "firstName": "Max",
                 "fullName": "Max Scherzer",
                 "gamesPlayedByPosition": {

@@ -24,7 +24,7 @@ def test_batter_model_validation(sample_batter):
 
     assert batter.name == sample_batter["name"]
     assert batter.playerid == sample_batter["playerid"]
-    assert batter.projection is not None
+    assert batter.projections is not None
 
 
 def test_pitcher_model_validation(sample_pitcher):
@@ -33,7 +33,7 @@ def test_pitcher_model_validation(sample_pitcher):
 
     assert pitcher.name == sample_pitcher["name"]
     assert pitcher.playerid == sample_pitcher["playerid"]
-    assert pitcher.projection is not None
+    assert pitcher.projections is not None
 
 
 def test_batter_model_with_all_data(fangraphs_batter_data):
@@ -56,30 +56,30 @@ def test_batter_projection_fields(sample_batter):
     """Test that batter projection fields are accessible."""
     batter = FangraphsBatterModel.model_validate(sample_batter)
 
-    if batter.projection:
+    if batter.projections:
         # Test common fields
-        assert hasattr(batter.projection, "games")
-        assert hasattr(batter.projection, "war")
-        assert hasattr(batter.projection, "fpts")
+        assert hasattr(batter.projections, "games")
+        assert hasattr(batter.projections, "war")
+        assert hasattr(batter.projections, "fpts")
         # Test batter-specific fields
-        assert hasattr(batter.projection, "pa")
-        assert hasattr(batter.projection, "hr")
-        assert hasattr(batter.projection, "avg")
+        assert hasattr(batter.projections, "pa")
+        assert hasattr(batter.projections, "hr")
+        assert hasattr(batter.projections, "avg")
 
 
 def test_pitcher_projection_fields(sample_pitcher):
     """Test that pitcher projection fields are accessible."""
     pitcher = FangraphsPitcherModel.model_validate(sample_pitcher)
 
-    if pitcher.projection:
+    if pitcher.projections:
         # Test common fields
-        assert hasattr(pitcher.projection, "games")
-        assert hasattr(pitcher.projection, "war")
-        assert hasattr(pitcher.projection, "fpts")
+        assert hasattr(pitcher.projections, "games")
+        assert hasattr(pitcher.projections, "war")
+        assert hasattr(pitcher.projections, "fpts")
         # Test pitcher-specific fields
-        assert hasattr(pitcher.projection, "innings_pitched")
-        assert hasattr(pitcher.projection, "era")
-        assert hasattr(pitcher.projection, "whip")
+        assert hasattr(pitcher.projections, "innings_pitched")
+        assert hasattr(pitcher.projections, "era")
+        assert hasattr(pitcher.projections, "whip")
 
 
 def test_batter_model_with_invalid_data():

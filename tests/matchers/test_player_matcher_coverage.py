@@ -1,11 +1,9 @@
 """Additional tests to achieve 100% coverage of player_matcher.py."""
 
-from player_universe_trx.matchers.player_matcher import (
-    PlayerMatcher,
-    apply_matches,
-    MatchMethod,
-    MatchConfidence,
-)
+from player_universe_trx.matchers.models import MatchConfidence, MatchMethod
+from player_universe_trx.matchers.player_matcher import PlayerMatcher
+from player_universe_trx.matchers.transformation import apply_matches
+from player_universe_trx.matchers.utils import extract_first_name, extract_last_name
 from player_universe_trx.models.espn import EspnBatterModel, EspnPitcherModel
 from player_universe_trx.models.espn.batter import EspnBatterStatsGroupModel
 from player_universe_trx.models.espn.pitcher import EspnPitcherStatsGroupModel
@@ -387,15 +385,17 @@ def test_filter_by_team_with_espn_mapping():
 
 
 def test_static_method_extract_last_name_empty():
-    """Test _extract_last_name with empty string."""
-    assert PlayerMatcher._extract_last_name("") == ""
-    assert PlayerMatcher._extract_last_name(None) == ""
+    """Test extract_last_name with empty string."""
+    assert extract_last_name("") == ""
+    assert extract_last_name(None) == ""
+    assert extract_last_name("   ") == ""  # Whitespace only
 
 
 def test_static_method_extract_first_name_empty():
-    """Test _extract_first_name with empty string."""
-    assert PlayerMatcher._extract_first_name("") == ""
-    assert PlayerMatcher._extract_first_name(None) == ""
+    """Test extract_first_name with empty string."""
+    assert extract_first_name("") == ""
+    assert extract_first_name(None) == ""
+    assert extract_first_name("   ") == ""  # Whitespace only
 
 
 def test_no_last_name_no_candidates():
