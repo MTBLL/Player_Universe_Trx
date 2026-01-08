@@ -18,7 +18,7 @@ class LeagueLoader:
     Loads league JSON files and validates them against ESPN league models.
     """
 
-    DEFAULT_RESOURCES_PATH = Path("resources")
+    DEFAULT_RESOURCES_PATH = Path("/Users/Shared/BaseballHQ/resources/extract")
 
     def __init__(
         self, resources_path: Optional[str] = None, year: Optional[int] = None

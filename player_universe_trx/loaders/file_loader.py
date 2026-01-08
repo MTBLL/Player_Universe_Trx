@@ -261,7 +261,7 @@ class DataLoader:
 
     def get_savant_batters_file(self) -> Path:
         """
-        Get the most recent Savant batters file for the configured year.
+        Get the most recent Savant batters file (year-indifferent).
 
         Returns:
             Path to the Savant batters file
@@ -269,19 +269,20 @@ class DataLoader:
         Raises:
             FileNotFoundError: If no matching file is found
         """
-        pattern = f"savant_batters_{self.year}_\\d{{2}}_\\d{{2}}_\\d{{4}}\\.json"
+        # Year-indifferent pattern - just find the latest file
+        pattern = r"savant_batters_\d{4}_\d{2}_\d{2}_\d{4}\.json"
 
         file_path = self._find_latest_file(pattern)
         if not file_path:
             raise FileNotFoundError(
-                f"No Savant batters file found for year {self.year} in {self.resources_path}"
+                f"No Savant batters file found in {self.resources_path}"
             )
 
         return file_path
 
     def get_savant_pitchers_file(self) -> Path:
         """
-        Get the most recent Savant pitchers file for the configured year.
+        Get the most recent Savant pitchers file (year-indifferent).
 
         Returns:
             Path to the Savant pitchers file
@@ -289,12 +290,13 @@ class DataLoader:
         Raises:
             FileNotFoundError: If no matching file is found
         """
-        pattern = f"savant_pitchers_{self.year}_\\d{{2}}_\\d{{2}}_\\d{{4}}\\.json"
+        # Year-indifferent pattern - just find the latest file
+        pattern = r"savant_pitchers_\d{4}_\d{2}_\d{2}_\d{4}\.json"
 
         file_path = self._find_latest_file(pattern)
         if not file_path:
             raise FileNotFoundError(
-                f"No Savant pitchers file found for year {self.year} in {self.resources_path}"
+                f"No Savant pitchers file found in {self.resources_path}"
             )
 
         return file_path

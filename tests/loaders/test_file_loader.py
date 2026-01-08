@@ -129,14 +129,11 @@ def test_get_file_methods(fixtures_dir):
         FileNotFoundError, match="No FanGraphs pitchers file found for year 2099"
     ):
         loader_no_files.get_fangraphs_pitchers_file()
-    with pytest.raises(
-        FileNotFoundError, match="No Savant batters file found for year 2099"
-    ):
-        loader_no_files.get_savant_batters_file()
-    with pytest.raises(
-        FileNotFoundError, match="No Savant pitchers file found for year 2099"
-    ):
-        loader_no_files.get_savant_pitchers_file()
+
+    # Savant loaders are year-indifferent, so they will find files from any year
+    # Test that they succeed even when configured with a year that doesn't match
+    assert loader_no_files.get_savant_batters_file().name.startswith("savant_batters_")
+    assert loader_no_files.get_savant_pitchers_file().name.startswith("savant_pitchers_")
 
 
 def test_load_methods(fixtures_dir):
