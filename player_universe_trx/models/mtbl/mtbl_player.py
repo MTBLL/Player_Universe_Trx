@@ -43,8 +43,8 @@ class MtblPlayerModel(BaseModel):
 
     # Team information
     pro_team: Optional[str] = Field(None, alias="proTeam")
-    fantasy_team: Optional[str] = Field(None, alias="fantasyTeam")
-    draft_value: Optional[str] = Field(None, alias="draftValue")
+    fantasy_team: Optional[int] = Field(None, alias="fantasyTeam")
+    draft_value: Optional[float] = Field(None, alias="draftValue")
 
     # Status information
     injury_status: Optional[str] = Field(None, alias="injuryStatus")

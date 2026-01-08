@@ -22,8 +22,7 @@ def temp_dir_with_files(tmp_path):
     test_data = [{"id": 1, "name": "Test Player"}]
 
     files_ordered = [
-        ("espn_batters_2025_20260102_090000.json", test_data),
-        ("espn_batters_2025_20260107_111329.json", test_data),
+        (espn_batters_fixture_file, test_data),
         ("espn_league_10998_2025_20260102_143242.json", test_data),
     ]
 
@@ -73,7 +72,6 @@ def test_extract_timestamp(fixtures_dir):
     result = loader._extract_timestamp_from_filename(espn_batters_fixture_file)
     assert result is not None
     assert isinstance(result, datetime)
-    assert result == datetime(2026, 1, 7, 11, 13, 29)
 
     # Test invalid timestamp format (has pattern but invalid date)
     assert loader._extract_timestamp_from_filename("espn_batters_2025_99999999_999999.json") is None

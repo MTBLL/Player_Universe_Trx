@@ -6,8 +6,8 @@ import pytest
 
 from player_universe_trx.models.mtbl import MtblPlayerModel
 
-espn_batters_fixture_file = "espn_batters_2025_20260107_111329.json"
-espn_pitchers_fixture_file = "espn_pitchers_2025_20260107_111329.json"
+espn_batters_fixture_file = "espn_batters_2025_20260108_095403.json"
+espn_pitchers_fixture_file = "espn_pitchers_2025_20260108_095403.json"
 
 
 @pytest.fixture
@@ -71,27 +71,27 @@ def player_models(espn_player_data) -> List[MtblPlayerModel]:
 @pytest.fixture
 def corbin_carroll_espn(espn_player_data) -> Dict[str, Any]:
     """Fixture providing Corbin Carroll's ESPN data."""
-    result = espn_player_data.filter(name="Corbin Carroll").first()
-    if result:
-        return result
+    for player in espn_player_data:
+        if player.get("name") == "Corbin Carroll":
+            return player
     raise ValueError("Corbin Carroll not found in ESPN data")
 
 
 @pytest.fixture
 def corbin_carroll_fangraphs(fangraphs_player_data) -> Dict[str, Any]:
     """Fixture providing Corbin Carroll's FanGraphs data."""
-    result = fangraphs_player_data.filter(slug="corbin-carroll").first()
-    if result:
-        return result
+    for player in fangraphs_player_data:
+        if player.get("slug") == "corbin-carroll":
+            return player
     raise ValueError("Corbin Carroll not found in FanGraphs data")
 
 
 @pytest.fixture
 def corbin_carroll_savant(savant_player_data) -> Dict[str, Any]:
     """Fixture providing Corbin Carroll's Savant data."""
-    result = savant_player_data.filter(slug="corbin-carroll").first()
-    if result:
-        return result
+    for player in savant_player_data:
+        if player.get("slug") == "corbin-carroll":
+            return player
     raise ValueError("Corbin Carroll not found in Savant data")
 
 @pytest.fixture

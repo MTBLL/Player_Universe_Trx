@@ -221,6 +221,13 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
 
         # Convert ESPN player to base MtblPlayerModel
         espn_data: Dict[str, Any] = result.espn_player.model_dump(exclude_none=True)
+
+        # Map ESPN fields to MTBL fields
+        if "on_team_id" in espn_data:
+            espn_data["fantasy_team"] = espn_data.pop("on_team_id")
+        if "draft_auction_value" in espn_data:
+            espn_data["draft_value"] = espn_data.pop("draft_auction_value")
+
         base_player: MtblPlayerModel = MtblPlayerModel.model_validate(espn_data)
 
         # Handle ambiguous matches
