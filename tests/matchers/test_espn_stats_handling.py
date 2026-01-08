@@ -8,8 +8,8 @@ These tests verify that ESPN stats are correctly structured:
 
 from player_universe_trx.matchers.player_matcher import PlayerMatcher, apply_matches
 from player_universe_trx.models.espn import EspnBatterModel, EspnPitcherModel
-from player_universe_trx.models.espn.batter import EspnBatterStats
-from player_universe_trx.models.espn.pitcher import EspnPitcherStats
+from player_universe_trx.models.espn.batter import EspnBatterStatsGroupModel
+from player_universe_trx.models.espn.pitcher import EspnPitcherStatsGroupModel
 from player_universe_trx.models.espn.stats import EspnBatterStatsModel, EspnPitcherStatsModel
 from player_universe_trx.models.fangraphs import FangraphsBatterModel, FangraphsPitcherModel
 from player_universe_trx.models.fangraphs.stats import FangraphsBatterStatsModel, FangraphsPitcherStatsModel
@@ -29,7 +29,7 @@ def test_espn_batter_current_season_only():
         last_name="Judge",
         slug="aaron-judge",
         pro_team="NYY",
-        stats=EspnBatterStats(
+        stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(
                 AB=500,
                 H=150,
@@ -73,7 +73,7 @@ def test_espn_batter_with_nested_container():
         last_name="Judge",
         slug="aaron-judge",
         pro_team="NYY",
-        stats=EspnBatterStats(
+        stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(AB=500, H=150, HR=30),
             projections=EspnBatterStatsModel(AB=550, H=165, HR=35),
             last_7_games=EspnBatterStatsModel(AB=28, H=10, HR=3),
@@ -124,7 +124,7 @@ def test_espn_batter_both_current_and_nested():
         last_name="Judge",
         slug="aaron-judge",
         pro_team="NYY",
-        stats=EspnBatterStats(
+        stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(AB=500, H=150, HR=30),
             projections=EspnBatterStatsModel(AB=550, H=165, HR=35)
         )
@@ -167,7 +167,7 @@ def test_espn_pitcher_current_season_only():
         last_name="Cole",
         slug="gerrit-cole",
         pro_team="NYY",
-        stats=EspnPitcherStats(
+        stats=EspnPitcherStatsGroupModel(
             current_season=EspnPitcherStatsModel(
                 W=15,
                 L=6,
@@ -211,7 +211,7 @@ def test_espn_pitcher_with_nested_container():
         last_name="Cole",
         slug="gerrit-cole",
         pro_team="NYY",
-        stats=EspnPitcherStats(
+        stats=EspnPitcherStatsGroupModel(
             current_season=EspnPitcherStatsModel(W=15, K=215, ERA=3.15),
             projections=EspnPitcherStatsModel(W=16, K=225, ERA=3.05),
             last_7_games=EspnPitcherStatsModel(W=2, K=25, ERA=2.50),
@@ -257,7 +257,7 @@ def test_espn_pitcher_both_current_and_nested():
         last_name="Cole",
         slug="gerrit-cole",
         pro_team="NYY",
-        stats=EspnPitcherStats(
+        stats=EspnPitcherStatsGroupModel(
             current_season=EspnPitcherStatsModel(W=15, ERA=3.15),
             projections=EspnPitcherStatsModel(W=16, ERA=3.05)
         )
@@ -298,7 +298,7 @@ def test_all_sources_batters_matched():
         last_name="Judge",
         slug="aaron-judge",
         pro_team="NYY",
-        stats=EspnBatterStats(
+        stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(AB=500, H=150, HR=30, RBI=85),
             projections=EspnBatterStatsModel(AB=550, H=165, HR=35, RBI=95),
             last_7_games=EspnBatterStatsModel(AB=28, HR=3)
@@ -374,7 +374,7 @@ def test_all_sources_pitchers_matched():
         last_name="Cole",
         slug="gerrit-cole",
         pro_team="NYY",
-        stats=EspnPitcherStats(
+        stats=EspnPitcherStatsGroupModel(
             current_season=EspnPitcherStatsModel(W=15, K=215, ERA=3.15),
             projections=EspnPitcherStatsModel(W=16, K=225, ERA=3.05),
             last_30_games=EspnPitcherStatsModel(W=7, K=105)
@@ -449,7 +449,7 @@ def test_espn_stats_unmatched_players():
         last_name="Player",
         slug="unknown-player",
         pro_team="NYY",
-        stats=EspnBatterStats(
+        stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(AB=100, H=25, HR=5),
             projections=EspnBatterStatsModel(AB=400, H=100, HR=20)
         )
@@ -514,7 +514,7 @@ def test_espn_stats_empty_container():
         last_name="Judge",
         slug="aaron-judge",
         pro_team="NYY",
-        stats=EspnBatterStats(
+        stats=EspnBatterStatsGroupModel(
             current_season=None,
             projections=None,
             last_7_games=None,
@@ -555,7 +555,7 @@ def test_access_nested_espn_projections():
         last_name="Judge",
         slug="aaron-judge",
         pro_team="NYY",
-        stats=EspnBatterStats(
+        stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(AB=500, AVG=0.300),
             projections=EspnBatterStatsModel(AB=550, AVG=0.310),
             last_7_games=EspnBatterStatsModel(AB=28, AVG=0.357),

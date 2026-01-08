@@ -7,8 +7,8 @@ from player_universe_trx.matchers.player_matcher import (
     MatchConfidence,
 )
 from player_universe_trx.models.espn import EspnBatterModel, EspnPitcherModel
-from player_universe_trx.models.espn.batter import EspnBatterStats
-from player_universe_trx.models.espn.pitcher import EspnPitcherStats
+from player_universe_trx.models.espn.batter import EspnBatterStatsGroupModel
+from player_universe_trx.models.espn.pitcher import EspnPitcherStatsGroupModel
 from player_universe_trx.models.espn.stats import EspnBatterStatsModel, EspnPitcherStatsModel
 from player_universe_trx.models.fangraphs import FangraphsBatterModel, FangraphsPitcherModel
 from player_universe_trx.models.savant import SavantBatterModel, SavantPitcherModel
@@ -459,7 +459,7 @@ def test_apply_matches_espn_stats_batters_matched():
         last_name="Judge",
         slug="aaron-judge",
         pro_team="NYY",
-        stats=EspnBatterStats(
+        stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(AB=500, H=150, HR=30)
         )
     )
@@ -494,7 +494,7 @@ def test_apply_matches_espn_stats_pitchers_matched():
         last_name="Cole",
         slug="gerrit-cole",
         pro_team="NYY",
-        stats=EspnPitcherStats(
+        stats=EspnPitcherStatsGroupModel(
             current_season=EspnPitcherStatsModel(W=15, K=215, ERA=3.15)
         )
     )
@@ -529,7 +529,7 @@ def test_apply_matches_espn_stats_batters_unmatched():
         last_name="Player",
         slug="unknown-player",
         pro_team="NYY",
-        stats=EspnBatterStats(
+        stats=EspnBatterStatsGroupModel(
             current_season=EspnBatterStatsModel(AB=100, H=25, HR=5)
         )
     )
@@ -556,7 +556,7 @@ def test_apply_matches_espn_stats_pitchers_unmatched():
         last_name="Pitcher",
         slug="unknown-pitcher",
         pro_team="NYY",
-        stats=EspnPitcherStats(
+        stats=EspnPitcherStatsGroupModel(
             current_season=EspnPitcherStatsModel(W=5, K=50, ERA=4.50)
         )
     )

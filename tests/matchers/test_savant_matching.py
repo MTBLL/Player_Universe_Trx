@@ -90,7 +90,9 @@ def test_savant_no_match_when_xmlbam_id_missing():
         pitches=1000,
         total_pitches=1000,
         pitch_percent=100.0,
-        exit_velo=95.4,
+        stats=SavantBatterStatsModel(
+            exit_velo=95.4,
+        ),
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player], [savant_player])

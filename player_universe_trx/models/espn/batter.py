@@ -6,7 +6,7 @@ from player_universe_trx.models.espn.espn_player import EspnPlayerModel
 from player_universe_trx.models.espn.stats import EspnBatterStatsModel
 
 
-class EspnBatterStats(BaseModel):
+class EspnBatterStatsGroupModel(BaseModel):
     """Container for all batter stat periods."""
 
     projections: Optional[EspnBatterStatsModel] = None
@@ -20,4 +20,4 @@ class EspnBatterStats(BaseModel):
 class EspnBatterModel(EspnPlayerModel):
     """ESPN batter model with batter-specific statistics."""
 
-    stats: Optional[EspnBatterStats] = None
+    stats: Optional[EspnBatterStatsGroupModel] = None

@@ -153,7 +153,6 @@ def test_batter_stats_all_sources_combined():
             OBP=0.378,
             SLG=0.545,
             OPS=0.923,
-
             # Savant sabermetrics
             exit_velo=93.2,
             launch_angle=14.5,
@@ -215,7 +214,6 @@ def test_batter_stats_partial_data_from_each_source():
             # Partial ESPN
             AB=450,
             HR=25,
-
             # Partial Savant
             exit_velo=91.0,
             barrel_rate=10.5,
@@ -251,7 +249,6 @@ def test_batter_stats_expected_vs_actual_comparison():
             # Actual (ESPN)
             AVG=0.275,
             SLG=0.480,
-
             # Expected (Savant)
             xAVG=0.290,
             xSLG=0.510,
@@ -294,7 +291,9 @@ def test_batter_stats_current_vs_projected_comparison():
 
     # Can calculate pace: (15 / 250) * 520 = 31.2 HR pace
     if stats.current_season.AB and stats.current_season.AB > 0:
-        pace = (stats.current_season.HR / stats.current_season.AB) * stats.projections.ab
+        pace = (
+            stats.current_season.HR / stats.current_season.AB
+        ) * stats.projections.ab
         assert pace == pytest.approx(31.2, abs=0.1)
 
 
@@ -332,7 +331,6 @@ def test_batter_stats_plate_discipline_metrics():
             B_BB=65,
             B_SO=120,
             PA=550,
-
             # Savant plate discipline
             swing_miss_pct=24.5,
             swings=450,

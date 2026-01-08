@@ -8,9 +8,9 @@ from typing_extensions import TYPE_CHECKING
 
 from player_universe_trx.models.espn import (
     EspnBatterModel,
-    EspnBatterStats,
+    EspnBatterStatsGroupModel,
     EspnPitcherModel,
-    EspnPitcherStats,
+    EspnPitcherStatsGroupModel,
     EspnPlayerModel,
 )
 from player_universe_trx.models.fangraphs import (
@@ -855,7 +855,7 @@ def _create_player_model(
     base_player: MtblPlayerModel,
     stats_dict: Dict[str, Any],
     projections_dict: Dict[str, Any],
-    espn_stats_container: Optional[EspnBatterStats | EspnPitcherStats],
+    espn_stats_container: Optional[EspnBatterStatsGroupModel | EspnPitcherStatsGroupModel],
     is_batter: bool,
 ) -> MtblPlayerModel:
     """Create typed player model (batter or pitcher) with stats.
@@ -876,14 +876,18 @@ def _create_player_model(
         batter_stats: Optional[MtblBatterStatsModel] = None
         if stats_dict or projections_dict or espn_stats_container:
             # Type narrow the container for batters
-            batter_container: Optional[EspnBatterStats] = (
-                espn_stats_container if isinstance(espn_stats_container, EspnBatterStats) else None
+            batter_container: Optional[EspnBatterStatsGroupModel] = (
+                espn_stats_container
+                if isinstance(espn_stats_container, EspnBatterStatsGroupModel)
+                else None
             )
             batter_current_season: Optional[MtblBatterSeasonStatsModel] = (
                 MtblBatterSeasonStatsModel(**stats_dict) if stats_dict else None
             )
             batter_projections: Optional[FangraphsBatterStatsModel] = (
-                FangraphsBatterStatsModel(**projections_dict) if projections_dict else None
+                FangraphsBatterStatsModel(**projections_dict)
+                if projections_dict
+                else None
             )
             batter_stats = MtblBatterStatsModel(
                 current_season=batter_current_season,
@@ -895,14 +899,18 @@ def _create_player_model(
         pitcher_stats: Optional[MtblPitcherStatsModel] = None
         if stats_dict or projections_dict or espn_stats_container:
             # Type narrow the container for pitchers
-            pitcher_container: Optional[EspnPitcherStats] = (
-                espn_stats_container if isinstance(espn_stats_container, EspnPitcherStats) else None
+            pitcher_container: Optional[EspnPitcherStatsGroupModel] = (
+                espn_stats_container
+                if isinstance(espn_stats_container, EspnPitcherStatsGroupModel)
+                else None
             )
             pitcher_current_season: Optional[MtblPitcherSeasonStatsModel] = (
                 MtblPitcherSeasonStatsModel(**stats_dict) if stats_dict else None
             )
             pitcher_projections: Optional[FangraphsPitcherStatsModel] = (
-                FangraphsPitcherStatsModel(**projections_dict) if projections_dict else None
+                FangraphsPitcherStatsModel(**projections_dict)
+                if projections_dict
+                else None
             )
             pitcher_stats = MtblPitcherStatsModel(
                 current_season=pitcher_current_season,
