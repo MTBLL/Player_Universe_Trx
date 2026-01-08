@@ -1,11 +1,14 @@
 [project]
 name = "player-universe-trx"
-version = "0.2.0"
+version = "0.3.0"
 description = "Player Universe Transformer"
 authors = [{ name = "Taylor \"TP\" Pubins", email = "tpubz@icloud.com" }]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = ["pydantic (>=2.11.4,<3.0.0)"]
+
+[project.scripts]
+universe_trx = "player_universe_trx.__main__:main"
 
 [tool.mypy]
 python_version = "3.13"
@@ -35,4 +38,5 @@ testpaths = ["tests"]
 [tool.coverage.run]
 omit = [
     "tests/*",
+    "player_universe_trx/__main__.py"
 ]

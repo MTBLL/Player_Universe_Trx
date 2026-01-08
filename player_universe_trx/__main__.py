@@ -1,11 +1,14 @@
 import logging
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from player_universe_trx.loaders import DataLoader
+from player_universe_trx.loaders.league_loader import LeagueLoader
 from player_universe_trx.matchers.player_matcher import (
     PlayerMatcher,
     apply_matches,
 )
+from player_universe_trx.transformers.league_transformer import LeagueTransformer
+from player_universe_trx.utils.league_output import save_league_results
 from player_universe_trx.utils.model_utils import (
     create_espn_batter_models,
     create_espn_pitcher_models,
@@ -22,24 +25,86 @@ logging.basicConfig(
 )
 logger = logging.getLogger("player_universe_trx")
 
+OUTPUT_DIR = "/Users/Shared/BaseballHQ/resources/transform"
+RESOURCE_DIR = "/Users/Shared/BaseballHQ/resources/extract"
 
-def main(
+def transform_league_data(
+    league_id: int,
     resources_path: Optional[str] = None,
     year: Optional[int] = None,
     output_dir: Optional[str] = None,
 ) -> Dict:
     """
+    Transform ESPN league data to MTBL format.
+
+    Args:
+        league_id: ESPN league ID
+        resources_path: Path to directory containing league files
+        year: Year for league data
+        output_dir: Directory to save output files (defaults to './output')
+
+    Returns:
+        Dictionary with file paths and summary info
+    """
+    output_dir = output_dir or "./output"
+    logger.info(f"Starting league transformation for league {league_id}")
+
+    # Initialize league loader
+    loader = LeagueLoader(resources_path=resources_path, year=year)
+
+    # Load ESPN league data
+    logger.info(f"Loading league {league_id} data...")
+    espn_league = loader.load_league(league_id)
+
+    # Transform to MTBL format
+    logger.info("Transforming league data...")
+    league_summary = LeagueTransformer.create_league_summary(espn_league)
+    team_rosters = LeagueTransformer.transform_league(espn_league)
+    schedule = LeagueTransformer.transform_schedule(espn_league)
+
+    # Save results
+    logger.info("Saving league transformation results...")
+    results = save_league_results(
+        league_summary=league_summary,
+        team_rosters=team_rosters,
+        schedule=schedule,
+        output_dir=output_dir,
+    )
+
+    logger.info("=" * 60)
+    logger.info("League transformation complete!")
+    logger.info("=" * 60)
+    logger.info(f"League summary: {results['league_file']}")
+    logger.info(f"Team rosters: {results['num_teams']} files")
+    logger.info(f"Schedule: {results.get('schedule_file', 'N/A')}")
+    logger.info("")
+
+    return results
+
+
+def main(
+    resources_path: Optional[str] = None,
+    year: Optional[int] = None,
+    output_dir: Optional[str] = None,
+    league_id: Optional[int] = None,
+) -> Dict[str, Any]:
+    """
     Main entry point for the player universe transformation pipeline.
 
     Args:
         resources_path: Path to directory containing input files (defaults to DataLoader.DEFAULT_RESOURCES_PATH)
-        year: Year for data files (defaults to current year)
-        output_dir: Directory to save output files (defaults to './output')
+        year: Year for data files (defaults to 2025)
+        output_dir: Directory to save output files (defaults to OUTPUT_DIR constant)
+        league_id: Optional ESPN league ID to transform league data (defaults to 10998)
 
     Returns:
-        Dictionary with counts of matched, unmatched, and ambiguous players
+        Dictionary with counts of matched, unmatched, and ambiguous players, and optionally league results
     """
-    output_dir = output_dir or "./output"
+    # Set defaults
+    year = year or 2025
+    output_dir = output_dir or OUTPUT_DIR
+    resources_path = resources_path or RESOURCE_DIR
+    league_id = league_id if league_id is not None else 10998
 
     logger.info("Starting player universe transformation")
 
@@ -129,11 +194,27 @@ def main(
     logger.info("Player universe transformation complete")
     logger.info("=" * 60)
 
-    return {
+    result: Dict[str, Any] = {
         "matched": len(matched_players),
         "unmatched": len(unmatched_players),
         "ambiguous": len(ambiguous_players),
     }
+
+    # Transform league data if league_id is provided
+    if league_id is not None:
+        logger.info("")
+        logger.info("=" * 60)
+        logger.info("Starting league transformation...")
+        logger.info("=" * 60)
+        league_results = transform_league_data(
+            league_id=league_id,
+            resources_path=resources_path,
+            year=year,
+            output_dir=output_dir,
+        )
+        result.update({"league": league_results})
+
+    return result
 
 
 def _report_match_statistics(batter_results, pitcher_results):
@@ -179,5 +260,6 @@ def _report_match_statistics(batter_results, pitcher_results):
 
 
 if __name__ == "__main__":
-    # Default to 2025 for now since that's the latest data we have
-    main(year=2025, output_dir=".temp")
+    # Defaults are set in main() function
+    # year=2025, output_dir=OUTPUT_DIR, resources_path=RESOURCE_DIR, league_id=10998
+    main()
