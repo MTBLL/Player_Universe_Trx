@@ -311,7 +311,7 @@ def test_all_sources_batters_matched():
         slug="aaron-judge",
         team="NYY",
         xmlbam_id=592450,
-        projections=FangraphsBatterStatsModel(ab=575, h=170, hr=38, rbi=100, avg=0.296),
+        projection=FangraphsBatterStatsModel(ab=575, h=170, hr=38, rbi=100, avg=0.296),
     )
 
     savant_player = SavantBatterModel(
@@ -378,7 +378,7 @@ def test_all_sources_pitchers_matched():
         slug="gerrit-cole",
         team="NYY",
         xmlbam_id=543037,
-        projections=FangraphsPitcherStatsModel(
+        projection=FangraphsPitcherStatsModel(
             wins=17, strikeouts=230, era=3.00, whip=1.05
         ),
     )
@@ -394,7 +394,7 @@ def test_all_sources_pitchers_matched():
         total_pitches=3000,
         pitch_percent=100.0,
         stats=SavantPitcherStatsModel(
-            velo=97.2, spin_rate=2550, xwoba=0.285, swing_miss_pct=32.5
+            velo=97.2, spin_rate=2550, xwOBA=0.285, swing_miss_pct=32.5
         ),
     )
 

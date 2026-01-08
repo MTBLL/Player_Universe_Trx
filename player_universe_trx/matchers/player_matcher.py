@@ -6,7 +6,6 @@ from typing_extensions import TYPE_CHECKING
 
 from player_universe_trx.matchers.config import (
     ESPN_TO_FG_TEAM_MAPPING,
-    FG_TO_ESPN_TEAM_MAPPING,
 )
 from player_universe_trx.matchers.indexing import PlayerIndex
 from player_universe_trx.matchers.models import (

@@ -71,20 +71,28 @@ def player_models(espn_player_data) -> List[MtblPlayerModel]:
 @pytest.fixture
 def corbin_carroll_espn(espn_player_data) -> Dict[str, Any]:
     """Fixture providing Corbin Carroll's ESPN data."""
-    for player in espn_player_data:
-        if player.get("name") == "Corbin Carroll":
-            return player
+    result = espn_player_data.filter(name="Corbin Carroll").first()
+    if result:
+        return result
     raise ValueError("Corbin Carroll not found in ESPN data")
 
 
 @pytest.fixture
 def corbin_carroll_fangraphs(fangraphs_player_data) -> Dict[str, Any]:
     """Fixture providing Corbin Carroll's FanGraphs data."""
-    for player in fangraphs_player_data:
-        if player.get("name") == "Corbin Carroll":
-            return player
+    result = fangraphs_player_data.filter(slug="corbin-carroll").first()
+    if result:
+        return result
     raise ValueError("Corbin Carroll not found in FanGraphs data")
 
+
+@pytest.fixture
+def corbin_carroll_savant(savant_player_data) -> Dict[str, Any]:
+    """Fixture providing Corbin Carroll's Savant data."""
+    result = savant_player_data.filter(slug="corbin-carroll").first()
+    if result:
+        return result
+    raise ValueError("Corbin Carroll not found in Savant data")
 
 @pytest.fixture
 def espn_batter_data(espn_fixture_path) -> List[Dict]:

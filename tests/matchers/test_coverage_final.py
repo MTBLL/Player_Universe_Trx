@@ -159,7 +159,6 @@ def test_match_player_fallthrough():
         name="Different Player",
         ascii_name="Different Player",
         playerid="456",
-        last_name="Player",
         team="BOS",
     )
 

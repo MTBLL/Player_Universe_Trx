@@ -67,17 +67,11 @@ def main(
     # Load Savant player data (raw dicts for matching)
     # Note: Savant data may be from a different year
     logger.info("Loading Savant player data...")
-    try:
-        savant_batters_raw = loader.load_savant_batters()
-        savant_pitchers_raw = loader.load_savant_pitchers()
-        logger.info("Creating player models from Savant data...")
-        savant_batters = create_savant_batter_models(savant_batters_raw)
-        savant_pitchers = create_savant_pitcher_models(savant_pitchers_raw)
-    except FileNotFoundError as e:
-        logger.warning(f"Savant data not found: {e}")
-        logger.warning("Continuing without Savant data...")
-        savant_batters = []
-        savant_pitchers = []
+    savant_batters_raw = loader.load_savant_batters()
+    savant_pitchers_raw = loader.load_savant_pitchers()
+    logger.info("Creating player models from Savant data...")
+    savant_batters = create_savant_batter_models(savant_batters_raw)
+    savant_pitchers = create_savant_pitcher_models(savant_pitchers_raw)
 
     # Match batters
     logger.info("Matching batters across ESPN, FanGraphs, and Savant...")
