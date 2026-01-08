@@ -15,6 +15,8 @@ def test_batter_model_validation(sample_batter):
     assert batter.primary_position == sample_batter["primary_position"]
     assert batter.stats is not None
     assert batter.stats.projections is not None
+    assert batter.on_team_id == sample_batter["on_team_id"]
+    assert batter.draft_auction_value == sample_batter["draft_auction_value"]
 
 
 def test_pitcher_model_validation(sample_pitcher):
