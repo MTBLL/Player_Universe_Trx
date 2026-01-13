@@ -5,8 +5,8 @@ from player_universe_trx.loaders import DataLoader
 from player_universe_trx.loaders.league_loader import LeagueLoader
 from player_universe_trx.matchers.player_matcher import (
     PlayerMatcher,
-    apply_matches,
 )
+from player_universe_trx.matchers.transformation import apply_matches
 from player_universe_trx.transformers.league_transformer import LeagueTransformer
 from player_universe_trx.utils.league_output import save_league_results
 from player_universe_trx.utils.model_utils import (
@@ -27,6 +27,7 @@ logger = logging.getLogger("player_universe_trx")
 
 OUTPUT_DIR = "/Users/Shared/BaseballHQ/resources/transform"
 RESOURCE_DIR = "/Users/Shared/BaseballHQ/resources/extract"
+
 
 def transform_league_data(
     league_id: int,

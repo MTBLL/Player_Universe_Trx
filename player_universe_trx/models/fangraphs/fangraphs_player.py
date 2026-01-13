@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class FangraphsBaseProjection(BaseModel):
     """Base projection fields common to both batters and pitchers."""
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     # Quantile projections (context-specific: wOBA for batters, ERA for pitchers)
     q10: Optional[float] = Field(default=None, description="10th percentile projection")
@@ -31,19 +31,15 @@ class FangraphsBaseProjection(BaseModel):
     tt_q90: Optional[float] = Field(default=None, description="True talent 90th percentile")
 
     # Common statistics
-    games: Optional[float] = Field(default=None, description="Games played")
-    war: Optional[float] = Field(default=None, description="Wins Above Replacement")
-    babip: Optional[float] = Field(default=None, description="Batting Average on Balls In Play")
-    k_percent: Optional[float] = Field(default=None, description="Strikeout percentage")
-    bb_percent: Optional[float] = Field(default=None, description="Walk percentage")
-    fpts: Optional[float] = Field(default=None, description="Fantasy points")
-    spts: Optional[float] = Field(default=None, description="Standard points")
+    games: Optional[float] = Field(default=None, alias="G", description="Games played")
+    fpts: Optional[float] = Field(default=None, alias="FPTS", description="Fantasy points")
+    spts: Optional[float] = Field(default=None, alias="SPTS", description="Standard points")
 
 
 class FangraphsPlayerModel(BaseModel):
     """Base FanGraphs player model with common fields for all player types."""
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     # Player identification
     name: str

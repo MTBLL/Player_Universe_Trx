@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 from player_universe_trx.models.mtbl import (
     MtblBatterModel,

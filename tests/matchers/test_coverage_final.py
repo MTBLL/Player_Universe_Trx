@@ -7,7 +7,7 @@ from player_universe_trx.matchers.models import (
 )
 from player_universe_trx.matchers.player_matcher import PlayerMatcher
 from player_universe_trx.matchers.transformation import apply_matches
-from player_universe_trx.models.espn import EspnBatterModel, EspnPitcherModel
+from player_universe_trx.models.espn import EspnBatterModel
 from player_universe_trx.models.fangraphs import FangraphsBatterModel
 
 
@@ -113,7 +113,9 @@ def test_savant_match_already_matched():
         stats=SavantBatterStatsModel(),
     )
 
-    matcher = PlayerMatcher([espn_player1, espn_player2], [fg_player1, fg_player2], [savant_player])
+    matcher = PlayerMatcher(
+        [espn_player1, espn_player2], [fg_player1, fg_player2], [savant_player]
+    )
     results = matcher.match_players()
 
     # First player should get Savant match, second should not

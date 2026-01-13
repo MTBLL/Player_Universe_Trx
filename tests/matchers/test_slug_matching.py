@@ -1,10 +1,9 @@
 """Tests for slug-based player matching with period normalization."""
 
 from player_universe_trx.matchers.player_matcher import (
-    PlayerMatcher,
-    apply_matches,
-    MatchMethod,
     MatchConfidence,
+    MatchMethod,
+    PlayerMatcher,
 )
 from player_universe_trx.models.espn import EspnBatterModel
 from player_universe_trx.models.fangraphs import FangraphsBatterModel
@@ -19,7 +18,7 @@ def test_slug_exact_match():
         first_name="Bobby",
         last_name="Witt",
         slug="bobby-witt-jr",
-        pro_team="KCR"
+        pro_team="KCR",
     )
 
     # FanGraphs player with matching slug (no period)
@@ -29,7 +28,7 @@ def test_slug_exact_match():
         ascii_name="Bobby Witt",
         slug="bobby-witt-jr",
         team="KCR",
-        xmlbam_id=677951
+        xmlbam_id=677951,
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -51,7 +50,7 @@ def test_slug_period_normalization():
         first_name="Bobby",
         last_name="Witt",
         slug="bobby-witt-jr",  # No period
-        pro_team="KCR"
+        pro_team="KCR",
     )
 
     # FanGraphs player with slug (with period)
@@ -61,7 +60,7 @@ def test_slug_period_normalization():
         ascii_name="Bobby Witt",
         slug="bobby-witt-jr.",  # With period
         team="KCR",
-        xmlbam_id=677951
+        xmlbam_id=677951,
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -83,7 +82,7 @@ def test_slug_no_match_falls_back_to_name():
         first_name="Aaron",
         last_name="Judge",
         slug="aaron-judge-different",  # Different slug
-        pro_team="NYY"
+        pro_team="NYY",
     )
 
     # FanGraphs player with different slug
@@ -93,7 +92,7 @@ def test_slug_no_match_falls_back_to_name():
         ascii_name="Aaron Judge",
         slug="aaron-judge",  # Different slug
         team="NYY",
-        xmlbam_id=592450
+        xmlbam_id=592450,
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -115,7 +114,7 @@ def test_slug_missing_in_espn():
         first_name="Aaron",
         last_name="Judge",
         slug=None,  # No slug
-        pro_team="NYY"
+        pro_team="NYY",
     )
 
     # FanGraphs player with slug
@@ -125,7 +124,7 @@ def test_slug_missing_in_espn():
         ascii_name="Aaron Judge",
         slug="aaron-judge",
         team="NYY",
-        xmlbam_id=592450
+        xmlbam_id=592450,
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player])
@@ -147,7 +146,7 @@ def test_slug_match_faster_than_name():
         first_name="Shohei",
         last_name="Ohtani",
         slug="shohei-ohtani",
-        pro_team="LAA"
+        pro_team="LAA",
     )
 
     # Multiple FanGraphs players with same last name (would slow down name matching)
@@ -158,7 +157,7 @@ def test_slug_match_faster_than_name():
             ascii_name="Shohei Ohtani",
             slug="shohei-ohtani",
             team="LAA",
-            xmlbam_id=660271
+            xmlbam_id=660271,
         ),
         # Other "Ohtani" players (fictional)
         FangraphsBatterModel(
@@ -167,8 +166,8 @@ def test_slug_match_faster_than_name():
             ascii_name="Other Ohtani",
             slug="other-ohtani",
             team="SEA",
-            xmlbam_id=111111
-        )
+            xmlbam_id=111111,
+        ),
     ]
 
     matcher = PlayerMatcher([espn_player], fg_players)

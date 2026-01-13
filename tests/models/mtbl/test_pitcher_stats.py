@@ -269,7 +269,7 @@ def test_pitcher_stats_model_dump():
     assert dumped["current_season"]["W"] == 15
     assert dumped["current_season"]["ERA"] == 3.25
     assert dumped["current_season"]["velo"] == 96.0
-    assert dumped["projections"]["era"] == 3.10
+    assert dumped["projections"]["ERA"] == 3.10
 
     # None values should be excluded
     assert "WHIP" not in dumped["current_season"]

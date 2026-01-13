@@ -57,18 +57,18 @@ def test_batter_stats_fangraphs_projections_only():
     """Test batter stats with only FanGraphs projection data."""
     stats = MtblBatterStatsModel(
         projections=FangraphsBatterStatsModel(
-            ab=550,
-            h=165,
-            avg=0.300,
-            hr=32,
-            rbi=95,
-            r=90,
-            sb=12,
-            obp=0.370,
-            slg=0.540,
-            ops=0.910,
-            woba=0.380,
-            wrc_plus=125.5,
+            AB=550,
+            H=165,
+            AVG=0.300,
+            HR=32,
+            RBI=95,
+            R=90,
+            SB=12,
+            OBP=0.370,
+            SLG=0.540,
+            OPS=0.910,
+            wOBA=0.380,
+            wrc_plus=125.5,  # type: ignore [reportCallIssues]
         )
     )
 
@@ -171,18 +171,18 @@ def test_batter_stats_all_sources_combined():
             attack_angle=15.2,
         ),
         projections=FangraphsBatterStatsModel(
-            ab=540,
-            h=162,
-            avg=0.300,
-            hr=30,
-            rbi=95,
-            r=90,
-            sb=15,
-            obp=0.375,
-            slg=0.540,
-            ops=0.915,
-            woba=0.375,
-            wrc_plus=128.0,
+            AB=540,
+            H=162,
+            AVG=0.300,
+            HR=30,
+            RBI=95,
+            R=90,
+            SB=15,
+            OBP=0.375,
+            SLG=0.540,
+            OPS=0.915,
+            wOBA=0.375,
+            wrc_plus=128.0,  # type: ignore [reportCallIssues]
         ),
     )
 
@@ -193,6 +193,7 @@ def test_batter_stats_all_sources_combined():
     assert stats.current_season.AVG == 0.300
     assert stats.current_season.HR == 32
     assert stats.current_season.OPS == 0.923
+    assert stats.current_season.SBN == 14
 
     # Verify FanGraphs projections
     assert stats.projections is not None
@@ -220,8 +221,8 @@ def test_batter_stats_partial_data_from_each_source():
             barrel_rate=10.5,
         ),
         projections=FangraphsBatterStatsModel(
-            hr=28,
-            woba=0.360,
+            HR=28,
+            wOBA=0.360,
         ),
     )
 
@@ -280,8 +281,8 @@ def test_batter_stats_current_vs_projected_comparison():
             AB=250,
         ),
         projections=FangraphsBatterStatsModel(
-            hr=32,  # Full season projection
-            ab=520,
+            HR=32,  # Full season projection
+            AB=520,
         ),
     )
 
@@ -310,7 +311,7 @@ def test_batter_stats_model_dump():
             exit_velo=92.0,
         ),
         projections=FangraphsBatterStatsModel(
-            hr=28,
+            HR=28,
         ),
     )
 
@@ -319,7 +320,7 @@ def test_batter_stats_model_dump():
     assert dumped["current_season"]["AB"] == 500
     assert dumped["current_season"]["HR"] == 30
     assert dumped["current_season"]["exit_velo"] == 92.0
-    assert dumped["projections"]["hr"] == 28
+    assert dumped["projections"]["HR"] == 28
 
     # None values should be excluded
     assert "AVG" not in dumped["current_season"]
@@ -342,9 +343,9 @@ def test_batter_stats_plate_discipline_metrics():
             takes=100,
         ),
         projections=FangraphsBatterStatsModel(
-            bb=68,
-            so=115,
-            bb_k=0.59,
+            BB=68,
+            SO=115,
+            bb_k=0.59,  # type: ignore [reportCallIssues]
         ),
     )
 
@@ -414,3 +415,17 @@ def test_batter_stats_swing_mechanics():
     assert stats.current_season.bat_speed == 74.2
     assert stats.current_season.swing_length == 7.1
     assert stats.current_season.swing_path_tilt == 18.2
+
+
+def test_batter_stats_sbn_with_only_sb():
+    """Test SBN when only SB is provided."""
+    stats = MtblBatterSeasonStatsModel(SB=11)
+
+    assert stats.SBN == 11
+
+
+def test_batter_stats_sbn_with_only_cs():
+    """Test SBN when only CS is provided."""
+    stats = MtblBatterSeasonStatsModel(CS=5)
+
+    assert stats.SBN == -5

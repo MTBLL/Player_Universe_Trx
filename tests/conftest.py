@@ -8,6 +8,8 @@ from player_universe_trx.models.mtbl import MtblPlayerModel
 
 espn_batters_fixture_file = "espn_batters_2025_20260108_095403.json"
 espn_pitchers_fixture_file = "espn_pitchers_2025_20260108_095403.json"
+fangraphs_batters_fixture_file = "fangraph_batters_2025_20260113_105922.json"
+fangraphs_pitchers_fixture_file = "fangraph_pitchers_2025_20260113_105922.json"
 
 
 @pytest.fixture
@@ -23,7 +25,7 @@ def fangraphs_fixture_path():
     """Fixture providing the path to the FanGraphs players fixture file."""
     fixtures_dir = Path(__file__).parent / "fixtures"
     # Use the actual batter file (most complete for testing)
-    return fixtures_dir / "fangraph_batters_2025_20260103_135002.json"
+    return fixtures_dir / fangraphs_batters_fixture_file
 
 
 @pytest.fixture
@@ -94,6 +96,7 @@ def corbin_carroll_savant(savant_player_data) -> Dict[str, Any]:
             return player
     raise ValueError("Corbin Carroll not found in Savant data")
 
+
 @pytest.fixture
 def espn_batter_data(espn_fixture_path) -> List[Dict]:
     """Fixture providing ESPN batter data."""
@@ -115,7 +118,7 @@ def espn_pitcher_data() -> List[Dict]:
 def fangraphs_batter_data() -> List[Dict]:
     """Fixture providing FanGraphs batter data."""
     fixtures_path = Path(__file__).parent / "fixtures"
-    with open(fixtures_path / "fangraph_batters_2025_20260103_135002.json") as f:
+    with open(fixtures_path / fangraphs_batters_fixture_file) as f:
         data = json.load(f)
     return data[:10]
 
@@ -124,7 +127,7 @@ def fangraphs_batter_data() -> List[Dict]:
 def fangraphs_pitcher_data() -> List[Dict]:
     """Fixture providing FanGraphs pitcher data."""
     fixtures_path = Path(__file__).parent / "fixtures"
-    with open(fixtures_path / "fangraph_pitchers_2025_20260103_135002.json") as f:
+    with open(fixtures_path / fangraphs_pitchers_fixture_file) as f:
         data = json.load(f)
     return data[:10]
 
@@ -145,3 +148,23 @@ def savant_pitcher_data() -> List[Dict]:
     with open(fixtures_path / "savant_pitchers_2026_01_03_1444.json") as f:
         data = json.load(f)
     return data[:10]
+
+
+@pytest.fixture
+def mason_miller_fangraphs() -> Dict[str, Any]:
+    """Fixture providing Mason Miller's FanGraphs data (relief pitcher with saves/holds)."""
+    fixtures_path = Path(__file__).parent / "fixtures"
+    with open(fixtures_path / fangraphs_pitchers_fixture_file) as f:
+        data = json.load(f)
+
+    for player in data:
+        if player.get("slug") == "mason-miller":
+            return player
+
+    # If Mason Miller not found, return any relief pitcher with saves and holds
+    for player in data:
+        proj = player.get("projection", {})
+        if proj.get("SV", 0) > 0 and proj.get("HLD", 0) > 0:
+            return player
+
+    raise ValueError("No relief pitcher with saves and holds found in FanGraphs data")

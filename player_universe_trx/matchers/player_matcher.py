@@ -1,6 +1,5 @@
 import logging
-import re
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 from typing_extensions import TYPE_CHECKING
 
@@ -13,31 +12,17 @@ from player_universe_trx.matchers.models import (
     MatchMethod,
     PlayerMatchResult,
 )
-from player_universe_trx.matchers.transformation import apply_matches
 from player_universe_trx.matchers.utils import extract_first_name, extract_last_name
 from player_universe_trx.models.espn import (
     EspnBatterModel,
-    EspnBatterStatsGroupModel,
     EspnPitcherModel,
-    EspnPitcherStatsGroupModel,
     EspnPlayerModel,
 )
 from player_universe_trx.models.fangraphs import (
     FangraphsBatterModel,
     FangraphsPitcherModel,
-    FangraphsPlayerModel,
-)
-from player_universe_trx.models.fangraphs.stats import (
-    FangraphsBatterStatsModel,
-    FangraphsPitcherStatsModel,
 )
 from player_universe_trx.models.mtbl import (
-    MtblBatterModel,
-    MtblBatterSeasonStatsModel,
-    MtblBatterStatsModel,
-    MtblPitcherModel,
-    MtblPitcherSeasonStatsModel,
-    MtblPitcherStatsModel,
     MtblPlayerModel,
 )
 from player_universe_trx.models.savant import (

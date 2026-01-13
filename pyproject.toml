@@ -1,6 +1,6 @@
 [project]
 name = "player-universe-trx"
-version = "0.3.0"
+version = "0.4.0"
 description = "Player Universe Transformer"
 authors = [{ name = "Taylor \"TP\" Pubins", email = "tpubz@icloud.com" }]
 readme = "README.md"

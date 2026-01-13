@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from player_universe_trx.models.espn.batter import EspnBatterStatsGroupModel
 from player_universe_trx.models.espn.pitcher import EspnPitcherStatsGroupModel
@@ -62,7 +62,6 @@ class MtblBatterSeasonStatsModel(BaseModel):
     # Stolen bases
     SB: Optional[float] = Field(default=None, description="Stolen Bases (ESPN)")
     CS: Optional[float] = Field(default=None, description="Caught Stealing (ESPN)")
-    SBN: Optional[float] = Field(default=None, description="Stolen Base Net (ESPN)")
 
     # Other
     GDP: Optional[float] = Field(
@@ -173,6 +172,18 @@ class MtblBatterSeasonStatsModel(BaseModel):
     pitch_velo: Optional[float] = Field(
         default=None, description="Avg Pitch Velocity Faced (Savant)"
     )
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def SBN(self) -> Optional[float]:
+        """Net stolen bases (SB - CS)."""
+        if self.SB is not None and self.CS is not None:
+            return self.SB - self.CS
+        elif self.SB is not None:
+            return self.SB
+        elif self.CS is not None:
+            return -self.CS
+        return None
 
 
 class MtblBatterStatsModel(BaseModel):
