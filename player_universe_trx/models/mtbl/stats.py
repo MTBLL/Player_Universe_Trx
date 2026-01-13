@@ -257,6 +257,18 @@ class MtblPitcherSeasonStatsModel(BaseModel):
         default=None, alias="K/BB", description="K/BB Ratio (ESPN)"
     )
 
+    # Relief pitcher statistics
+    SV: Optional[float] = Field(default=None, description="Saves (ESPN)")
+    HLD: Optional[float] = Field(default=None, description="Holds (ESPN)")
+    SVHD: Optional[float] = Field(default=None, description="Saves + Holds (ESPN)")
+    SVO: Optional[float] = Field(default=None, description="Save Opportunities (ESPN)")
+    BLSV: Optional[float] = Field(default=None, description="Blown Saves (ESPN)")
+    SV_pct: Optional[float] = Field(default=None, alias="SV%", description="Save Percentage (ESPN)")
+
+    # Additional statistics
+    IP: Optional[float] = Field(default=None, description="Innings Pitched (ESPN)")
+    k_per_9: Optional[float] = Field(default=None, alias="K/9", description="Strikeouts per 9 innings (ESPN)")
+
     # ========== Savant Sabermetrics ==========
     # Pitch characteristics
     velo: Optional[float] = Field(default=None, description="Pitch Velocity (Savant)")

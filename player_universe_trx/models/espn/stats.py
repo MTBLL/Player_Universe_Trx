@@ -75,3 +75,15 @@ class EspnPitcherStatsModel(BaseModel):
     k_bb_ratio: Optional[float] = Field(
         default=None, alias="K/BB", description="Strikeout to Walk Ratio"
     )
+
+    # Relief pitcher statistics
+    SV: Optional[float] = Field(default=None, description="Saves")
+    HLD: Optional[float] = Field(default=None, description="Holds")
+    SVHD: Optional[float] = Field(default=None, description="Saves + Holds")
+    SVO: Optional[float] = Field(default=None, description="Save Opportunities")
+    BLSV: Optional[float] = Field(default=None, description="Blown Saves")
+    SV_pct: Optional[float] = Field(default=None, alias="SV%", description="Save Percentage")
+
+    # Additional statistics
+    IP: Optional[float] = Field(default=None, description="Innings Pitched")
+    k_per_9: Optional[float] = Field(default=None, alias="K/9", description="Strikeouts per 9 innings")
