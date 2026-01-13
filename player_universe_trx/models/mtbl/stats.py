@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from player_universe_trx.models.espn.batter import EspnBatterStatsGroupModel
 from player_universe_trx.models.espn.pitcher import EspnPitcherStatsGroupModel
@@ -62,6 +62,9 @@ class MtblBatterSeasonStatsModel(BaseModel):
     # Stolen bases
     SB: Optional[float] = Field(default=None, description="Stolen Bases (ESPN)")
     CS: Optional[float] = Field(default=None, description="Caught Stealing (ESPN)")
+    SBN: Optional[float] = Field(
+        default=None, description="Stolen Base Net (ESPN or computed from SB - CS)"
+    )
 
     # Other
     GDP: Optional[float] = Field(
@@ -173,17 +176,22 @@ class MtblBatterSeasonStatsModel(BaseModel):
         default=None, description="Avg Pitch Velocity Faced (Savant)"
     )
 
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def SBN(self) -> Optional[float]:
-        """Net stolen bases (SB - CS)."""
+    @model_validator(mode="after")
+    def compute_sbn_if_missing(self):
+        """Compute SBN from SB - CS if not provided by ESPN."""
+        # If SBN is already provided (from ESPN), keep it
+        if self.SBN is not None:
+            return self
+
+        # Otherwise, try to compute from SB and CS
         if self.SB is not None and self.CS is not None:
-            return self.SB - self.CS
+            self.SBN = self.SB - self.CS
         elif self.SB is not None:
-            return self.SB
+            self.SBN = self.SB
         elif self.CS is not None:
-            return -self.CS
-        return None
+            self.SBN = -self.CS
+
+        return self
 
 
 class MtblBatterStatsModel(BaseModel):

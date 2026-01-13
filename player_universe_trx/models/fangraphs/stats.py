@@ -121,15 +121,4 @@ class FangraphsPitcherStatsModel(FangraphsBaseProjection):
     # Fantasy metrics
     fpts_ip: Optional[float] = Field(default=None, alias="FPTS_IP", description="Fantasy points per inning pitched")
     spts_ip: Optional[float] = Field(default=None, alias="SPTS_IP", description="Standard points per inning pitched")
-
-    @computed_field(alias="SVHD")  # type: ignore[prop-decorator]
-    @property
-    def svhd(self) -> Optional[float]:
-        """Combined saves and holds metric."""
-        if self.saves is not None and self.holds is not None:
-            return self.saves + self.holds
-        elif self.saves is not None:
-            return self.saves
-        elif self.holds is not None:
-            return self.holds
-        return None
+    svhd: Optional[float] = Field(default=None, alias="SVHD", description="Combined saves and holds")

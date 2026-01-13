@@ -429,3 +429,24 @@ def test_batter_stats_sbn_with_only_cs():
     stats = MtblBatterSeasonStatsModel(CS=5)
 
     assert stats.SBN == -5
+
+
+def test_batter_stats_sbn_provided_by_espn():
+    """Test that ESPN-provided SBN is preserved (not overwritten by computation)."""
+    # This simulates a league that only tracks SBN, not individual SB/CS
+    stats = MtblBatterSeasonStatsModel(SBN=15)
+
+    # ESPN's SBN should be preserved
+    assert stats.SBN == 15
+    assert stats.SB is None
+    assert stats.CS is None
+
+
+def test_batter_stats_sbn_espn_overrides_computation():
+    """Test that ESPN-provided SBN takes precedence over computed value."""
+    # Even if SB and CS are present, if ESPN provides SBN, use ESPN's value
+    # (This handles edge cases where ESPN may have special SBN calculation logic)
+    stats = MtblBatterSeasonStatsModel(SB=20, CS=8, SBN=10)
+
+    # Should use ESPN's SBN value, not compute from SB-CS
+    assert stats.SBN == 10

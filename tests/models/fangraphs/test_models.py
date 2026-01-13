@@ -136,18 +136,17 @@ def test_pitcher_model_with_invalid_data():
         FangraphsPitcherModel.model_validate(invalid_data)
 
 
-def test_pitcher_svhd_computed_field(mason_miller_fangraphs):
-    """Test that SVHD is correctly computed from saves and holds."""
+def test_pitcher_svhd_field(mason_miller_fangraphs):
+    """Test that SVHD field is correctly loaded from data."""
     pitcher = FangraphsPitcherModel.model_validate(mason_miller_fangraphs)
 
-    # Test that SVHD is computed
+    # Test that SVHD is loaded from the data
     assert pitcher.projections is not None
     assert pitcher.projections.svhd is not None
     assert pitcher.projections.saves is not None
     assert pitcher.projections.holds is not None
-    assert pitcher.projections.svhd == (
-        pitcher.projections.saves + pitcher.projections.holds
-    )
+    # SVHD should be provided by upstream data (FanGraphs now includes it)
+    assert pitcher.projections.svhd > 0
 
 
 def test_batter_sbn_computed_field(sample_batter):
@@ -213,7 +212,7 @@ def test_pitcher_model_serialize_by_alias_with_svhd(mason_miller_fangraphs):
     assert "G" in exported["projection"]
     assert "FPTS" in exported["projection"]
 
-    # Check that SVHD computed field is exported with alias
+    # Check that SVHD field is exported with alias
     assert "SVHD" in exported["projection"]
     assert exported["projection"]["SVHD"] is not None
     assert exported["projection"]["SVHD"] > 0
@@ -253,27 +252,16 @@ def test_batter_sbn_with_only_cs():
     assert batter.projections.sbn == -3
 
 
-def test_pitcher_svhd_with_only_saves():
-    """Test that SVHD equals saves when holds is missing."""
+def test_pitcher_svhd_from_data():
+    """Test that SVHD is loaded directly from data when provided."""
     data = {
-        "name": "Only Saves Pitcher",
-        "playerid": "sv-only",
-        "projection": {"SV": 4},
+        "name": "Test Pitcher",
+        "playerid": "test-pitcher",
+        "projection": {"SV": 4, "HLD": 6, "SVHD": 10},
     }
     pitcher = FangraphsPitcherModel.model_validate(data)
 
     assert pitcher.projections is not None
-    assert pitcher.projections.svhd == 4
-
-
-def test_pitcher_svhd_with_only_holds():
-    """Test that SVHD equals holds when saves is missing."""
-    data = {
-        "name": "Only Holds Pitcher",
-        "playerid": "hld-only",
-        "projection": {"HLD": 6},
-    }
-    pitcher = FangraphsPitcherModel.model_validate(data)
-
-    assert pitcher.projections is not None
-    assert pitcher.projections.svhd == 6
+    assert pitcher.projections.svhd == 10
+    assert pitcher.projections.saves == 4
+    assert pitcher.projections.holds == 6

@@ -4,12 +4,13 @@ from typing import Any, Dict, List
 
 import pytest
 
+from player_universe_trx.models.espn import EspnPlayerModel
 from player_universe_trx.models.mtbl import MtblPlayerModel
 
 espn_batters_fixture_file = "espn_batters_2025_20260108_095403.json"
 espn_pitchers_fixture_file = "espn_pitchers_2025_20260108_095403.json"
 fangraphs_batters_fixture_file = "fangraph_batters_2025_20260113_105922.json"
-fangraphs_pitchers_fixture_file = "fangraph_pitchers_2025_20260113_105922.json"
+fangraphs_pitchers_fixture_file = "fangraph_pitchers_2025_20260113_150546.json"
 
 
 @pytest.fixture
@@ -168,3 +169,27 @@ def mason_miller_fangraphs() -> Dict[str, Any]:
             return player
 
     raise ValueError("No relief pitcher with saves and holds found in FanGraphs data")
+
+
+@pytest.fixture
+def mason_miller_savant() -> Dict[str, Any]:
+    """Fixture providing Mason Miller's Savant data."""
+    fixtures_path = Path(__file__).parent / "fixtures"
+    with open(fixtures_path / "savant_pitchers_2026_01_03_1444.json") as f:
+        data = json.load(f)
+
+    for player in data:
+        if player.get("name") == "Mason Miller":
+            return player
+
+    raise ValueError("No player named Mason Miller found in Savant data")
+
+
+@pytest.fixture
+def mason_miller_espn(player_models) -> EspnPlayerModel:
+    """Fixture providing Mason Miller's ESPN data."""
+    for player in player_models:
+        if player.slug == "mason-miller":
+            return player
+
+    raise ValueError("No player named Mason Miller found in ESPN data")
