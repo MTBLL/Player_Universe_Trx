@@ -8,8 +8,8 @@ from player_universe_trx.models.savant import SavantBatterModel
 def test_find_by_slug_empty():
     """Test find_by_slug with empty slug."""
     index = PlayerIndex([], [])
-    assert index.find_by_slug("") is None
-    assert index.find_by_slug(None) is None
+    assert index.find_by_slug("") == []
+    assert index.find_by_slug(None) == []
 
 
 def test_find_by_last_name_empty():
@@ -43,7 +43,7 @@ def test_find_by_slug_no_match():
     index = PlayerIndex([fg_player], [])
 
     # Try with a different slug
-    assert index.find_by_slug("different-player") is None
+    assert index.find_by_slug("different-player") == []
 
 
 def test_find_by_last_name_no_match():
