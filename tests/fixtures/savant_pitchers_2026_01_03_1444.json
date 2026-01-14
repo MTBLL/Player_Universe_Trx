@@ -43217,7 +43217,7 @@
     "xAVG": 0.391,
     "exit_velo": 94.4,
     "launch_angle": 19.6,
-    "spin_rate": NaN,
+    "spin_rate": null,
     "velo": 38.6,
     "percieved_velo": 35.74,
     "whiffs": 3,

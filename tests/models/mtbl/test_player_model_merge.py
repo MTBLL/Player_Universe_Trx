@@ -69,3 +69,7 @@ def test_merge_fangraphs_data_empty_dict():
     # Try merging with empty dict
     player.merge_fangraphs_data(FangraphsPlayerModel(name="Test Player", playerid="1"))
     assert player.id_fangraphs == "1"  # Should remain unchanged
+
+
+def test_merge_mason_miller():
+    pass

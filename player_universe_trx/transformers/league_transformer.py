@@ -9,7 +9,6 @@ from player_universe_trx.constants import (
     ESPN_LINEUP_SLOT_MAP,
     ESPN_POSITION_MAP,
     ESPN_PRO_TEAM_MAP,
-    ROSTER_FIELD_MAP,
 )
 from player_universe_trx.models.espn import (
     EspnLeagueModel,
@@ -372,7 +371,9 @@ class LeagueTransformer:
         # Get acquisition budget
         acquisition_budget = None
         if espn_league.settings and espn_league.settings.acquisitionSettings:
-            acquisition_budget = espn_league.settings.acquisitionSettings.acquisitionBudget
+            acquisition_budget = (
+                espn_league.settings.acquisitionSettings.acquisitionBudget
+            )
 
         # Get draft auction budget
         draft_auction_budget = None
@@ -404,7 +405,9 @@ class LeagueTransformer:
         matchups = []
         for matchup in espn_league.schedule:
             # Determine if this is a playoff matchup
-            is_playoff = matchup.playoffTierType != "NONE" if matchup.playoffTierType else False
+            is_playoff = (
+                matchup.playoffTierType != "NONE" if matchup.playoffTierType else False
+            )
 
             # Parse teams
             team_ids = list(matchup.teams.keys())

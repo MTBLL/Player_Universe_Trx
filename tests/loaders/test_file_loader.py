@@ -5,7 +5,12 @@ from pathlib import Path
 import pytest
 
 from player_universe_trx.loaders.file_loader import DataLoader
-from tests.conftest import espn_batters_fixture_file, espn_pitchers_fixture_file
+from tests.conftest import (
+    espn_batters_fixture_file,
+    espn_pitchers_fixture_file,
+    fangraphs_batters_fixture_file,
+    fangraphs_pitchers_fixture_file,
+)
 
 
 @pytest.fixture
@@ -74,7 +79,12 @@ def test_extract_timestamp(fixtures_dir):
     assert isinstance(result, datetime)
 
     # Test invalid timestamp format (has pattern but invalid date)
-    assert loader._extract_timestamp_from_filename("espn_batters_2025_99999999_999999.json") is None
+    assert (
+        loader._extract_timestamp_from_filename(
+            "espn_batters_2025_99999999_999999.json"
+        )
+        is None
+    )
 
 
 def test_get_file_methods(fixtures_dir):
@@ -88,14 +98,8 @@ def test_get_file_methods(fixtures_dir):
         == "espn_league_10998_2025_20260102_143242.json"
     )
     assert "espn_league_" in loader.get_espn_league_file().name
-    assert (
-        loader.get_fangraphs_batters_file().name
-        == "fangraph_batters_2025_20260103_135002.json"
-    )
-    assert (
-        loader.get_fangraphs_pitchers_file().name
-        == "fangraph_pitchers_2025_20260103_135002.json"
-    )
+    assert loader.get_fangraphs_batters_file().name == fangraphs_batters_fixture_file
+    assert loader.get_fangraphs_pitchers_file().name == fangraphs_pitchers_fixture_file
 
     # Test Savant file methods (year 2026 for Savant fixtures)
     loader_2026 = DataLoader(resources_path=str(fixtures_dir), year=2026)
@@ -133,7 +137,9 @@ def test_get_file_methods(fixtures_dir):
     # Savant loaders are year-indifferent, so they will find files from any year
     # Test that they succeed even when configured with a year that doesn't match
     assert loader_no_files.get_savant_batters_file().name.startswith("savant_batters_")
-    assert loader_no_files.get_savant_pitchers_file().name.startswith("savant_pitchers_")
+    assert loader_no_files.get_savant_pitchers_file().name.startswith(
+        "savant_pitchers_"
+    )
 
 
 def test_load_methods(fixtures_dir):
@@ -172,12 +178,8 @@ def test_get_savant_files_not_found(tmp_path):
     """Test Savant file methods raise when no matching files exist."""
     loader = DataLoader(resources_path=str(tmp_path), year=2099)
 
-    with pytest.raises(
-        FileNotFoundError, match="No Savant batters file found"
-    ):
+    with pytest.raises(FileNotFoundError, match="No Savant batters file found"):
         loader.get_savant_batters_file()
 
-    with pytest.raises(
-        FileNotFoundError, match="No Savant pitchers file found"
-    ):
+    with pytest.raises(FileNotFoundError, match="No Savant pitchers file found"):
         loader.get_savant_pitchers_file()

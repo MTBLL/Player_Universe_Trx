@@ -1,6 +1,5 @@
 import logging
-import re
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 from typing_extensions import TYPE_CHECKING
 
@@ -13,31 +12,17 @@ from player_universe_trx.matchers.models import (
     MatchMethod,
     PlayerMatchResult,
 )
-from player_universe_trx.matchers.transformation import apply_matches
 from player_universe_trx.matchers.utils import extract_first_name, extract_last_name
 from player_universe_trx.models.espn import (
     EspnBatterModel,
-    EspnBatterStatsGroupModel,
     EspnPitcherModel,
-    EspnPitcherStatsGroupModel,
     EspnPlayerModel,
 )
 from player_universe_trx.models.fangraphs import (
     FangraphsBatterModel,
     FangraphsPitcherModel,
-    FangraphsPlayerModel,
-)
-from player_universe_trx.models.fangraphs.stats import (
-    FangraphsBatterStatsModel,
-    FangraphsPitcherStatsModel,
 )
 from player_universe_trx.models.mtbl import (
-    MtblBatterModel,
-    MtblBatterSeasonStatsModel,
-    MtblBatterStatsModel,
-    MtblPitcherModel,
-    MtblPitcherSeasonStatsModel,
-    MtblPitcherStatsModel,
     MtblPlayerModel,
 )
 from player_universe_trx.models.savant import (
@@ -105,7 +90,7 @@ class PlayerMatcher:
         self, player: EspnPlayerModel
     ) -> Optional[PlayerMatchResult]:
         """
-        Try to match a player using slug (fastest, highest confidence).
+        Try to match a player using slug with team disambiguation for duplicates.
 
         Args:
             player: PlayerModel instance with ESPN data
@@ -116,21 +101,19 @@ class PlayerMatcher:
         if not player.slug:
             return None
 
-        # Try exact match first
-        fg_match = self.index.find_by_slug(player.slug)
+        # Get all players with matching slug
+        fg_matches = self.index.find_by_slug(player.slug)
 
-        if fg_match:
-            # Check if already matched (shouldn't happen with index shrinking, but be safe)
-            if fg_match.playerid in self.matched_fg_ids:
-                return None
+        # Filter out already matched players
+        fg_matches = [p for p in fg_matches if p.playerid not in self.matched_fg_ids]
 
-            # Get Savant data using xmlbam_id from FanGraphs match
-            savant_match = None
-            xmlbam_id = fg_match.xmlbam_id
-            if xmlbam_id and self.index.savant_by_mlb_id:
-                savant_match = self.index.find_savant_by_mlb_id(xmlbam_id)
-                if savant_match and savant_match.player_id in self.matched_savant_ids:
-                    savant_match = None  # Already matched to another player
+        if not fg_matches:
+            return None
+
+        # Handle single match (most common case)
+        if len(fg_matches) == 1:
+            fg_match = fg_matches[0]
+            savant_match = self._get_savant_match(fg_match)
 
             assert isinstance(player, EspnBatterModel | EspnPitcherModel)
             return PlayerMatchResult(
@@ -143,7 +126,35 @@ class PlayerMatcher:
                 notes=f"Matched on slug: {player.slug}",
             )
 
-        return None
+        # Handle duplicate slugs - use team to disambiguate
+        assert isinstance(player, EspnBatterModel | EspnPitcherModel)
+        team_matches = self._filter_by_team(fg_matches, player.pro_team)
+
+        if len(team_matches) == 1:
+            # Team disambiguation successful
+            fg_match = team_matches[0]
+            savant_match = self._get_savant_match(fg_match)
+
+            return PlayerMatchResult(
+                espn_player=player,
+                fangraphs_match=fg_match,
+                savant_match=savant_match,
+                match_method=MatchMethod.SLUG,
+                confidence=MatchConfidence.HIGH,  # Slug + team = HIGH confidence
+                candidates=[fg_match],
+                notes=f"Matched on slug + team (duplicate slug resolved): {player.slug}",
+            )
+
+        # Ambiguous - multiple players with same slug, couldn't disambiguate by team
+        return PlayerMatchResult(
+            espn_player=player,
+            fangraphs_match=None,
+            savant_match=None,
+            match_method=MatchMethod.SLUG,
+            confidence=MatchConfidence.AMBIGUOUS,
+            candidates=fg_matches,
+            notes=f"Duplicate slug, ambiguous match: {player.slug} ({len(fg_matches)} candidates)",
+        )
 
     def _find_candidates_by_last_name(
         self, player: EspnBatterModel | EspnPitcherModel

@@ -3,8 +3,8 @@
 from player_universe_trx.matchers.player_matcher import (
     MatchMethod,
     PlayerMatcher,
-    apply_matches,
 )
+from player_universe_trx.matchers.transformation import apply_matches
 from player_universe_trx.models.espn import EspnBatterModel
 from player_universe_trx.models.fangraphs import FangraphsBatterModel
 from player_universe_trx.models.savant import (

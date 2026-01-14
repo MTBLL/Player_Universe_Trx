@@ -33,7 +33,9 @@ class PlayerIndex:
         self.fg_by_last_name: Dict[
             str, List[FangraphsBatterModel | FangraphsPitcherModel]
         ] = {}
-        self.fg_by_slug: Dict[str, FangraphsBatterModel | FangraphsPitcherModel] = {}
+        self.fg_by_slug: Dict[
+            str, List[FangraphsBatterModel | FangraphsPitcherModel]
+        ] = {}
         self.fg_by_team: Dict[
             str, List[FangraphsBatterModel | FangraphsPitcherModel]
         ] = {}
@@ -71,11 +73,13 @@ class PlayerIndex:
             if playerid:
                 self.fg_by_id[playerid] = fg_player
 
-            # Index by slug (exact and normalized)
+            # Index by slug (exact and normalized) - store as list to handle duplicates
             if slug:
                 # Also index normalized version (no periods)
                 normalized = slug.replace(".", "")
-                self.fg_by_slug[normalized] = fg_player
+                if normalized not in self.fg_by_slug:
+                    self.fg_by_slug[normalized] = []
+                self.fg_by_slug[normalized].append(fg_player)
 
             # Index by team, normalized for ESPN team names
             if team:
@@ -96,27 +100,29 @@ class PlayerIndex:
             if player_id:
                 self.savant_by_mlb_id[player_id] = savant_player
 
-    def find_by_slug(self, slug: str) -> Optional[FangraphsBatterModel | FangraphsPitcherModel]:
+    def find_by_slug(
+        self, slug: str
+    ) -> List[FangraphsBatterModel | FangraphsPitcherModel]:
         """
-        Find player by slug.
+        Find players by slug. Returns a list to handle duplicate slugs.
 
         Args:
             slug: Player slug to search for
 
         Returns:
-            FanGraphs player if found, None otherwise
+            List of FanGraphs players with matching slug (may be empty, or contain multiple players)
         """
         if not slug:
-            return None
+            return []
 
         # Try exact match first
-        fg_match = self.fg_by_slug.get(slug)
-        if fg_match:
-            return fg_match
+        fg_matches = self.fg_by_slug.get(slug)
+        if fg_matches:
+            return fg_matches
 
         # Try normalized (no periods)
         normalized = slug.replace(".", "")
-        return self.fg_by_slug.get(normalized)
+        return self.fg_by_slug.get(normalized, [])
 
     def find_by_last_name(
         self, last_name: str
@@ -209,9 +215,16 @@ class PlayerIndex:
             if not self.fg_by_team[team]:
                 del self.fg_by_team[team]
 
-        # Remove from slug indexes (fast - O(1))
+        # Remove from slug indexes
         if slug:
-            self.fg_by_slug.pop(slug, None)
+            normalized = slug.replace(".", "")
+            if normalized in self.fg_by_slug:
+                self.fg_by_slug[normalized] = [
+                    p for p in self.fg_by_slug[normalized] if p.playerid != playerid
+                ]
+                # Clean up empty entries
+                if not self.fg_by_slug[normalized]:
+                    del self.fg_by_slug[normalized]
 
         # Remove from ID index
         if playerid:

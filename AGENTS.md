@@ -14,7 +14,7 @@ This module is part of the MTBL ETL pipeline, transforming player data from ESPN
    uv sync
 
    # Run tests
-   uv run pytest
+   uv run pytest --cov=player_universe_trx --cov-report=term-missing -vv
 
    # Type check with mypy
    uv run mypy player_universe_trx/

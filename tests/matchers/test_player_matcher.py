@@ -1,8 +1,8 @@
 from player_universe_trx.matchers.player_matcher import (
     ESPN_TO_FG_TEAM_MAPPING,
     PlayerMatcher,
-    apply_matches,
 )
+from player_universe_trx.matchers.transformation import apply_matches
 from player_universe_trx.models.espn import EspnBatterModel
 from player_universe_trx.models.fangraphs import FangraphsBatterModel
 
@@ -176,7 +176,10 @@ def test_matching_players_with_suffixes(espn_player_data, fangraphs_player_data)
     )
 
     fg_junior = FangraphsBatterModel(
-        playerid="12345", name="Ken Griffey Jr.", ascii_name="Ken Griffey Jr.", team="SEA"
+        playerid="12345",
+        name="Ken Griffey Jr.",
+        ascii_name="Ken Griffey Jr.",
+        team="SEA",
     )
 
     matcher = PlayerMatcher([junior], [fg_junior])
