@@ -1,4 +1,6 @@
+import argparse
 import logging
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 from player_universe_trx.loaders import DataLoader
@@ -102,7 +104,7 @@ def main(
         Dictionary with counts of matched, unmatched, and ambiguous players, and optionally league results
     """
     # Set defaults
-    year = year or 2025
+    year = year or datetime.now().year
     output_dir = output_dir or OUTPUT_DIR
     resources_path = resources_path or RESOURCE_DIR
     league_id = league_id if league_id is not None else 10998
@@ -260,7 +262,42 @@ def _report_match_statistics(batter_results, pitcher_results):
     logger.info("")
 
 
+def cli() -> None:
+    parser = argparse.ArgumentParser(
+        description="Player Universe Transformer",
+    )
+    parser.add_argument(
+        "--year",
+        type=int,
+        default=None,
+        help="Year for data files (defaults to current year)",
+    )
+    parser.add_argument(
+        "--resources-path",
+        type=str,
+        default=None,
+        help=f"Path to directory containing input files (default: {RESOURCE_DIR})",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help=f"Directory to save output files (default: {OUTPUT_DIR})",
+    )
+    parser.add_argument(
+        "--league-id",
+        type=int,
+        default=10998,
+        help="ESPN league ID to transform league data (default: 10998)",
+    )
+    args = parser.parse_args()
+    main(
+        resources_path=args.resources_path,
+        year=args.year,
+        output_dir=args.output_dir,
+        league_id=args.league_id,
+    )
+
+
 if __name__ == "__main__":
-    # Defaults are set in main() function
-    # year=2025, output_dir=OUTPUT_DIR, resources_path=RESOURCE_DIR, league_id=10998
-    main()
+    cli()
