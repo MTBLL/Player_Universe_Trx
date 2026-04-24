@@ -8,7 +8,7 @@ requires-python = ">=3.13"
 dependencies = ["pydantic (>=2.11.4,<3.0.0)"]
 
 [project.scripts]
-universe_trx = "player_universe_trx.__main__:cli"
+universe-trx = "player_universe_trx.__main__:cli"
 
 [tool.mypy]
 python_version = "3.13"
