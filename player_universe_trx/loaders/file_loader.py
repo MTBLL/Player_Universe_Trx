@@ -94,6 +94,45 @@ class DataLoader:
                 return None
         return None
 
+    def _extract_savant_season_from_filename(self, filename: str) -> Optional[int]:
+        """
+        Extract Savant season from filename in format savant_<role>_<season>_<MM>_<DD>_<HHMM>.json.
+
+        Args:
+            filename: Name of the Savant file
+
+        Returns:
+            Season year if found, None otherwise
+        """
+        season_pattern = r"^savant_(?:batters|pitchers)_(\d{4})_\d{2}_\d{2}_\d{4}\.json$"
+        match = re.match(season_pattern, filename)
+        if not match:
+            return None
+
+        return int(match.group(1))
+
+    @staticmethod
+    def _annotate_savant_rows(
+        rows: List[Dict], player_type: str, season: Optional[int]
+    ) -> List[Dict]:
+        """
+        Attach downstream metadata that Savant rows do not include directly.
+
+        The upstream extractor documents player_type as part of the row schema and
+        season as ingestion context. Older fixture files may not include
+        player_type, so this method fills it from the file role without
+        overwriting newer extractor output.
+        """
+        annotated_rows = []
+        for row in rows:
+            annotated = dict(row)
+            annotated.setdefault("player_type", player_type)
+            if season is not None:
+                annotated.setdefault("season", season)
+            annotated_rows.append(annotated)
+
+        return annotated_rows
+
     def get_espn_batters_file(self) -> Path:
         """
         Get the most recent ESPN batters file for the configured year.
@@ -310,7 +349,9 @@ class DataLoader:
         """
         file_path = self.get_savant_batters_file()
         logger.info(f"Loading Savant batters from: {file_path}")
-        return load_json_data(str(file_path))
+        data = load_json_data(str(file_path))
+        season = self._extract_savant_season_from_filename(file_path.name)
+        return self._annotate_savant_rows(data, "batter", season)
 
     def load_savant_pitchers(self) -> List[Dict]:
         """
@@ -321,4 +362,6 @@ class DataLoader:
         """
         file_path = self.get_savant_pitchers_file()
         logger.info(f"Loading Savant pitchers from: {file_path}")
-        return load_json_data(str(file_path))
+        data = load_json_data(str(file_path))
+        season = self._extract_savant_season_from_filename(file_path.name)
+        return self._annotate_savant_rows(data, "pitcher", season)

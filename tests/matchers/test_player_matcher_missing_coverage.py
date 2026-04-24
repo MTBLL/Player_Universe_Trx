@@ -64,7 +64,7 @@ def test_try_match_by_slug_savant_already_matched():
         pitch_percent=1.0,
     )
     matcher = PlayerMatcher([player], [fg_player], [savant_player])
-    matcher.matched_savant_ids.add(123)
+    matcher.matched_savant_ids.add((123, "batter"))
 
     result = matcher._try_match_by_slug(player)
 
@@ -107,7 +107,7 @@ def test_get_savant_match_skips_already_matched():
         pitch_percent=1.0,
     )
     matcher = PlayerMatcher([], [fg_player], [savant_player])
-    matcher.matched_savant_ids.add(555)
+    matcher.matched_savant_ids.add((555, "batter"))
 
     assert matcher._get_savant_match(fg_player) is None
 

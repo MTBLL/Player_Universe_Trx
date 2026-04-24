@@ -1,12 +1,14 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+
+SAVANT_STATS_MODEL_CONFIG = ConfigDict(populate_by_name=True, extra="allow")
 
 
 class SavantBaseStats(BaseModel):
     """Base statistics common to both batters and pitchers in Savant data."""
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = SAVANT_STATS_MODEL_CONFIG
 
     # Batting statistics
     BABIP: Optional[float] = Field(default=None, description="Batting Average on Balls In Play")
@@ -33,7 +35,26 @@ class SavantBaseStats(BaseModel):
     swing_miss_pct: Optional[float] = Field(default=None, description="Swing and miss percentage")
 
     # Advanced metrics
+    barrels_per_bbe_pct: Optional[float] = Field(
+        default=None, description="Barrels per batted ball event percentage"
+    )
+    barrels_per_bbe_pct_pct_rnk: Optional[float] = Field(
+        default=None, description="Barrels per BBE percentile rank"
+    )
+    barrels_per_pa_pct: Optional[float] = Field(
+        default=None, description="Barrels per plate appearance percentage"
+    )
+    barrels_per_pa_pct_pct_rnk: Optional[float] = Field(
+        default=None, description="Barrels per PA percentile rank"
+    )
     barrels_total: Optional[int] = Field(default=None, description="Total barrels")
+    barrels_total_pct_rnk: Optional[float] = Field(
+        default=None, description="Total barrels percentile rank"
+    )
+    hardhit_pct: Optional[float] = Field(default=None, description="Hard hit percentage")
+    hardhit_pct_pct_rnk: Optional[float] = Field(
+        default=None, description="Hard hit percentile rank"
+    )
     run_exp: Optional[float] = Field(default=None, description="Run expectancy")
     rate_ideal_attack_angle: Optional[float] = Field(default=None, description="Rate of ideal attack angle")
     wOBA: Optional[float] = Field(default=None, description="Weighted On-Base Average")
@@ -59,6 +80,12 @@ class SavantPlayerModel(BaseModel):
     last_name: str
     name_ascii: str = Field(description="ASCII name in 'First Last' format")
     slug: str
+    player_type: Optional[Literal["batter", "pitcher"]] = Field(
+        default=None, description="Savant role for the player-season row"
+    )
+    season: Optional[int] = Field(
+        default=None, description="Savant season inferred from extractor context"
+    )
 
     # Pitch counts
     pitches: int = Field(description="Number of pitches in sample")

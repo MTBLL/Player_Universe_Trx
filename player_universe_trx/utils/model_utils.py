@@ -156,6 +156,8 @@ def create_savant_batter_models(batter_data: List[Dict]) -> Sequence[SavantBatte
         "last_name",
         "name_ascii",
         "slug",
+        "player_type",
+        "season",
     }
     pitch_count_fields = {"pitches", "total_pitches", "pitch_percent"}
     root_fields = identity_fields | pitch_count_fields
@@ -208,6 +210,8 @@ def create_savant_pitcher_models(
         "last_name",
         "name_ascii",
         "slug",
+        "player_type",
+        "season",
     }
     pitch_count_fields = {"pitches", "total_pitches", "pitch_percent"}
     root_fields = identity_fields | pitch_count_fields

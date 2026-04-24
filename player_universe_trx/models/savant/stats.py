@@ -1,14 +1,17 @@
 from typing import Optional
 
-from pydantic import ConfigDict, Field
+from pydantic import Field
 
-from player_universe_trx.models.savant.savant_player import SavantBaseStats
+from player_universe_trx.models.savant.savant_player import (
+    SAVANT_STATS_MODEL_CONFIG,
+    SavantBaseStats,
+)
 
 
 class SavantBatterStatsModel(SavantBaseStats):
     """Savant batter statistics including base stats plus batter-specific fields."""
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = SAVANT_STATS_MODEL_CONFIG
 
     # Swing mechanics
     attack_angle: Optional[float] = Field(default=None, description="Attack angle")
@@ -19,16 +22,13 @@ class SavantBatterStatsModel(SavantBaseStats):
 
     # Performance metrics
     pitch_velo: Optional[float] = Field(default=None, description="Average pitch velocity faced")
-    barrels_per_bbe_pct: Optional[float] = Field(default=None, description="Barrels per batted ball event percentage")
-    barrels_per_pa_pct: Optional[float] = Field(default=None, description="Barrels per plate appearance percentage")
-    hardhit_pct: Optional[float] = Field(default=None, description="Hard hit percentage")
     batter_run_value_per_100: Optional[float] = Field(default=None, description="Batter run value per 100 pitches")
 
 
 class SavantPitcherStatsModel(SavantBaseStats):
     """Savant pitcher statistics including base stats plus pitcher-specific fields."""
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = SAVANT_STATS_MODEL_CONFIG
 
     # Pitch characteristics
     velo: Optional[float] = Field(default=None, description="Pitch velocity")

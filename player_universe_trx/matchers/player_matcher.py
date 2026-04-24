@@ -81,7 +81,7 @@ class PlayerMatcher:
 
         # Track matched players by ID
         self.matched_fg_ids: Set[str] = set()
-        self.matched_savant_ids: Set[int] = set()
+        self.matched_savant_ids: Set[Tuple[int, str]] = set()
 
         # Build player indexes for efficient lookup
         self.index = PlayerIndex(fangraphs_data, savant_data)
@@ -286,8 +286,15 @@ class PlayerMatcher:
         if not xmlbam_id or not self.index.savant_by_mlb_id:
             return None
 
-        savant_match = self.index.find_savant_by_mlb_id(xmlbam_id)
-        if savant_match and savant_match.player_id in self.matched_savant_ids:
+        player_type = (
+            "batter" if isinstance(fg_match, FangraphsBatterModel) else "pitcher"
+        )
+        savant_match = self.index.find_savant_by_mlb_id(xmlbam_id, player_type)
+        if not savant_match:
+            return None
+
+        savant_key = (savant_match.player_id, savant_match.player_type)
+        if savant_key in self.matched_savant_ids:
             return None  # Already matched to another player
 
         return savant_match
@@ -561,8 +568,9 @@ class PlayerMatcher:
 
             if result.savant_match:
                 savant_id = result.savant_match.player_id
-                if savant_id:
-                    self.matched_savant_ids.add(savant_id)
+                savant_type = result.savant_match.player_type
+                if savant_id and savant_type:
+                    self.matched_savant_ids.add((savant_id, savant_type))
 
             results.append(result)
 

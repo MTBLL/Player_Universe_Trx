@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from player_universe_trx.matchers.config import FG_TO_ESPN_TEAM_MAPPING
 from player_universe_trx.matchers.utils import extract_last_name
@@ -42,7 +42,12 @@ class PlayerIndex:
         self.fg_by_id: Dict[str, FangraphsBatterModel | FangraphsPitcherModel] = {}
 
         # Savant indexes
-        self.savant_by_mlb_id: Dict[int, SavantBatterModel | SavantPitcherModel] = {}
+        self.savant_by_mlb_id: Dict[
+            int, List[SavantBatterModel | SavantPitcherModel]
+        ] = {}
+        self.savant_by_mlb_id_and_type: Dict[
+            Tuple[int, str], SavantBatterModel | SavantPitcherModel
+        ] = {}
 
         # Build all indexes
         self._build_indexes()
@@ -57,7 +62,9 @@ class PlayerIndex:
         - Team (for team-based disambiguation)
         - Player ID (for quick lookup)
 
-        Also indexes Savant data by MLB ID (player_id).
+        Also indexes Savant data by MLB ID (player_id) and role. The role-aware
+        index prevents two-way player batter and pitcher rows from overwriting
+        each other.
         """
         # Index FanGraphs data
         for fg_player in self.fg_data:
@@ -94,11 +101,15 @@ class PlayerIndex:
                     self.fg_by_last_name[last_name] = []
                 self.fg_by_last_name[last_name].append(fg_player)
 
-        # Index Savant data by MLB ID (player_id)
+        # Index Savant data by MLB ID (player_id) and player_type
         for savant_player in self.savant_data:
             player_id = savant_player.player_id
             if player_id:
-                self.savant_by_mlb_id[player_id] = savant_player
+                self.savant_by_mlb_id.setdefault(player_id, []).append(savant_player)
+                if savant_player.player_type:
+                    self.savant_by_mlb_id_and_type[
+                        (player_id, savant_player.player_type)
+                    ] = savant_player
 
     def find_by_slug(
         self, slug: str
@@ -161,13 +172,14 @@ class PlayerIndex:
         return self.fg_by_team.get(team, [])
 
     def find_savant_by_mlb_id(
-        self, mlb_id: int
+        self, mlb_id: Optional[int], player_type: Optional[str] = None
     ) -> Optional[SavantBatterModel | SavantPitcherModel]:
         """
         Find Savant player by MLB ID.
 
         Args:
             mlb_id: MLB player ID
+            player_type: Optional Savant role ("batter" or "pitcher")
 
         Returns:
             Savant player if found, None otherwise
@@ -175,7 +187,16 @@ class PlayerIndex:
         if not mlb_id:
             return None
 
-        return self.savant_by_mlb_id.get(mlb_id)
+        if player_type:
+            match = self.savant_by_mlb_id_and_type.get((mlb_id, player_type))
+            if match:
+                return match
+
+        matches = self.savant_by_mlb_id.get(mlb_id, [])
+        if len(matches) == 1:
+            return matches[0]
+
+        return None
 
     def remove_matched(
         self, fg_player: FangraphsBatterModel | FangraphsPitcherModel
@@ -230,6 +251,17 @@ class PlayerIndex:
         if playerid:
             self.fg_by_id.pop(playerid, None)
 
-        # Remove from Savant MLB ID index
+        # Remove from Savant MLB ID index for this role only. Two-way players may
+        # still have a valid row in the opposite role.
         if mlbid:
-            self.savant_by_mlb_id.pop(mlbid, None)
+            player_type = "batter" if isinstance(fg_player, FangraphsBatterModel) else "pitcher"
+            self.savant_by_mlb_id_and_type.pop((mlbid, player_type), None)
+
+            if mlbid in self.savant_by_mlb_id:
+                self.savant_by_mlb_id[mlbid] = [
+                    p
+                    for p in self.savant_by_mlb_id[mlbid]
+                    if p.player_type != player_type
+                ]
+                if not self.savant_by_mlb_id[mlbid]:
+                    del self.savant_by_mlb_id[mlbid]
