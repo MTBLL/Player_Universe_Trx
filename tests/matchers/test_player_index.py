@@ -51,6 +51,36 @@ def test_find_savant_by_mlb_id_returns_single_match_without_player_type():
     assert index.find_savant_by_mlb_id(592450) == batter
 
 
+def test_find_savant_by_mlb_id_role_miss_does_not_return_opposite_role():
+    """Test role-specific Savant lookups do not fall back to the opposite role."""
+    batter = SavantBatterModel(
+        player_id=660271,
+        name="Ohtani, Shohei",
+        first_name="Shohei",
+        last_name="Ohtani",
+        name_ascii="Shohei Ohtani",
+        slug="shohei-ohtani",
+        pitches=100,
+        total_pitches=100,
+        pitch_percent=100.0,
+    )
+    pitcher = SavantPitcherModel(
+        player_id=543037,
+        name="Cole, Gerrit",
+        first_name="Gerrit",
+        last_name="Cole",
+        name_ascii="Gerrit Cole",
+        slug="gerrit-cole",
+        pitches=100,
+        total_pitches=100,
+        pitch_percent=100.0,
+    )
+    index = PlayerIndex([], [batter, pitcher])
+
+    assert index.find_savant_by_mlb_id(660271, "pitcher") is None
+    assert index.find_savant_by_mlb_id(543037, "batter") is None
+
+
 def test_find_by_slug_no_match():
     """Test find_by_slug when no match exists."""
     fg_player = FangraphsBatterModel(
