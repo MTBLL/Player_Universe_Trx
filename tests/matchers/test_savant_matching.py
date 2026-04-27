@@ -44,6 +44,7 @@ def test_savant_match_via_xmlbam_id():
         last_name="Judge",
         name_ascii="Aaron Judge",
         slug="aaron-judge",
+        season=2026,
         pitches=1000,
         total_pitches=1000,
         pitch_percent=100.0,
@@ -87,6 +88,7 @@ def test_savant_no_match_when_xmlbam_id_missing():
         last_name="Judge",
         name_ascii="Aaron Judge",
         slug="aaron-judge",
+        season=2026,
         pitches=1000,
         total_pitches=1000,
         pitch_percent=100.0,
@@ -173,6 +175,7 @@ def test_savant_stats_merged_correctly():
         last_name="Judge",
         name_ascii="Aaron Judge",
         slug="aaron-judge",
+        season=2026,
         pitches=1000,
         total_pitches=1000,
         pitch_percent=100.0,
@@ -180,6 +183,7 @@ def test_savant_stats_merged_correctly():
             exit_velo=95.4,
             barrels_per_bbe_pct=15.2,
             hardhit_pct=52.3,
+            hardhit_pct_pct_rnk=92.7,
             xwOBA=0.463,
             xAVG=0.312,
             xSLG=0.654,
@@ -199,8 +203,12 @@ def test_savant_stats_merged_correctly():
     assert matched_player.stats is not None
     assert matched_player.stats.current_season is not None
     assert matched_player.stats.current_season.exit_velo == 95.4
+    assert matched_player.stats.current_season.savant_player_id == 592450
+    assert matched_player.stats.current_season.savant_player_type == "batter"
+    assert matched_player.stats.current_season.savant_season == 2026
     assert matched_player.stats.current_season.barrels_per_bbe_pct == 15.2
     assert matched_player.stats.current_season.hardhit_pct == 52.3
+    assert matched_player.stats.current_season.hardhit_pct_pct_rnk == 92.7
     assert matched_player.stats.current_season.xwOBA == 0.463
     assert matched_player.stats.current_season.xAVG == 0.312
     assert matched_player.stats.current_season.xSLG == 0.654

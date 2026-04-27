@@ -1,6 +1,6 @@
 """MTBL pitcher model with combined stats from all sources."""
 
-from typing import Optional
+from typing import Literal, Optional
 
 from player_universe_trx.models.mtbl.mtbl_player import MtblPlayerModel
 from player_universe_trx.models.mtbl.stats import MtblPitcherStatsModel
@@ -14,4 +14,5 @@ class MtblPitcherModel(MtblPlayerModel):
     from ESPN (current), FanGraphs (projections), and Savant (sabermetrics).
     """
 
+    player_type: Literal["pitcher"] = "pitcher"
     stats: Optional[MtblPitcherStatsModel] = None

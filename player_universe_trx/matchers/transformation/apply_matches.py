@@ -85,7 +85,12 @@ def _extract_savant_stats(
         Dictionary of Savant stats (unprefixed)
     """
     if savant_match and savant_match.stats:
-        return savant_match.stats.model_dump(exclude_none=True)
+        stats = savant_match.stats.model_dump(exclude_none=True)
+        stats["savant_player_id"] = savant_match.player_id
+        stats["savant_player_type"] = savant_match.player_type
+        if savant_match.season is not None:
+            stats["savant_season"] = savant_match.season
+        return stats
     return {}
 
 

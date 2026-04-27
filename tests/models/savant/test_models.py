@@ -79,6 +79,28 @@ def test_batter_stats_fields(sample_batter):
         assert hasattr(batter.stats, "barrels_per_pa_pct")
 
 
+def test_batter_preserves_new_role_metadata_and_percentile_fields(sample_batter):
+    """Test new Savant role metadata and percentile ranks are preserved."""
+    sample = {
+        **sample_batter,
+        "player_type": "batter",
+        "season": 2026,
+        "hardhit_pct_pct_rnk": 86.4,
+        "barrels_per_bbe_pct_pct_rnk": 97.6,
+        "barrels_per_pa_pct_pct_rnk": 96.9,
+        "barrels_total_pct_rnk": 98.6,
+    }
+
+    batter = create_savant_batter_models([sample])[0]
+
+    assert batter.player_type == "batter"
+    assert batter.season == 2026
+    assert batter.stats is not None
+    assert batter.stats.hardhit_pct_pct_rnk == 86.4
+    assert batter.stats.barrels_per_bbe_pct_pct_rnk == 97.6
+    assert batter.stats.model_dump()["barrels_total_pct_rnk"] == 98.6
+
+
 def test_pitcher_stats_fields(sample_pitcher):
     """Test that pitcher stats fields are accessible."""
     pitchers = create_savant_pitcher_models([sample_pitcher])
@@ -95,6 +117,29 @@ def test_pitcher_stats_fields(sample_pitcher):
         assert hasattr(pitcher.stats, "release_extension")
 
 
+def test_pitcher_preserves_contact_quality_fields(sample_pitcher):
+    """Test pitcher exports keep the contact-quality fields shared with batters."""
+    sample = {
+        **sample_pitcher,
+        "player_type": "pitcher",
+        "hardhit_pct": 31.0,
+        "hardhit_pct_pct_rnk": 44.4,
+        "barrels_per_bbe_pct": 3.4,
+        "barrels_per_bbe_pct_pct_rnk": 12.1,
+        "barrels_per_pa_pct": 2.1,
+        "barrels_per_pa_pct_pct_rnk": 9.8,
+    }
+
+    pitcher = create_savant_pitcher_models([sample])[0]
+
+    assert pitcher.player_type == "pitcher"
+    assert pitcher.stats is not None
+    assert pitcher.stats.hardhit_pct == 31.0
+    assert pitcher.stats.hardhit_pct_pct_rnk == 44.4
+    assert pitcher.stats.barrels_per_bbe_pct == 3.4
+    assert pitcher.stats.barrels_per_pa_pct_pct_rnk == 9.8
+
+
 def test_batter_model_with_invalid_data():
     """Test that invalid batter data raises validation error."""
     invalid_data = [{"name": "Test Player"}]  # Missing required player_id
@@ -109,3 +154,12 @@ def test_pitcher_model_with_invalid_data():
 
     pitchers = create_savant_pitcher_models(invalid_data)
     assert len(pitchers) == 0  # Should skip invalid records
+
+
+def test_role_mismatch_is_invalid(sample_batter):
+    """Test role-specific models reject rows carrying the opposite player_type."""
+    invalid_role_data = {**sample_batter, "player_type": "pitcher"}
+
+    batters = create_savant_batter_models([invalid_role_data])
+
+    assert len(batters) == 0

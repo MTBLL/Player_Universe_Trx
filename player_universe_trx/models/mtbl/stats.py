@@ -22,7 +22,7 @@ class MtblBatterSeasonStatsModel(BaseModel):
     - Savant: Sabermetrics (advanced metrics like exit velocity, barrel rate, etc.)
     """
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     # ========== ESPN Current Season Stats ==========
     # Batting statistics
@@ -74,6 +74,15 @@ class MtblBatterSeasonStatsModel(BaseModel):
     G: Optional[float] = Field(default=None, description="Games (ESPN)")
 
     # ========== Savant Sabermetrics ==========
+    # Savant metadata
+    savant_player_id: Optional[int] = Field(
+        default=None, description="Savant player ID"
+    )
+    savant_player_type: Optional[str] = Field(
+        default=None, description="Savant player role"
+    )
+    savant_season: Optional[int] = Field(default=None, description="Savant season")
+
     # Contact metrics
     exit_velo: Optional[float] = Field(
         default=None, description="Exit Velocity (Savant)"
@@ -115,17 +124,29 @@ class MtblBatterSeasonStatsModel(BaseModel):
     barrels_per_bbe_pct: Optional[float] = Field(
         default=None, description="Barrels per BBE % (Savant)"
     )
+    barrels_per_bbe_pct_pct_rnk: Optional[float] = Field(
+        default=None, description="Barrels per BBE percentile rank (Savant)"
+    )
     barrels_per_pa_pct: Optional[float] = Field(
         default=None, description="Barrels per PA % (Savant)"
     )
+    barrels_per_pa_pct_pct_rnk: Optional[float] = Field(
+        default=None, description="Barrels per PA percentile rank (Savant)"
+    )
     barrels_total: Optional[int] = Field(
         default=None, description="Total Barrels (Savant)"
+    )
+    barrels_total_pct_rnk: Optional[float] = Field(
+        default=None, description="Total barrels percentile rank (Savant)"
     )
     hard_hit_rate: Optional[float] = Field(
         default=None, description="Hard Hit % (Savant)"
     )
     hardhit_pct: Optional[float] = Field(
         default=None, description="Hard Hit Pct (Savant)"
+    )
+    hardhit_pct_pct_rnk: Optional[float] = Field(
+        default=None, description="Hard hit percentile rank (Savant)"
     )
     batter_run_value_per_100: Optional[float] = Field(
         default=None, description="Run Value per 100 (Savant)"
@@ -203,7 +224,7 @@ class MtblBatterStatsModel(BaseModel):
     preserved in espn_stats.
     """
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     current_season: Optional[MtblBatterSeasonStatsModel] = Field(
         default=None,
@@ -270,6 +291,15 @@ class MtblPitcherSeasonStatsModel(BaseModel):
     k_per_9: Optional[float] = Field(default=None, alias="K/9", description="Strikeouts per 9 innings (ESPN)")
 
     # ========== Savant Sabermetrics ==========
+    # Savant metadata
+    savant_player_id: Optional[int] = Field(
+        default=None, description="Savant player ID"
+    )
+    savant_player_type: Optional[str] = Field(
+        default=None, description="Savant player role"
+    )
+    savant_season: Optional[int] = Field(default=None, description="Savant season")
+
     # Pitch characteristics
     velo: Optional[float] = Field(default=None, description="Pitch Velocity (Savant)")
     spin_rate: Optional[float] = Field(default=None, description="Spin Rate (Savant)")
@@ -323,6 +353,24 @@ class MtblPitcherSeasonStatsModel(BaseModel):
     )
     launch_angle: Optional[float] = Field(
         default=None, description="Launch Angle Against (Savant)"
+    )
+    hardhit_pct: Optional[float] = Field(
+        default=None, description="Hard Hit Pct Against (Savant)"
+    )
+    hardhit_pct_pct_rnk: Optional[float] = Field(
+        default=None, description="Hard hit percentile rank (Savant)"
+    )
+    barrels_per_bbe_pct: Optional[float] = Field(
+        default=None, description="Barrels per BBE Allowed % (Savant)"
+    )
+    barrels_per_bbe_pct_pct_rnk: Optional[float] = Field(
+        default=None, description="Barrels per BBE percentile rank (Savant)"
+    )
+    barrels_per_pa_pct: Optional[float] = Field(
+        default=None, description="Barrels per PA Allowed % (Savant)"
+    )
+    barrels_per_pa_pct_pct_rnk: Optional[float] = Field(
+        default=None, description="Barrels per PA percentile rank (Savant)"
     )
 
     # Plate discipline
@@ -379,6 +427,9 @@ class MtblPitcherSeasonStatsModel(BaseModel):
     )
     barrels_total: Optional[int] = Field(
         default=None, description="Barrels Allowed (Savant)"
+    )
+    barrels_total_pct_rnk: Optional[float] = Field(
+        default=None, description="Total barrels percentile rank (Savant)"
     )
     rate_ideal_attack_angle: Optional[float] = Field(
         default=None, description="Rate Ideal Attack Angle (Savant)"

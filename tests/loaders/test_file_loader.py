@@ -87,6 +87,19 @@ def test_extract_timestamp(fixtures_dir):
     )
 
 
+def test_extract_savant_season(fixtures_dir):
+    """Test Savant season extraction from role-specific filenames."""
+    loader = DataLoader(resources_path=str(fixtures_dir), year=2026)
+
+    assert (
+        loader._extract_savant_season_from_filename(
+            "savant_batters_2026_04_24_1245.json"
+        )
+        == 2026
+    )
+    assert loader._extract_savant_season_from_filename("invalid_filename.json") is None
+
+
 def test_get_file_methods(fixtures_dir):
     """Test all get_*_file methods for success and error cases."""
     loader = DataLoader(resources_path=str(fixtures_dir), year=2025)
@@ -169,9 +182,13 @@ def test_load_methods(fixtures_dir):
 
     sv_batters = loader_2026.load_savant_batters()
     assert isinstance(sv_batters, list) and len(sv_batters) > 0
+    assert sv_batters[0]["player_type"] == "batter"
+    assert sv_batters[0]["season"] == 2026
 
     sv_pitchers = loader_2026.load_savant_pitchers()
     assert isinstance(sv_pitchers, list) and len(sv_pitchers) > 0
+    assert sv_pitchers[0]["player_type"] == "pitcher"
+    assert sv_pitchers[0]["season"] == 2026
 
 
 def test_get_savant_files_not_found(tmp_path):
