@@ -191,6 +191,7 @@ class PlayerIndex:
             match = self.savant_by_mlb_id_and_type.get((mlb_id, player_type))
             if match:
                 return match
+            return None
 
         matches = self.savant_by_mlb_id.get(mlb_id, [])
         if len(matches) == 1:
