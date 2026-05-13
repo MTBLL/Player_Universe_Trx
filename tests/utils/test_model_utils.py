@@ -378,6 +378,42 @@ def test_consolidator_per_split_pitch_counts_preserved():
     assert m.vs_l.pitches == 50
 
 
+def test_consolidator_treats_missing_opp_hand_as_all_split():
+    """Legacy one-row-per-player extracts (pre-opp_hand) load as the `all` split.
+
+    Without this backwards-compat default, every row in a legacy file would
+    be silently dropped (opp_hand=None → unknown slot), wiping all Savant
+    enrichment downstream for backfills or reruns against older fixtures.
+    """
+    # Legacy row — note the absence of opp_hand
+    legacy_row = {
+        "player_id": 999,
+        "name": "Legacy, Player",
+        "first_name": "Legacy",
+        "last_name": "Player",
+        "name_ascii": "Legacy Player",
+        "slug": "legacy-player",
+        "player_type": "batter",
+        "season": 2024,
+        "pitches": 500,
+        "total_pitches": 500,
+        "pitch_percent": 100.0,
+        "xwOBA": 0.345,
+        "exit_velo": 89.0,
+    }
+    models = create_savant_batter_models([legacy_row])
+
+    assert len(models) == 1
+    m = models[0]
+    assert m.player_id == 999
+    # Missing opp_hand maps to the `all` slot
+    assert m.all is not None
+    assert m.all.xwOBA == 0.345
+    assert m.all.pitches == 500
+    assert m.vs_r is None
+    assert m.vs_l is None
+
+
 def test_consolidator_unknown_opp_hand_is_skipped(caplog):
     """opp_hand values outside the {all,R,L} contract are filtered with a debug log."""
     rows = [

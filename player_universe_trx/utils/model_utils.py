@@ -186,10 +186,17 @@ def _consolidate_savant_rows(
             logger.debug(f"Skipped Savant row with no player_id: {row.get('name')}")
             continue
 
-        slot = _OPP_HAND_TO_SLOT.get(row.get("opp_hand", ""))
+        # Rows missing `opp_hand` are treated as the `all` split. This keeps
+        # backwards-compatibility with legacy one-row-per-player extracts that
+        # predate the per-handedness wire format — without this default, those
+        # rows would be silently dropped and downstream Savant enrichment would
+        # vanish for the whole input.
+        raw_opp_hand = row.get("opp_hand")
+        opp_hand_key = "all" if raw_opp_hand is None else raw_opp_hand
+        slot = _OPP_HAND_TO_SLOT.get(opp_hand_key)
         if slot is None:
             logger.debug(
-                f"Skipped Savant row with unknown opp_hand={row.get('opp_hand')!r} "
+                f"Skipped Savant row with unknown opp_hand={raw_opp_hand!r} "
                 f"for player_id={pid}"
             )
             continue
