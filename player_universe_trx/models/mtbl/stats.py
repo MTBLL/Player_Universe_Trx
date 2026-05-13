@@ -219,9 +219,9 @@ class MtblBatterStatsModel(BaseModel):
     """
     MTBL batter statistics container with current season stats and ESPN periods.
 
-    Current season stats contain ESPN current season data and Savant sabermetrics, while
-    FanGraphs projections live in the projections object and ESPN historical periods are
-    preserved in espn_stats.
+    Current season stats contain ESPN current season data and Savant sabermetrics. The
+    three FanGraphs projection slots (preseason, in-season-updated, rest-of-season)
+    live alongside, and ESPN historical periods are preserved in espn_stats.
     """
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
@@ -232,7 +232,15 @@ class MtblBatterStatsModel(BaseModel):
     )
     projections: Optional[FangraphsBatterStatsModel] = Field(
         default=None,
-        description="FanGraphs projection stats",
+        description="FanGraphs preseason projection stats (canonical mix; carries q*/tt_q* percentiles)",
+    )
+    projs_updated: Optional[FangraphsBatterStatsModel] = Field(
+        default=None,
+        description="FanGraphs in-season updated full-year projection (None pre-draft)",
+    )
+    ros: Optional[FangraphsBatterStatsModel] = Field(
+        default=None,
+        description="FanGraphs rest-of-season projection (None pre-draft)",
     )
     espn_stats: Optional[EspnBatterStatsGroupModel] = Field(
         default=None, description="ESPN stats container with all periods"
@@ -440,9 +448,9 @@ class MtblPitcherStatsModel(BaseModel):
     """
     MTBL pitcher statistics container with current season stats and ESPN periods.
 
-    Current season stats contain ESPN current season data and Savant sabermetrics, while
-    FanGraphs projections live in the projections object and ESPN historical periods are
-    preserved in espn_stats.
+    Current season stats contain ESPN current season data and Savant sabermetrics. The
+    three FanGraphs projection slots (preseason, in-season-updated, rest-of-season)
+    live alongside, and ESPN historical periods are preserved in espn_stats.
     """
 
     model_config = ConfigDict(populate_by_name=True)
@@ -453,7 +461,15 @@ class MtblPitcherStatsModel(BaseModel):
     )
     projections: Optional[FangraphsPitcherStatsModel] = Field(
         default=None,
-        description="FanGraphs projection stats",
+        description="FanGraphs preseason projection stats (canonical mix; carries q*/tt_q* percentiles)",
+    )
+    projs_updated: Optional[FangraphsPitcherStatsModel] = Field(
+        default=None,
+        description="FanGraphs in-season updated full-year projection (None pre-draft)",
+    )
+    ros: Optional[FangraphsPitcherStatsModel] = Field(
+        default=None,
+        description="FanGraphs rest-of-season projection (None pre-draft)",
     )
     espn_stats: Optional[EspnPitcherStatsGroupModel] = Field(
         default=None, description="ESPN stats container with all periods"

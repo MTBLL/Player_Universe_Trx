@@ -9,8 +9,8 @@ from player_universe_trx.models.mtbl import MtblPlayerModel
 
 espn_batters_fixture_file = "espn_batters_2025_20260108_095403.json"
 espn_pitchers_fixture_file = "espn_pitchers_2025_20260108_095403.json"
-fangraphs_batters_fixture_file = "fangraph_batters_2025_20260113_105922.json"
-fangraphs_pitchers_fixture_file = "fangraph_pitchers_2025_20260113_150546.json"
+fangraphs_batters_fixture_file = "fangraph_batters_2026_20260512_131824.json"
+fangraphs_pitchers_fixture_file = "fangraph_pitchers_2026_20260512_131824.json"
 
 
 @pytest.fixture
@@ -164,7 +164,7 @@ def mason_miller_fangraphs() -> Dict[str, Any]:
 
     # If Mason Miller not found, return any relief pitcher with saves and holds
     for player in data:
-        proj = player.get("projection", {})
+        proj = player.get("projections", {})
         if proj.get("SV", 0) > 0 and proj.get("HLD", 0) > 0:
             return player
 

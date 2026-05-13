@@ -170,28 +170,28 @@ def test_batter_model_serialize_by_alias(sample_batter):
     # Export to dict
     exported = batter.model_dump()
 
-    # Check that aliases are used in export
-    assert "projection" in exported
-    assert exported["projection"] is not None
+    # Check that the new three-slot shape is preserved in export
+    assert "projections" in exported
+    assert exported["projections"] is not None
 
     # Check specific fields use uppercase aliases
-    assert "PA" in exported["projection"]
-    assert "HR" in exported["projection"]
-    assert "AVG" in exported["projection"]
-    assert "G" in exported["projection"]
-    assert "FPTS" in exported["projection"]
+    assert "PA" in exported["projections"]
+    assert "HR" in exported["projections"]
+    assert "AVG" in exported["projections"]
+    assert "G" in exported["projections"]
+    assert "FPTS" in exported["projections"]
 
     # Check that SBN computed field is exported with alias
-    assert "SBN" in exported["projection"]
-    assert exported["projection"]["SBN"] is not None
+    assert "SBN" in exported["projections"]
+    assert exported["projections"]["SBN"] is not None
 
     # Check that python names are NOT in export
-    assert "pa" not in exported["projection"]
-    assert "hr" not in exported["projection"]
-    assert "avg" not in exported["projection"]
-    assert "games" not in exported["projection"]
-    assert "fpts" not in exported["projection"]
-    assert "sbn" not in exported["projection"]
+    assert "pa" not in exported["projections"]
+    assert "hr" not in exported["projections"]
+    assert "avg" not in exported["projections"]
+    assert "games" not in exported["projections"]
+    assert "fpts" not in exported["projections"]
+    assert "sbn" not in exported["projections"]
 
 
 def test_pitcher_model_serialize_by_alias_with_svhd(mason_miller_fangraphs):
@@ -201,29 +201,29 @@ def test_pitcher_model_serialize_by_alias_with_svhd(mason_miller_fangraphs):
     # Export to dict
     exported = pitcher.model_dump()
 
-    # Check that aliases are used in export
-    assert "projection" in exported
-    assert exported["projection"] is not None
+    # Check that the new three-slot shape is preserved in export
+    assert "projections" in exported
+    assert exported["projections"] is not None
 
     # Check specific fields use uppercase aliases
-    assert "IP" in exported["projection"]
-    assert "ERA" in exported["projection"]
-    assert "WHIP" in exported["projection"]
-    assert "G" in exported["projection"]
-    assert "FPTS" in exported["projection"]
+    assert "IP" in exported["projections"]
+    assert "ERA" in exported["projections"]
+    assert "WHIP" in exported["projections"]
+    assert "G" in exported["projections"]
+    assert "FPTS" in exported["projections"]
 
     # Check that SVHD field is exported with alias
-    assert "SVHD" in exported["projection"]
-    assert exported["projection"]["SVHD"] is not None
-    assert exported["projection"]["SVHD"] > 0
+    assert "SVHD" in exported["projections"]
+    assert exported["projections"]["SVHD"] is not None
+    assert exported["projections"]["SVHD"] > 0
 
     # Check that python names are NOT in export
-    assert "innings_pitched" not in exported["projection"]
-    assert "era" not in exported["projection"]
-    assert "whip" not in exported["projection"]
-    assert "games" not in exported["projection"]
-    assert "fpts" not in exported["projection"]
-    assert "svhd" not in exported["projection"]
+    assert "innings_pitched" not in exported["projections"]
+    assert "era" not in exported["projections"]
+    assert "whip" not in exported["projections"]
+    assert "games" not in exported["projections"]
+    assert "fpts" not in exported["projections"]
+    assert "svhd" not in exported["projections"]
 
 
 def test_batter_sbn_with_only_sb():
@@ -231,7 +231,7 @@ def test_batter_sbn_with_only_sb():
     data = {
         "name": "Only SB Batter",
         "playerid": "sb-only",
-        "projection": {"SB": 7},
+        "projections": {"SB": 7},
     }
     batter = FangraphsBatterModel.model_validate(data)
 
@@ -244,7 +244,7 @@ def test_batter_sbn_with_only_cs():
     data = {
         "name": "Only CS Batter",
         "playerid": "cs-only",
-        "projection": {"CS": 3},
+        "projections": {"CS": 3},
     }
     batter = FangraphsBatterModel.model_validate(data)
 
@@ -257,7 +257,7 @@ def test_pitcher_svhd_from_data():
     data = {
         "name": "Test Pitcher",
         "playerid": "test-pitcher",
-        "projection": {"SV": 4, "HLD": 6, "SVHD": 10},
+        "projections": {"SV": 4, "HLD": 6, "SVHD": 10},
     }
     pitcher = FangraphsPitcherModel.model_validate(data)
 
@@ -265,3 +265,124 @@ def test_pitcher_svhd_from_data():
     assert pitcher.projections.svhd == 10
     assert pitcher.projections.saves == 4
     assert pitcher.projections.holds == 6
+
+
+# ========== Three-slot projection shape (projections / projs_updated / ros) ==========
+
+
+def test_batter_loads_all_three_projection_slots():
+    """All three upstream projection slots populate when provided."""
+    data = {
+        "name": "Three Slot Batter",
+        "playerid": "three-slot",
+        "projections": {"HR": 40, "RBI": 100, "AVG": 0.290},
+        "projs_updated": {"HR": 38, "RBI": 95, "AVG": 0.285},
+        "ros": {"HR": 12, "RBI": 30, "AVG": 0.275},
+    }
+    batter = FangraphsBatterModel.model_validate(data)
+
+    assert batter.projections is not None
+    assert batter.projections.hr == 40
+    assert batter.projs_updated is not None
+    assert batter.projs_updated.hr == 38
+    assert batter.ros is not None
+    assert batter.ros.hr == 12
+
+
+def test_pitcher_loads_all_three_projection_slots():
+    """All three upstream projection slots populate for pitchers."""
+    data = {
+        "name": "Three Slot Pitcher",
+        "playerid": "three-slot-p",
+        "projections": {"W": 18, "SO": 220, "ERA": 3.10},
+        "projs_updated": {"W": 16, "SO": 200, "ERA": 3.25},
+        "ros": {"W": 5, "SO": 70, "ERA": 3.40},
+    }
+    pitcher = FangraphsPitcherModel.model_validate(data)
+
+    assert pitcher.projections is not None
+    assert pitcher.projections.wins == 18
+    assert pitcher.projs_updated is not None
+    assert pitcher.projs_updated.wins == 16
+    assert pitcher.ros is not None
+    assert pitcher.ros.wins == 5
+
+
+def test_batter_missing_slots_default_to_none():
+    """projs_updated and ros default to None when absent from the payload (pre-draft)."""
+    data = {
+        "name": "Preseason Only",
+        "playerid": "preseason",
+        "projections": {"HR": 25},
+    }
+    batter = FangraphsBatterModel.model_validate(data)
+
+    assert batter.projections is not None
+    assert batter.projections.hr == 25
+    assert batter.projs_updated is None
+    assert batter.ros is None
+
+
+def test_batter_empty_slot_dicts_round_trip_to_empty():
+    """Upstream emits {} for slots with no data; the empty model dumps to {}.
+
+    This is the load-side of the stable-shape contract — pre-draft players have
+    projs_updated={} and ros={} on the wire, which we want to keep semantically
+    equivalent to "no data" so downstream consumers can ignore empty slots.
+    """
+    data = {
+        "name": "Empty Slots",
+        "playerid": "empty",
+        "projections": {"HR": 25},
+        "projs_updated": {},
+        "ros": {},
+    }
+    batter = FangraphsBatterModel.model_validate(data)
+
+    # Empty dicts validate to non-None model instances with every field None
+    assert batter.projs_updated is not None
+    assert batter.projs_updated.hr is None
+    # ...so model_dump(exclude_none=True) collapses them back to {}, which is
+    # how downstream code distinguishes "has data" from "slot exists but empty".
+    assert batter.projs_updated.model_dump(exclude_none=True) == {}
+    assert batter.ros is not None
+    assert batter.ros.model_dump(exclude_none=True) == {}
+
+
+def test_three_slots_serialize_with_plural_keys(sample_batter):
+    """Loaded fixture player serializes back with the new three-slot key shape."""
+    batter = FangraphsBatterModel.model_validate(sample_batter)
+    exported = batter.model_dump(by_alias=True, exclude_none=True)
+
+    # New plural key replaces the old singular `projection`
+    assert "projections" in exported
+    assert "projection" not in exported
+    # The two new sibling slots are present when upstream emitted them
+    assert ("projs_updated" in exported) or (batter.projs_updated is None)
+    assert ("ros" in exported) or (batter.ros is None)
+
+
+def test_only_preseason_slot_carries_percentiles(fangraphs_batter_data):
+    """Per upstream contract, q*/tt_q* percentile fields appear only in the
+    `projections` slot — they're derived from the steamer-at-weight-0 trick,
+    which is exclusive to the preseason mix. projs_updated and ros never have them.
+    """
+    saw_percentile_in_preseason = False
+    for raw in fangraphs_batter_data:
+        batter = FangraphsBatterModel.model_validate(raw)
+
+        # Whenever preseason has q10, fine. Whenever any other slot has q10, fail.
+        if batter.projections is not None and batter.projections.q10 is not None:
+            saw_percentile_in_preseason = True
+        if batter.projs_updated is not None:
+            assert batter.projs_updated.q10 is None
+            assert batter.projs_updated.tt_q50 is None
+        if batter.ros is not None:
+            assert batter.ros.q10 is None
+            assert batter.ros.tt_q50 is None
+
+    # The fixture should at least include some preseason percentiles, otherwise
+    # the contract above is unverified.
+    assert saw_percentile_in_preseason, (
+        "Expected at least one preseason player with q10 percentile in fixture"
+    )

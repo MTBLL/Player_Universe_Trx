@@ -111,11 +111,16 @@ def test_get_file_methods(fixtures_dir):
         == "espn_league_10998_2025_20260102_143242.json"
     )
     assert "espn_league_" in loader.get_espn_league_file().name
-    assert loader.get_fangraphs_batters_file().name == fangraphs_batters_fixture_file
-    assert loader.get_fangraphs_pitchers_file().name == fangraphs_pitchers_fixture_file
 
-    # Test Savant file methods (year 2026 for Savant fixtures)
+    # Test FanGraphs + Savant file methods (year 2026 for both)
     loader_2026 = DataLoader(resources_path=str(fixtures_dir), year=2026)
+    assert (
+        loader_2026.get_fangraphs_batters_file().name == fangraphs_batters_fixture_file
+    )
+    assert (
+        loader_2026.get_fangraphs_pitchers_file().name
+        == fangraphs_pitchers_fixture_file
+    )
     assert (
         loader_2026.get_savant_batters_file().name
         == "savant_batters_2026_01_03_1444.json"
@@ -171,14 +176,14 @@ def test_load_methods(fixtures_dir):
     league_no_id = loader.load_espn_league()
     assert isinstance(league_no_id, (dict, list))
 
-    fg_batters = loader.load_fangraphs_batters()
+    # Test FanGraphs + Savant load methods (year 2026 for both)
+    loader_2026 = DataLoader(resources_path=str(fixtures_dir), year=2026)
+
+    fg_batters = loader_2026.load_fangraphs_batters()
     assert isinstance(fg_batters, list) and len(fg_batters) > 0
 
-    fg_pitchers = loader.load_fangraphs_pitchers()
+    fg_pitchers = loader_2026.load_fangraphs_pitchers()
     assert isinstance(fg_pitchers, list) and len(fg_pitchers) > 0
-
-    # Test Savant load methods (year 2026 for Savant fixtures)
-    loader_2026 = DataLoader(resources_path=str(fixtures_dir), year=2026)
 
     sv_batters = loader_2026.load_savant_batters()
     assert isinstance(sv_batters, list) and len(sv_batters) > 0

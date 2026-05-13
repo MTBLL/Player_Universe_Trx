@@ -56,21 +56,34 @@ def _extract_espn_current_season_stats(
     return {}
 
 
+_FANGRAPHS_PROJECTION_SLOTS: Tuple[str, ...] = ("projections", "projs_updated", "ros")
+
+
 def _extract_fangraphs_projections(
     fg_match: Optional["FangraphsBatterModel | FangraphsPitcherModel"],
-) -> Dict[str, Any]:
-    """Extract FanGraphs projection stats.
+) -> Dict[str, Dict[str, Any]]:
+    """Extract FanGraphs projection stats for all three upstream slots.
 
-    Args:
-        fg_match: FanGraphs player model with projections
+    Upstream emits three sibling slots per player — `projections` (preseason),
+    `projs_updated` (in-season full-year refit), and `ros` (rest-of-season).
+    Each slot is rendered as `{}` upstream when Fangraphs hasn't published the
+    underlying endpoints yet, which round-trips here to a model whose
+    model_dump(exclude_none=True) is `{}`. We propagate empty dicts unchanged
+    so downstream consumers see the same stable shape.
 
     Returns:
-        Dictionary of projection stats
+        Dict keyed by slot name with the per-slot stats dict as value.
     """
-    if not fg_match or not fg_match.projections:
-        return {}
+    out: Dict[str, Dict[str, Any]] = {slot: {} for slot in _FANGRAPHS_PROJECTION_SLOTS}
+    if not fg_match:
+        return out
 
-    return fg_match.projections.model_dump(exclude_none=True)
+    for slot in _FANGRAPHS_PROJECTION_SLOTS:
+        model = getattr(fg_match, slot, None)
+        if model is None:
+            continue
+        out[slot] = model.model_dump(exclude_none=True)
+    return out
 
 
 def _extract_savant_stats(
@@ -128,7 +141,7 @@ def _build_stats_dict(
 def _create_player_model(
     base_player: MtblPlayerModel,
     stats_dict: Dict[str, Any],
-    projections_dict: Dict[str, Any],
+    projections_dict: Dict[str, Dict[str, Any]],
     espn_stats_container: Optional[
         EspnBatterStatsGroupModel | EspnPitcherStatsGroupModel
     ],
@@ -139,7 +152,9 @@ def _create_player_model(
     Args:
         base_player: Base MTBL player model
         stats_dict: Combined current season stats dictionary
-        projections_dict: FanGraphs projections dictionary
+        projections_dict: FanGraphs projections by slot — keys are
+            "projections", "projs_updated", "ros"; each value is the per-slot
+            stats dict (possibly empty).
         espn_stats_container: ESPN stats container with all periods
         is_batter: True for batter, False for pitcher
 
@@ -148,9 +163,16 @@ def _create_player_model(
     """
     base_data: Dict[str, Any] = base_player.model_dump()
 
+    # Pull per-slot dicts out for clarity; empty dicts mean "upstream had no data"
+    # and we leave the corresponding field as None on the MTBL stats container.
+    preseason = projections_dict.get("projections", {})
+    updated = projections_dict.get("projs_updated", {})
+    ros = projections_dict.get("ros", {})
+    has_any_projection = bool(preseason or updated or ros)
+
     if is_batter:
         batter_stats: Optional[MtblBatterStatsModel] = None
-        if stats_dict or projections_dict or espn_stats_container:
+        if stats_dict or has_any_projection or espn_stats_container:
             # Type narrow the container for batters
             batter_container: Optional[EspnBatterStatsGroupModel] = (
                 espn_stats_container
@@ -160,20 +182,21 @@ def _create_player_model(
             batter_current_season: Optional[MtblBatterSeasonStatsModel] = (
                 MtblBatterSeasonStatsModel(**stats_dict) if stats_dict else None
             )
-            batter_projections: Optional[FangraphsBatterStatsModel] = (
-                FangraphsBatterStatsModel(**projections_dict)
-                if projections_dict
-                else None
-            )
             batter_stats = MtblBatterStatsModel(
                 current_season=batter_current_season,
-                projections=batter_projections,
+                projections=(
+                    FangraphsBatterStatsModel(**preseason) if preseason else None
+                ),
+                projs_updated=(
+                    FangraphsBatterStatsModel(**updated) if updated else None
+                ),
+                ros=(FangraphsBatterStatsModel(**ros) if ros else None),
                 espn_stats=batter_container,
             )
         return MtblBatterModel(**base_data, stats=batter_stats)
     else:
         pitcher_stats: Optional[MtblPitcherStatsModel] = None
-        if stats_dict or projections_dict or espn_stats_container:
+        if stats_dict or has_any_projection or espn_stats_container:
             # Type narrow the container for pitchers
             pitcher_container: Optional[EspnPitcherStatsGroupModel] = (
                 espn_stats_container
@@ -183,14 +206,15 @@ def _create_player_model(
             pitcher_current_season: Optional[MtblPitcherSeasonStatsModel] = (
                 MtblPitcherSeasonStatsModel(**stats_dict) if stats_dict else None
             )
-            pitcher_projections: Optional[FangraphsPitcherStatsModel] = (
-                FangraphsPitcherStatsModel(**projections_dict)
-                if projections_dict
-                else None
-            )
             pitcher_stats = MtblPitcherStatsModel(
                 current_season=pitcher_current_season,
-                projections=pitcher_projections,
+                projections=(
+                    FangraphsPitcherStatsModel(**preseason) if preseason else None
+                ),
+                projs_updated=(
+                    FangraphsPitcherStatsModel(**updated) if updated else None
+                ),
+                ros=(FangraphsPitcherStatsModel(**ros) if ros else None),
                 espn_stats=pitcher_container,
             )
         return MtblPitcherModel(**base_data, stats=pitcher_stats)
@@ -238,7 +262,9 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
         # Handle ambiguous matches
         if result.confidence == MatchConfidence.AMBIGUOUS:
             ambiguous_stats_dict = _build_stats_dict(result, is_matched=False)
-            ambiguous_projections_dict: Dict[str, Any] = {}
+            ambiguous_projections_dict: Dict[str, Dict[str, Any]] = {
+                slot: {} for slot in _FANGRAPHS_PROJECTION_SLOTS
+            }
             ambiguous_espn_stats_container: Optional[Any] = (
                 result.espn_player.stats if result.espn_player.stats else None
             )
@@ -262,8 +288,10 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
         # Build combined current-season stats dictionary
         stats_dict: Dict[str, Any] = _build_stats_dict(result, is_matched)
 
-        projections_dict: Dict[str, Any] = (
-            _extract_fangraphs_projections(result.fangraphs_match) if is_matched else {}
+        projections_dict: Dict[str, Dict[str, Any]] = (
+            _extract_fangraphs_projections(result.fangraphs_match)
+            if is_matched
+            else {slot: {} for slot in _FANGRAPHS_PROJECTION_SLOTS}
         )
 
         # Extract ESPN stats container
