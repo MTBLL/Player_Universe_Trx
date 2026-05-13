@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class EspnBatterStatsModel(BaseModel):
@@ -43,6 +43,24 @@ class EspnBatterStatsModel(BaseModel):
     GDP: Optional[float] = Field(default=None, description="Grounded Into Double Play")
     B_SO: Optional[float] = Field(default=None, description="Strikeouts (Batter)")
     G: Optional[float] = Field(default=None, description="Games")
+
+    @model_validator(mode="after")
+    def compute_sbn_if_missing(self):
+        """Compute SBN from SB - CS when ESPN's payload didn't include it.
+
+        SBN is a derived stat (net steals) that ESPN sometimes omits — we want
+        downstream consumers to be able to read SBN unconditionally. The
+        compute is non-destructive: if ESPN already supplied SBN, keep it.
+        """
+        if self.SBN is not None:
+            return self
+        if self.SB is not None and self.CS is not None:
+            self.SBN = self.SB - self.CS
+        elif self.SB is not None:
+            self.SBN = self.SB
+        elif self.CS is not None:
+            self.SBN = -self.CS
+        return self
 
 
 class EspnPitcherStatsModel(BaseModel):

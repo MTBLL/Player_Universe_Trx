@@ -28,7 +28,7 @@ def temp_dir_with_files(tmp_path):
 
     files_ordered = [
         (espn_batters_fixture_file, test_data),
-        ("espn_league_10998_2025_20260102_143242.json", test_data),
+        ("espn_league_10998_2026_20260513_140635.json", test_data),
     ]
 
     for filename, data in files_ordered:
@@ -60,9 +60,9 @@ def test_init_and_default_path(fixtures_dir):
 
 def test_find_latest_file(temp_dir_with_files):
     """Test finding latest file by modification time."""
-    loader = DataLoader(resources_path=str(temp_dir_with_files), year=2025)
+    loader = DataLoader(resources_path=str(temp_dir_with_files), year=2026)
 
-    result = loader._find_latest_file(r"espn_batters_2025_\d{8}_\d{6}\.json")
+    result = loader._find_latest_file(r"espn_batters_2026_\d{8}_\d{6}\.json")
     assert isinstance(result, Path)
     assert result.name == espn_batters_fixture_file
 
@@ -71,7 +71,7 @@ def test_find_latest_file(temp_dir_with_files):
 
 def test_extract_timestamp(fixtures_dir):
     """Test timestamp extraction from filenames."""
-    loader = DataLoader(resources_path=str(fixtures_dir), year=2025)
+    loader = DataLoader(resources_path=str(fixtures_dir), year=2026)
 
     assert loader._extract_timestamp_from_filename("invalid_filename.json") is None
     result = loader._extract_timestamp_from_filename(espn_batters_fixture_file)
@@ -81,7 +81,7 @@ def test_extract_timestamp(fixtures_dir):
     # Test invalid timestamp format (has pattern but invalid date)
     assert (
         loader._extract_timestamp_from_filename(
-            "espn_batters_2025_99999999_999999.json"
+            "espn_batters_2026_99999999_999999.json"
         )
         is None
     )
@@ -102,32 +102,51 @@ def test_extract_savant_season(fixtures_dir):
 
 def test_get_file_methods(fixtures_dir):
     """Test all get_*_file methods for success and error cases."""
-    loader = DataLoader(resources_path=str(fixtures_dir), year=2025)
+    # All sources are now year-2026 fixtures, so a single loader covers them.
+    loader = DataLoader(resources_path=str(fixtures_dir), year=2026)
 
     assert loader.get_espn_batters_file().name == espn_batters_fixture_file
     assert loader.get_espn_pitchers_file().name == espn_pitchers_fixture_file
     assert (
         loader.get_espn_league_file(league_id=10998).name
-        == "espn_league_10998_2025_20260102_143242.json"
+        == "espn_league_10998_2026_20260513_140635.json"
     )
     assert "espn_league_" in loader.get_espn_league_file().name
 
-    # Test FanGraphs + Savant file methods (year 2026 for both)
-    loader_2026 = DataLoader(resources_path=str(fixtures_dir), year=2026)
+    assert loader.get_fangraphs_batters_file().name == fangraphs_batters_fixture_file
     assert (
-        loader_2026.get_fangraphs_batters_file().name == fangraphs_batters_fixture_file
+        loader.get_fangraphs_pitchers_file().name == fangraphs_pitchers_fixture_file
     )
     assert (
-        loader_2026.get_fangraphs_pitchers_file().name
-        == fangraphs_pitchers_fixture_file
+        loader.get_savant_batters_file().name == "savant_batters_2026_05_13_1312.json"
     )
     assert (
-        loader_2026.get_savant_batters_file().name
-        == "savant_batters_2026_05_13_1212.json"
+        loader.get_savant_pitchers_file().name == "savant_pitchers_2026_05_13_1312.json"
     )
-    assert (
-        loader_2026.get_savant_pitchers_file().name
-        == "savant_pitchers_2026_05_13_1212.json"
+
+    # Savant sub-domain accessors — each thinly wraps _get_savant_subdomain_file
+    # with a different stem. Exercise each to lock in the stem → filename map.
+    assert loader.get_savant_statcast_batters_file().name.startswith(
+        "savant_statcast_batter_"
+    )
+    assert loader.get_savant_statcast_pitchers_file().name.startswith(
+        "savant_statcast_pitcher_"
+    )
+    assert loader.get_savant_home_runs_batters_file().name.startswith(
+        "savant_home_runs_batter_"
+    )
+    assert loader.get_savant_home_runs_pitchers_file().name.startswith(
+        "savant_home_runs_pitcher_"
+    )
+    assert loader.get_savant_pitch_arsenal_batters_file().name.startswith(
+        "savant_pitch_arsenal_stats_batter_"
+    )
+    assert loader.get_savant_pitch_arsenal_pitchers_file().name.startswith(
+        "savant_pitch_arsenal_stats_pitcher_"
+    )
+    assert loader.get_savant_sprint_speed_file().name.startswith("savant_sprint_speed_")
+    assert loader.get_savant_expected_statistics_pitchers_file().name.startswith(
+        "savant_expected_statistics_pitcher_"
     )
 
     loader_no_files = DataLoader(resources_path=str(fixtures_dir), year=2099)
@@ -160,9 +179,18 @@ def test_get_file_methods(fixtures_dir):
     )
 
 
+def test_savant_subdomain_file_not_found(tmp_path):
+    """Each Savant sub-domain accessor raises FileNotFoundError when its file is absent."""
+    loader = DataLoader(resources_path=str(tmp_path), year=2026)
+
+    with pytest.raises(FileNotFoundError, match="No Savant statcast batters file found"):
+        loader.get_savant_statcast_batters_file()
+
+
 def test_load_methods(fixtures_dir):
     """Test all load_* methods."""
-    loader = DataLoader(resources_path=str(fixtures_dir), year=2025)
+    # All sources are year-2026 now.
+    loader = DataLoader(resources_path=str(fixtures_dir), year=2026)
 
     batters = loader.load_espn_batters()
     assert isinstance(batters, list) and len(batters) > 0
@@ -176,21 +204,18 @@ def test_load_methods(fixtures_dir):
     league_no_id = loader.load_espn_league()
     assert isinstance(league_no_id, (dict, list))
 
-    # Test FanGraphs + Savant load methods (year 2026 for both)
-    loader_2026 = DataLoader(resources_path=str(fixtures_dir), year=2026)
-
-    fg_batters = loader_2026.load_fangraphs_batters()
+    fg_batters = loader.load_fangraphs_batters()
     assert isinstance(fg_batters, list) and len(fg_batters) > 0
 
-    fg_pitchers = loader_2026.load_fangraphs_pitchers()
+    fg_pitchers = loader.load_fangraphs_pitchers()
     assert isinstance(fg_pitchers, list) and len(fg_pitchers) > 0
 
-    sv_batters = loader_2026.load_savant_batters()
+    sv_batters = loader.load_savant_batters()
     assert isinstance(sv_batters, list) and len(sv_batters) > 0
     assert sv_batters[0]["player_type"] == "batter"
     assert sv_batters[0]["season"] == 2026
 
-    sv_pitchers = loader_2026.load_savant_pitchers()
+    sv_pitchers = loader.load_savant_pitchers()
     assert isinstance(sv_pitchers, list) and len(sv_pitchers) > 0
     assert sv_pitchers[0]["player_type"] == "pitcher"
     assert sv_pitchers[0]["season"] == 2026

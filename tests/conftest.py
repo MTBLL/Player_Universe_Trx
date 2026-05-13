@@ -7,8 +7,8 @@ import pytest
 from player_universe_trx.models.espn import EspnPlayerModel
 from player_universe_trx.models.mtbl import MtblPlayerModel
 
-espn_batters_fixture_file = "espn_batters_2025_20260108_095403.json"
-espn_pitchers_fixture_file = "espn_pitchers_2025_20260108_095403.json"
+espn_batters_fixture_file = "espn_batters_2026_20260513_140634.json"
+espn_pitchers_fixture_file = "espn_pitchers_2026_20260513_140634.json"
 fangraphs_batters_fixture_file = "fangraph_batters_2026_20260512_131824.json"
 fangraphs_pitchers_fixture_file = "fangraph_pitchers_2026_20260512_131824.json"
 
@@ -33,7 +33,7 @@ def fangraphs_fixture_path():
 def savant_fixture_path():
     """Fixture providing the path to the Savant players fixture file."""
     fixtures_dir = Path(__file__).parent / "fixtures"
-    return fixtures_dir / "savant_batters_2026_05_13_1212.json"
+    return fixtures_dir / "savant_batters_2026_05_13_1312.json"
 
 
 @pytest.fixture
@@ -137,7 +137,7 @@ def fangraphs_pitcher_data() -> List[Dict]:
 def savant_batter_data() -> List[Dict]:
     """Fixture providing Savant batter data."""
     fixtures_path = Path(__file__).parent / "fixtures"
-    with open(fixtures_path / "savant_batters_2026_05_13_1212.json") as f:
+    with open(fixtures_path / "savant_batters_2026_05_13_1312.json") as f:
         data = json.load(f)
     return data[:10]
 
@@ -146,7 +146,7 @@ def savant_batter_data() -> List[Dict]:
 def savant_pitcher_data() -> List[Dict]:
     """Fixture providing Savant pitcher data."""
     fixtures_path = Path(__file__).parent / "fixtures"
-    with open(fixtures_path / "savant_pitchers_2026_05_13_1212.json") as f:
+    with open(fixtures_path / "savant_pitchers_2026_05_13_1312.json") as f:
         data = json.load(f)
     return data[:10]
 
@@ -175,7 +175,7 @@ def mason_miller_fangraphs() -> Dict[str, Any]:
 def mason_miller_savant() -> Dict[str, Any]:
     """Fixture providing Mason Miller's Savant data."""
     fixtures_path = Path(__file__).parent / "fixtures"
-    with open(fixtures_path / "savant_pitchers_2026_05_13_1212.json") as f:
+    with open(fixtures_path / "savant_pitchers_2026_05_13_1312.json") as f:
         data = json.load(f)
 
     for player in data:

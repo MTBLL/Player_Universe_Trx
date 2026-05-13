@@ -16,9 +16,11 @@ from player_universe_trx.models.mtbl.league import (
 from player_universe_trx.models.mtbl.mtbl_player import MtblPlayerModel
 from player_universe_trx.models.mtbl.pitcher import MtblPitcherModel
 from player_universe_trx.models.mtbl.stats import (
-    MtblBatterSeasonStatsModel,
+    MtblBatterFangraphsBundle,
+    MtblBatterSavantBundle,
     MtblBatterStatsModel,
-    MtblPitcherSeasonStatsModel,
+    MtblPitcherFangraphsBundle,
+    MtblPitcherSavantBundle,
     MtblPitcherStatsModel,
 )
 
@@ -26,9 +28,11 @@ __all__ = [
     "MtblPlayerModel",
     "MtblBatterModel",
     "MtblPitcherModel",
-    "MtblBatterSeasonStatsModel",
+    "MtblBatterFangraphsBundle",
+    "MtblBatterSavantBundle",
     "MtblBatterStatsModel",
-    "MtblPitcherSeasonStatsModel",
+    "MtblPitcherFangraphsBundle",
+    "MtblPitcherSavantBundle",
     "MtblPitcherStatsModel",
     "MtblLeagueModel",
     "MtblScheduleModel",

@@ -4,6 +4,7 @@ from player_universe_trx.models.espn import (
     EspnPitcherModel,
     EspnPitcherStatsModel,
 )
+from player_universe_trx.models.espn.batter import EspnBatterStatsGroupModel
 
 
 def test_batter_model_validation(sample_batter):
@@ -58,7 +59,7 @@ def test_batter_model_all_stat_periods(espn_batter_data):
     assert batter.stats is not None
     assert batter.stats.projections is not None
     assert batter.stats.current_season is not None
-    assert batter.stats.previous_season_24 is not None
+    assert batter.stats.previous_season is not None
     assert batter.stats.last_7_games is not None
     assert batter.stats.last_15_games is not None
     assert batter.stats.last_30_games is not None
@@ -71,10 +72,63 @@ def test_pitcher_model_all_stat_periods(espn_pitcher_data):
     assert pitcher.stats is not None
     assert pitcher.stats.projections is not None
     assert pitcher.stats.current_season is not None
-    assert pitcher.stats.previous_season_24 is not None
+    assert pitcher.stats.previous_season is not None
     assert pitcher.stats.last_7_games is not None
     assert pitcher.stats.last_15_games is not None
     assert pitcher.stats.last_30_games is not None
+
+
+def test_previous_season_year_suffix_mapped_to_canonical_field():
+    """ESPN emits previous_season_{YY}; the model normalizes to `previous_season`.
+
+    Locks in the year-agnostic contract — whatever year-suffixed key the wire
+    uses (`_24`, `_25`, `_26`, ...) lands at the same `stats.previous_season`
+    path on the model.
+    """
+    # Each year-suffixed wire key should land at the canonical field
+    for suffix in ("24", "25", "26", "30"):
+        raw = {
+            f"previous_season_{suffix}": {"AB": 480, "HR": 28, "AVG": 0.285},
+        }
+        m = EspnBatterStatsGroupModel.model_validate(raw)
+        assert m.previous_season is not None, f"suffix _{suffix} dropped"
+        assert m.previous_season.AB == 480
+        assert m.previous_season.HR == 28
+
+
+def test_previous_season_explicit_wins_over_suffix():
+    """If both `previous_season` and a year-suffixed key are present, prefer the explicit one."""
+    raw = {
+        "previous_season": {"AB": 100},
+        "previous_season_24": {"AB": 999},
+    }
+    m = EspnBatterStatsGroupModel.model_validate(raw)
+    assert m.previous_season is not None
+    assert m.previous_season.AB == 100
+
+
+def test_previous_season_validator_passes_non_dict_input_through():
+    """The pre-validator guards against non-dict input by returning it unchanged.
+
+    Pydantic normally hands the validator a dict, but the defensive
+    `if not isinstance(data, dict): return data` branch means non-dict inputs
+    (e.g., something pydantic later rejects, or future revalidation paths
+    that hand the validator a model instance) won't crash the validator.
+    """
+    from player_universe_trx.models.espn.pitcher import EspnPitcherStatsGroupModel
+
+    # Call the validator classmethod directly with non-dict inputs — exercises
+    # the early-return branch without depending on how pydantic normalizes
+    # external inputs before invoking before-validators.
+    for non_dict in (None, "string", 42, ["a", "b"], object()):
+        assert (
+            EspnBatterStatsGroupModel._map_previous_season_wire_key(non_dict)
+            is non_dict
+        )
+        assert (
+            EspnPitcherStatsGroupModel._map_previous_season_wire_key(non_dict)
+            is non_dict
+        )
 
 
 def test_batter_nested_models(sample_batter):
