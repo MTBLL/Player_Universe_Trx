@@ -321,11 +321,14 @@ def test_all_sources_batters_matched():
         last_name="Judge",
         name_ascii="Aaron Judge",
         slug="aaron-judge",
-        pitches=2000,
-        total_pitches=2000,
-        pitch_percent=100.0,
-        stats=SavantBatterStatsModel(
-            exit_velo=95.5, xwOBA=0.420, xAVG=0.310, xSLG=0.625
+        all=SavantBatterStatsModel(
+            pitches=2000,
+            total_pitches=2000,
+            pitch_percent=100.0,
+            exit_velo=95.5,
+            xwOBA=0.420,
+            xAVG=0.310,
+            xSLG=0.625,
         ),
     )
 
@@ -388,11 +391,14 @@ def test_all_sources_pitchers_matched():
         last_name="Cole",
         name_ascii="Gerrit Cole",
         slug="gerrit-cole",
-        pitches=3000,
-        total_pitches=3000,
-        pitch_percent=100.0,
-        stats=SavantPitcherStatsModel(
-            velo=97.2, spin_rate=2550, xwOBA=0.285, swing_miss_pct=32.5
+        all=SavantPitcherStatsModel(
+            pitches=3000,
+            total_pitches=3000,
+            pitch_percent=100.0,
+            velo=97.2,
+            spin_rate=2550,
+            xwOBA=0.285,
+            swing_miss_pct=32.5,
         ),
     )
 
@@ -736,3 +742,191 @@ def test_ambiguous_match_zero_projection_slots():
     # Direct extractor check: None input → all three slots empty
     result = _extract_fangraphs_projections(None)
     assert result == {"projections": {}, "projs_updated": {}, "ros": {}}
+
+
+# ========== Three-split Savant data flows into MTBL ==========
+
+
+def test_savant_vs_r_and_vs_l_land_on_mtbl_batter():
+    """Savant vs_r/vs_l splits flow into typed MTBL fields; `all` still feeds current_season."""
+    espn_player = EspnBatterModel(
+        id=1,
+        name="Aaron Judge",
+        first_name="Aaron",
+        last_name="Judge",
+        slug="aaron-judge",
+        pro_team="NYY",
+        stats=EspnBatterStatsGroupModel(
+            current_season=EspnBatterStatsModel(AB=500, HR=30)
+        ),
+    )
+
+    fg_player = FangraphsBatterModel(
+        playerid="15640",
+        name="Aaron Judge",
+        ascii_name="Aaron Judge",
+        slug="aaron-judge",
+        team="NYY",
+        xmlbam_id=592450,
+    )
+
+    savant_player = SavantBatterModel(
+        player_id=592450,
+        name="Judge, Aaron",
+        first_name="Aaron",
+        last_name="Judge",
+        name_ascii="Aaron Judge",
+        slug="aaron-judge",
+        season=2026,
+        all=SavantBatterStatsModel(xwOBA=0.420, exit_velo=95.5),
+        vs_r=SavantBatterStatsModel(xwOBA=0.430, exit_velo=96.2),
+        vs_l=SavantBatterStatsModel(xwOBA=0.395, exit_velo=93.8),
+    )
+
+    results = PlayerMatcher(
+        [espn_player], [fg_player], [savant_player]
+    ).match_players()
+    player = apply_matches(results)["matched"][0]
+
+    # `all` continues to fold into current_season (preserves prior contract)
+    assert player.stats.current_season.xwOBA == 0.420
+    assert player.stats.current_season.exit_velo == 95.5
+
+    # vs_r / vs_l land on new typed fields
+    assert player.stats.savant_vs_r is not None
+    assert player.stats.savant_vs_r.xwOBA == 0.430
+    assert player.stats.savant_vs_r.exit_velo == 96.2
+    assert player.stats.savant_vs_l is not None
+    assert player.stats.savant_vs_l.xwOBA == 0.395
+    assert player.stats.savant_vs_l.exit_velo == 93.8
+
+
+def test_savant_vs_r_and_vs_l_land_on_mtbl_pitcher():
+    """Pitcher counterpart: vs_r/vs_l splits flow into MtblPitcherStatsModel."""
+    espn_player = EspnPitcherModel(
+        id=1,
+        name="Tarik Skubal",
+        first_name="Tarik",
+        last_name="Skubal",
+        slug="tarik-skubal",
+        pro_team="DET",
+        stats=EspnPitcherStatsGroupModel(
+            current_season=EspnPitcherStatsModel(W=15, K=220, ERA=2.80)
+        ),
+    )
+
+    fg_player = FangraphsPitcherModel(
+        playerid="29597",
+        name="Tarik Skubal",
+        ascii_name="Tarik Skubal",
+        slug="tarik-skubal",
+        team="DET",
+        xmlbam_id=669373,
+    )
+
+    savant_player = SavantPitcherModel(
+        player_id=669373,
+        name="Skubal, Tarik",
+        first_name="Tarik",
+        last_name="Skubal",
+        name_ascii="Tarik Skubal",
+        slug="tarik-skubal",
+        season=2026,
+        all=SavantPitcherStatsModel(velo=97.0, spin_rate=2500, xwOBA=0.260),
+        vs_r=SavantPitcherStatsModel(velo=97.3, spin_rate=2510, xwOBA=0.250),
+        vs_l=SavantPitcherStatsModel(velo=96.4, spin_rate=2480, xwOBA=0.285),
+    )
+
+    results = PlayerMatcher(
+        [espn_player], [fg_player], [savant_player]
+    ).match_players()
+    player = apply_matches(results)["matched"][0]
+
+    # `all` still feeds current_season
+    assert player.stats.current_season.velo == 97.0
+    assert player.stats.current_season.xwOBA == 0.260
+
+    # New split fields populated
+    assert player.stats.savant_vs_r is not None
+    assert player.stats.savant_vs_r.velo == 97.3
+    assert player.stats.savant_vs_l is not None
+    assert player.stats.savant_vs_l.xwOBA == 0.285
+
+
+def test_savant_partial_coverage_only_all_split_yields_none_split_fields():
+    """Player with only the `all` Savant split: savant_vs_r/savant_vs_l are None."""
+    espn_player = EspnBatterModel(
+        id=2,
+        name="Lefty-Free Hitter",
+        first_name="Lefty-Free",
+        last_name="Hitter",
+        slug="lefty-free-hitter",
+        pro_team="FA",
+        stats=EspnBatterStatsGroupModel(
+            current_season=EspnBatterStatsModel(AB=300, HR=10)
+        ),
+    )
+
+    fg_player = FangraphsBatterModel(
+        playerid="lfh-1",
+        name="Lefty-Free Hitter",
+        ascii_name="Lefty-Free Hitter",
+        slug="lefty-free-hitter",
+        team="FA",
+        xmlbam_id=900001,
+    )
+
+    savant_player = SavantBatterModel(
+        player_id=900001,
+        name="Hitter, Lefty-Free",
+        first_name="Lefty-Free",
+        last_name="Hitter",
+        name_ascii="Lefty-Free Hitter",
+        slug="lefty-free-hitter",
+        season=2026,
+        all=SavantBatterStatsModel(xwOBA=0.320),
+        # vs_r/vs_l intentionally omitted
+    )
+
+    results = PlayerMatcher(
+        [espn_player], [fg_player], [savant_player]
+    ).match_players()
+    player = apply_matches(results)["matched"][0]
+
+    assert player.stats.current_season.xwOBA == 0.320
+    assert player.stats.savant_vs_r is None
+    assert player.stats.savant_vs_l is None
+
+
+def test_extract_savant_splits_none_input():
+    """The extractor returns empty slot dicts when there is no Savant match."""
+    from player_universe_trx.matchers.transformation.apply_matches import (
+        _extract_savant_splits,
+    )
+
+    assert _extract_savant_splits(None) == {"vs_r": {}, "vs_l": {}}
+
+
+def test_extract_savant_stats_reads_all_split():
+    """Regression guard: _extract_savant_stats sources `current_season` from `all`."""
+    from player_universe_trx.matchers.transformation.apply_matches import (
+        _extract_savant_stats,
+    )
+
+    sm = SavantBatterModel(
+        player_id=42,
+        name="A, B",
+        first_name="A",
+        last_name="B",
+        name_ascii="A B",
+        slug="a-b",
+        season=2026,
+        all=SavantBatterStatsModel(xwOBA=0.350),
+        vs_r=SavantBatterStatsModel(xwOBA=0.999),  # would be wrong if read
+    )
+
+    out = _extract_savant_stats(sm)
+    assert out["xwOBA"] == 0.350  # from `all`, not `vs_r`
+    assert out["savant_player_id"] == 42
+    assert out["savant_player_type"] == "batter"
+    assert out["savant_season"] == 2026

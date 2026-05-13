@@ -5,7 +5,16 @@ from player_universe_trx.models.savant.stats import SavantPitcherStatsModel
 
 
 class SavantPitcherModel(SavantPlayerModel):
-    """Savant pitcher model with pitcher-specific statistics."""
+    """Savant pitcher model with per-split pitcher statistics.
+
+    Savant emits one row per (player, opp_hand). The consolidator groups those
+    rows into three split fields here:
+      - all:  overall stats (guaranteed present post-min_pas-filter fix)
+      - vs_r: stats facing right-handed batters (None if no sample)
+      - vs_l: stats facing left-handed batters (None if no sample)
+    """
 
     player_type: Literal["pitcher"] = "pitcher"
-    stats: Optional[SavantPitcherStatsModel] = None
+    all: Optional[SavantPitcherStatsModel] = None
+    vs_r: Optional[SavantPitcherStatsModel] = None
+    vs_l: Optional[SavantPitcherStatsModel] = None

@@ -6,9 +6,19 @@ SAVANT_STATS_MODEL_CONFIG = ConfigDict(populate_by_name=True, extra="allow")
 
 
 class SavantBaseStats(BaseModel):
-    """Base statistics common to both batters and pitchers in Savant data."""
+    """Base statistics common to both batters and pitchers in Savant data.
+
+    Note: pitch counts (pitches / total_pitches / pitch_percent) live on the
+    stats model rather than the player model because Savant emits them per
+    split (the `all` sample size differs from `vs R` and `vs L`).
+    """
 
     model_config = SAVANT_STATS_MODEL_CONFIG
+
+    # Per-split sample size — varies per opp_hand row
+    pitches: Optional[int] = Field(default=None, description="Pitches in this split sample")
+    total_pitches: Optional[int] = Field(default=None, description="Total pitches in this split scope")
+    pitch_percent: Optional[float] = Field(default=None, description="Pitches / total_pitches for this split")
 
     # Batting statistics
     BABIP: Optional[float] = Field(default=None, description="Batting Average on Balls In Play")
@@ -69,7 +79,12 @@ class SavantBaseStats(BaseModel):
 
 
 class SavantPlayerModel(BaseModel):
-    """Base Savant player model with common fields for all player types."""
+    """Base Savant player model with common fields for all player types.
+
+    Per-split stats (all / vs_r / vs_l) live on the typed subclasses; this base
+    only carries identity fields that stay constant across the three rows
+    Savant emits per player.
+    """
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -86,8 +101,3 @@ class SavantPlayerModel(BaseModel):
     season: Optional[int] = Field(
         default=None, description="Savant season inferred from extractor context"
     )
-
-    # Pitch counts
-    pitches: int = Field(description="Number of pitches in sample")
-    total_pitches: int = Field(description="Total pitches")
-    pitch_percent: float = Field(description="Percentage of total pitches")

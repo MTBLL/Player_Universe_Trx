@@ -45,9 +45,6 @@ def test_savant_match_via_xmlbam_id():
         name_ascii="Aaron Judge",
         slug="aaron-judge",
         season=2026,
-        pitches=1000,
-        total_pitches=1000,
-        pitch_percent=100.0,
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player], [savant_player])
@@ -89,10 +86,10 @@ def test_savant_no_match_when_xmlbam_id_missing():
         name_ascii="Aaron Judge",
         slug="aaron-judge",
         season=2026,
-        pitches=1000,
-        total_pitches=1000,
-        pitch_percent=100.0,
-        stats=SavantBatterStatsModel(
+        all=SavantBatterStatsModel(
+            pitches=1000,
+            total_pitches=1000,
+            pitch_percent=100.0,
             exit_velo=95.4,
         ),
     )
@@ -134,9 +131,6 @@ def test_savant_no_match_when_player_id_not_in_savant():
         last_name="Player",
         name_ascii="Other Player",
         slug="other-player",
-        pitches=1000,
-        total_pitches=1000,
-        pitch_percent=100.0,
     )
 
     matcher = PlayerMatcher([espn_player], [fg_player], [savant_player])
@@ -176,10 +170,10 @@ def test_savant_stats_merged_correctly():
         name_ascii="Aaron Judge",
         slug="aaron-judge",
         season=2026,
-        pitches=1000,
-        total_pitches=1000,
-        pitch_percent=100.0,
-        stats=SavantBatterStatsModel(
+        all=SavantBatterStatsModel(
+            pitches=1000,
+            total_pitches=1000,
+            pitch_percent=100.0,
             exit_velo=95.4,
             barrels_per_bbe_pct=15.2,
             hardhit_pct=52.3,
@@ -239,9 +233,6 @@ def test_savant_no_data_when_no_fangraphs_match():
         last_name="Else",
         name_ascii="Someone Else",
         slug="someone-else",
-        pitches=1000,
-        total_pitches=1000,
-        pitch_percent=100.0,
     )
 
     matcher = PlayerMatcher([espn_player], fg_players, [savant_player])
@@ -294,9 +285,6 @@ def test_multiple_players_correct_savant_matches():
         last_name="Judge",
         name_ascii="Aaron Judge",
         slug="aaron-judge",
-        pitches=1000,
-        total_pitches=1000,
-        pitch_percent=100.0,
     )
 
     savant_ohtani = SavantBatterModel(
@@ -306,9 +294,6 @@ def test_multiple_players_correct_savant_matches():
         last_name="Ohtani",
         name_ascii="Shohei Ohtani",
         slug="shohei-ohtani",
-        pitches=1000,
-        total_pitches=1000,
-        pitch_percent=100.0,
     )
 
     matcher = PlayerMatcher(
