@@ -312,6 +312,16 @@ def _report_match_statistics(batter_results, pitcher_results):
 
 
 def cli() -> None:
+    """CLI entry point for `universe-trx`.
+
+    Contract: returns None (exit code 0) on success. Errors should propagate
+    as exceptions so the interpreter exits non-zero with a traceback —
+    orchestrators (mtbl-et, MTBL_Prefect) used to whitelist exit code 1 as
+    success because an earlier version of this entry returned 1 on the happy
+    path; that workaround has been removed downstream and a subprocess-level
+    regression test in tests/test_cli_exit_code.py guards against it returning.
+    See Linear MTBL-153.
+    """
     parser = argparse.ArgumentParser(
         description="Player Universe Transformer",
     )
