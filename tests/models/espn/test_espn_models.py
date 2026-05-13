@@ -107,6 +107,30 @@ def test_previous_season_explicit_wins_over_suffix():
     assert m.previous_season.AB == 100
 
 
+def test_previous_season_validator_passes_non_dict_input_through():
+    """The pre-validator guards against non-dict input by returning it unchanged.
+
+    Pydantic normally hands the validator a dict, but the defensive
+    `if not isinstance(data, dict): return data` branch means non-dict inputs
+    (e.g., something pydantic later rejects, or future revalidation paths
+    that hand the validator a model instance) won't crash the validator.
+    """
+    from player_universe_trx.models.espn.pitcher import EspnPitcherStatsGroupModel
+
+    # Call the validator classmethod directly with non-dict inputs — exercises
+    # the early-return branch without depending on how pydantic normalizes
+    # external inputs before invoking before-validators.
+    for non_dict in (None, "string", 42, ["a", "b"], object()):
+        assert (
+            EspnBatterStatsGroupModel._map_previous_season_wire_key(non_dict)
+            is non_dict
+        )
+        assert (
+            EspnPitcherStatsGroupModel._map_previous_season_wire_key(non_dict)
+            is non_dict
+        )
+
+
 def test_batter_nested_models(sample_batter):
     """Test nested models in batter data."""
     batter = EspnBatterModel.model_validate(sample_batter)

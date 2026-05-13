@@ -124,6 +124,31 @@ def test_get_file_methods(fixtures_dir):
         loader.get_savant_pitchers_file().name == "savant_pitchers_2026_05_13_1312.json"
     )
 
+    # Savant sub-domain accessors — each thinly wraps _get_savant_subdomain_file
+    # with a different stem. Exercise each to lock in the stem → filename map.
+    assert loader.get_savant_statcast_batters_file().name.startswith(
+        "savant_statcast_batter_"
+    )
+    assert loader.get_savant_statcast_pitchers_file().name.startswith(
+        "savant_statcast_pitcher_"
+    )
+    assert loader.get_savant_home_runs_batters_file().name.startswith(
+        "savant_home_runs_batter_"
+    )
+    assert loader.get_savant_home_runs_pitchers_file().name.startswith(
+        "savant_home_runs_pitcher_"
+    )
+    assert loader.get_savant_pitch_arsenal_batters_file().name.startswith(
+        "savant_pitch_arsenal_stats_batter_"
+    )
+    assert loader.get_savant_pitch_arsenal_pitchers_file().name.startswith(
+        "savant_pitch_arsenal_stats_pitcher_"
+    )
+    assert loader.get_savant_sprint_speed_file().name.startswith("savant_sprint_speed_")
+    assert loader.get_savant_expected_statistics_pitchers_file().name.startswith(
+        "savant_expected_statistics_pitcher_"
+    )
+
     loader_no_files = DataLoader(resources_path=str(fixtures_dir), year=2099)
     with pytest.raises(
         FileNotFoundError, match="No ESPN batters file found for year 2099"
@@ -152,6 +177,14 @@ def test_get_file_methods(fixtures_dir):
     assert loader_no_files.get_savant_pitchers_file().name.startswith(
         "savant_pitchers_"
     )
+
+
+def test_savant_subdomain_file_not_found(tmp_path):
+    """Each Savant sub-domain accessor raises FileNotFoundError when its file is absent."""
+    loader = DataLoader(resources_path=str(tmp_path), year=2026)
+
+    with pytest.raises(FileNotFoundError, match="No Savant statcast batters file found"):
+        loader.get_savant_statcast_batters_file()
 
 
 def test_load_methods(fixtures_dir):

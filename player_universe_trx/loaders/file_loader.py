@@ -399,23 +399,22 @@ class DataLoader:
         return file_path
 
     def _load_savant_subdomain(
-        self, stem: str, missing_label: str, player_type: Optional[str] = None
+        self, stem: str, missing_label: str, player_type: str
     ) -> List[Dict]:
         """Load + annotate the latest Savant sub-domain file.
 
         Args:
             stem: Role-specific stem (e.g., "home_runs_batter").
             missing_label: Human-readable description for error messages.
-            player_type: When provided, annotate each row with player_type and
-                season. Omit for files whose row schema doesn't carry these
-                (e.g., sprint_speed, which is batter-implied by `position`).
+            player_type: Annotate each row with player_type + season for
+                downstream consolidation. Always required — the sprint_speed
+                file is batter-only by position but still annotated as
+                player_type="batter" for shape consistency.
         """
         file_path = self._get_savant_subdomain_file(stem, missing_label)
         logger.info(f"Loading Savant {missing_label} from: {file_path}")
         data = load_json_data(str(file_path))
         season = self._extract_savant_season_from_filename(file_path.name)
-        if player_type is None:
-            return data
         return self._annotate_savant_rows(data, player_type, season)
 
     # ---- Statcast ----
