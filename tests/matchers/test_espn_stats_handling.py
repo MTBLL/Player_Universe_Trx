@@ -61,11 +61,11 @@ def test_espn_batter_current_season_only():
 
     player = matched[0]
     # Verify current season stats are nested under current_season
-    assert player.stats.current_season.AB == 500
-    assert player.stats.current_season.H == 150
-    assert player.stats.current_season.HR == 30
-    assert player.stats.current_season.RBI == 85
-    assert player.stats.current_season.AVG == 0.300
+    assert player.stats.espn.current_season.AB == 500
+    assert player.stats.espn.current_season.H == 150
+    assert player.stats.espn.current_season.HR == 30
+    assert player.stats.espn.current_season.RBI == 85
+    assert player.stats.espn.current_season.AVG == 0.300
 
 
 def test_espn_batter_with_nested_container():
@@ -104,19 +104,19 @@ def test_espn_batter_with_nested_container():
 
     player = matched[0]
     # Verify ESPN stats container is nested
-    assert player.stats.espn_stats is not None
-    assert player.stats.espn_stats.current_season is not None
-    assert player.stats.espn_stats.projections is not None
-    assert player.stats.espn_stats.last_7_games is not None
-    assert player.stats.espn_stats.last_15_games is not None
-    assert player.stats.espn_stats.last_30_games is not None
-    assert player.stats.espn_stats.previous_season_24 is not None
+    assert player.stats.espn is not None
+    assert player.stats.espn.current_season is not None
+    assert player.stats.espn.projections is not None
+    assert player.stats.espn.last_7_games is not None
+    assert player.stats.espn.last_15_games is not None
+    assert player.stats.espn.last_30_games is not None
+    assert player.stats.espn.previous_season_24 is not None
 
     # Verify nested data is correct
-    assert player.stats.espn_stats.projections.AB == 550
-    assert player.stats.espn_stats.projections.HR == 35
-    assert player.stats.espn_stats.last_7_games.HR == 3
-    assert player.stats.espn_stats.previous_season_24.AB == 480
+    assert player.stats.espn.projections.AB == 550
+    assert player.stats.espn.projections.HR == 35
+    assert player.stats.espn.last_7_games.HR == 3
+    assert player.stats.espn.previous_season_24.AB == 480
 
 
 def test_espn_batter_both_current_and_nested():
@@ -150,16 +150,16 @@ def test_espn_batter_both_current_and_nested():
     player = matched[0]
 
     # Current season stats
-    assert player.stats.current_season.AB == 500
-    assert player.stats.current_season.HR == 30
+    assert player.stats.espn.current_season.AB == 500
+    assert player.stats.espn.current_season.HR == 30
 
     # Nested container with projections
-    assert player.stats.espn_stats.projections.AB == 550
-    assert player.stats.espn_stats.projections.HR == 35
+    assert player.stats.espn.projections.AB == 550
+    assert player.stats.espn.projections.HR == 35
 
     # Current season also in nested container
-    assert player.stats.espn_stats.current_season.AB == 500
-    assert player.stats.espn_stats.current_season.HR == 30
+    assert player.stats.espn.current_season.AB == 500
+    assert player.stats.espn.current_season.HR == 30
 
 
 def test_espn_pitcher_current_season_only():
@@ -193,11 +193,11 @@ def test_espn_pitcher_current_season_only():
 
     player = matched[0]
     # Verify current season stats are nested under current_season
-    assert player.stats.current_season.W == 15
-    assert player.stats.current_season.L == 6
-    assert player.stats.current_season.ERA == 3.15
-    assert player.stats.current_season.WHIP == 1.08
-    assert player.stats.current_season.K == 215
+    assert player.stats.espn.current_season.W == 15
+    assert player.stats.espn.current_season.L == 6
+    assert player.stats.espn.current_season.ERA == 3.15
+    assert player.stats.espn.current_season.WHIP == 1.08
+    assert player.stats.espn.current_season.K == 215
 
 
 def test_espn_pitcher_with_nested_container():
@@ -235,15 +235,15 @@ def test_espn_pitcher_with_nested_container():
     player = matched[0]
 
     # Verify ESPN stats container is nested
-    assert player.stats.espn_stats is not None
-    assert player.stats.espn_stats.projections is not None
-    assert player.stats.espn_stats.last_7_games is not None
-    assert player.stats.espn_stats.previous_season_24 is not None
+    assert player.stats.espn is not None
+    assert player.stats.espn.projections is not None
+    assert player.stats.espn.last_7_games is not None
+    assert player.stats.espn.previous_season_24 is not None
 
     # Verify nested data is correct
-    assert player.stats.espn_stats.projections.W == 16
-    assert player.stats.espn_stats.last_7_games.ERA == 2.50
-    assert player.stats.espn_stats.previous_season_24.K == 200
+    assert player.stats.espn.projections.W == 16
+    assert player.stats.espn.last_7_games.ERA == 2.50
+    assert player.stats.espn.previous_season_24.K == 200
 
 
 def test_espn_pitcher_both_current_and_nested():
@@ -277,12 +277,12 @@ def test_espn_pitcher_both_current_and_nested():
     player = matched[0]
 
     # Current season stats
-    assert player.stats.current_season.W == 15
-    assert player.stats.current_season.ERA == 3.15
+    assert player.stats.espn.current_season.W == 15
+    assert player.stats.espn.current_season.ERA == 3.15
 
     # Nested container with projections
-    assert player.stats.espn_stats.projections.W == 16
-    assert player.stats.espn_stats.projections.ERA == 3.05
+    assert player.stats.espn.projections.W == 16
+    assert player.stats.espn.projections.ERA == 3.05
 
 
 # ========== Integration Tests - All Sources ==========
@@ -340,22 +340,24 @@ def test_all_sources_batters_matched():
     player = matched[0]
 
     # ESPN current season (nested under current_season)
-    assert player.stats.current_season.AB == 500
-    assert player.stats.current_season.HR == 30
-    assert player.stats.current_season.RBI == 85
+    assert player.stats.espn.current_season.AB == 500
+    assert player.stats.espn.current_season.HR == 30
+    assert player.stats.espn.current_season.RBI == 85
 
     # FanGraphs projections (nested under projections)
-    assert player.stats.projections.ab == 575
-    assert player.stats.projections.hr == 38
-    assert player.stats.projections.rbi == 100
+    assert player.stats.fangraphs.projections.ab == 575
+    assert player.stats.fangraphs.projections.hr == 38
+    assert player.stats.fangraphs.projections.rbi == 100
 
-    # Savant (nested under current_season, unprefixed)
-    assert player.stats.current_season.exit_velo == 95.5
-    assert player.stats.current_season.xwOBA == 0.420
+    # Savant (under its own bundle now — no merge into current_season)
+    assert player.stats.savant is not None
+    assert player.stats.savant.all is not None
+    assert player.stats.savant.all.exit_velo == 95.5
+    assert player.stats.savant.all.xwOBA == 0.420
 
     # ESPN container (nested)
-    assert player.stats.espn_stats.projections.HR == 35
-    assert player.stats.espn_stats.last_7_games.HR == 3
+    assert player.stats.espn.projections.HR == 35
+    assert player.stats.espn.last_7_games.HR == 3
 
 
 def test_all_sources_pitchers_matched():
@@ -410,22 +412,24 @@ def test_all_sources_pitchers_matched():
     player = matched[0]
 
     # ESPN current season (nested under current_season)
-    assert player.stats.current_season.W == 15
-    assert player.stats.current_season.K == 215
-    assert player.stats.current_season.ERA == 3.15
+    assert player.stats.espn.current_season.W == 15
+    assert player.stats.espn.current_season.K == 215
+    assert player.stats.espn.current_season.ERA == 3.15
 
     # FanGraphs projections (nested under projections)
-    assert player.stats.projections.wins == 17
-    assert player.stats.projections.strikeouts == 230
-    assert player.stats.projections.era == 3.00
+    assert player.stats.fangraphs.projections.wins == 17
+    assert player.stats.fangraphs.projections.strikeouts == 230
+    assert player.stats.fangraphs.projections.era == 3.00
 
-    # Savant (nested under current_season, unprefixed)
-    assert player.stats.current_season.velo == 97.2
-    assert player.stats.current_season.swing_miss_pct == 32.5
+    # Savant (under its own bundle now — no merge into current_season)
+    assert player.stats.savant is not None
+    assert player.stats.savant.all is not None
+    assert player.stats.savant.all.velo == 97.2
+    assert player.stats.savant.all.swing_miss_pct == 32.5
 
     # ESPN container (nested)
-    assert player.stats.espn_stats.projections.W == 16
-    assert player.stats.espn_stats.last_30_games.K == 105
+    assert player.stats.espn.projections.W == 16
+    assert player.stats.espn.last_30_games.K == 105
 
 
 def test_espn_stats_unmatched_players():
@@ -452,12 +456,12 @@ def test_espn_stats_unmatched_players():
 
     player = unmatched[0]
     # Current season under current_season
-    assert player.stats.current_season.AB == 100
-    assert player.stats.current_season.HR == 5
+    assert player.stats.espn.current_season.AB == 100
+    assert player.stats.espn.current_season.HR == 5
 
     # ESPN container nested
-    assert player.stats.espn_stats.projections.AB == 400
-    assert player.stats.espn_stats.projections.HR == 20
+    assert player.stats.espn.projections.AB == 400
+    assert player.stats.espn.projections.HR == 20
 
 
 # ========== Edge Cases ==========
@@ -530,9 +534,9 @@ def test_espn_stats_empty_container():
 
     # Should have espn_stats container even if all periods are None
     assert player.stats is not None
-    assert player.stats.espn_stats is not None
-    assert player.stats.espn_stats.current_season is None
-    assert player.stats.espn_stats.projections is None
+    assert player.stats.espn is not None
+    assert player.stats.espn.current_season is None
+    assert player.stats.espn.projections is None
 
 
 def test_access_nested_espn_projections():
@@ -568,13 +572,13 @@ def test_access_nested_espn_projections():
     player = matched[0]
 
     # Access all nested periods
-    assert player.stats.espn_stats.current_season.AVG == 0.300
-    assert player.stats.espn_stats.projections.AVG == 0.310
-    assert player.stats.espn_stats.last_7_games.AVG == 0.357
-    assert player.stats.espn_stats.previous_season_24.AVG == 0.285
+    assert player.stats.espn.current_season.AVG == 0.300
+    assert player.stats.espn.projections.AVG == 0.310
+    assert player.stats.espn.last_7_games.AVG == 0.357
+    assert player.stats.espn.previous_season_24.AVG == 0.285
 
     # Current season should be nested under current_season
-    assert player.stats.current_season.AVG == 0.300
+    assert player.stats.espn.current_season.AVG == 0.300
 
 
 # ========== Three-slot FG projections flow into MTBL stats ==========
@@ -609,12 +613,12 @@ def test_all_three_fg_projection_slots_land_on_mtbl_batter():
     results = PlayerMatcher([espn_player], [fg_player]).match_players()
     player = apply_matches(results)["matched"][0]
 
-    assert player.stats.projections is not None
-    assert player.stats.projections.hr == 40
-    assert player.stats.projs_updated is not None
-    assert player.stats.projs_updated.hr == 37
-    assert player.stats.ros is not None
-    assert player.stats.ros.hr == 12
+    assert player.stats.fangraphs.projections is not None
+    assert player.stats.fangraphs.projections.hr == 40
+    assert player.stats.fangraphs.projs_updated is not None
+    assert player.stats.fangraphs.projs_updated.hr == 37
+    assert player.stats.fangraphs.ros is not None
+    assert player.stats.fangraphs.ros.hr == 12
 
 
 def test_all_three_fg_projection_slots_land_on_mtbl_pitcher():
@@ -646,12 +650,12 @@ def test_all_three_fg_projection_slots_land_on_mtbl_pitcher():
     results = PlayerMatcher([espn_player], [fg_player]).match_players()
     player = apply_matches(results)["matched"][0]
 
-    assert player.stats.projections is not None
-    assert player.stats.projections.wins == 18
-    assert player.stats.projs_updated is not None
-    assert player.stats.projs_updated.wins == 16
-    assert player.stats.ros is not None
-    assert player.stats.ros.wins == 5
+    assert player.stats.fangraphs.projections is not None
+    assert player.stats.fangraphs.projections.wins == 18
+    assert player.stats.fangraphs.projs_updated is not None
+    assert player.stats.fangraphs.projs_updated.wins == 16
+    assert player.stats.fangraphs.ros is not None
+    assert player.stats.fangraphs.ros.wins == 5
 
 
 def test_pre_draft_only_preseason_slot_populated():
@@ -685,10 +689,10 @@ def test_pre_draft_only_preseason_slot_populated():
     results = PlayerMatcher([espn_player], [fg_player]).match_players()
     player = apply_matches(results)["matched"][0]
 
-    assert player.stats.projections is not None
-    assert player.stats.projections.hr == 30
-    assert player.stats.projs_updated is None
-    assert player.stats.ros is None
+    assert player.stats.fangraphs.projections is not None
+    assert player.stats.fangraphs.projections.hr == 30
+    assert player.stats.fangraphs.projs_updated is None
+    assert player.stats.fangraphs.ros is None
 
 
 def test_fg_match_with_empty_slot_dicts_yields_none_on_mtbl():
@@ -726,29 +730,28 @@ def test_fg_match_with_empty_slot_dicts_yields_none_on_mtbl():
     results = PlayerMatcher([espn_player], [fg_player]).match_players()
     player = apply_matches(results)["matched"][0]
 
-    assert player.stats.projections is not None
-    assert player.stats.projections.hr == 20
+    assert player.stats.fangraphs.projections is not None
+    assert player.stats.fangraphs.projections.hr == 20
     # Empty dicts on the wire → None on the typed MTBL output
-    assert player.stats.projs_updated is None
-    assert player.stats.ros is None
+    assert player.stats.fangraphs.projs_updated is None
+    assert player.stats.fangraphs.ros is None
 
 
-def test_ambiguous_match_zero_projection_slots():
-    """An ambiguous match contributes none of the three FG slots."""
+def test_build_fangraphs_bundle_none_input():
+    """The FG bundle builder returns None when there's no FG match."""
     from player_universe_trx.matchers.transformation.apply_matches import (
-        _extract_fangraphs_projections,
+        _build_fangraphs_bundle,
     )
 
-    # Direct extractor check: None input → all three slots empty
-    result = _extract_fangraphs_projections(None)
-    assert result == {"projections": {}, "projs_updated": {}, "ros": {}}
+    assert _build_fangraphs_bundle(None, is_batter=True) is None
+    assert _build_fangraphs_bundle(None, is_batter=False) is None
 
 
 # ========== Three-split Savant data flows into MTBL ==========
 
 
-def test_savant_vs_r_and_vs_l_land_on_mtbl_batter():
-    """Savant vs_r/vs_l splits flow into typed MTBL fields; `all` still feeds current_season."""
+def test_savant_bundle_carries_all_three_splits_for_batter():
+    """All three Savant splits live under the nested MTBL bundle; `all` also folds into current_season."""
     espn_player = EspnBatterModel(
         id=1,
         name="Aaron Judge",
@@ -788,21 +791,21 @@ def test_savant_vs_r_and_vs_l_land_on_mtbl_batter():
     ).match_players()
     player = apply_matches(results)["matched"][0]
 
-    # `all` continues to fold into current_season (preserves prior contract)
-    assert player.stats.current_season.xwOBA == 0.420
-    assert player.stats.current_season.exit_velo == 95.5
+    # All three splits live under the savant bundle (no merge into ESPN
+    # current_season after the source-namespace cleanup).
+    assert player.stats.savant is not None
+    assert player.stats.savant.all is not None
+    assert player.stats.savant.all.xwOBA == 0.420
+    assert player.stats.savant.all.exit_velo == 95.5
+    assert player.stats.savant.vs_r is not None
+    assert player.stats.savant.vs_r.xwOBA == 0.430
+    assert player.stats.savant.vs_r.exit_velo == 96.2
+    assert player.stats.savant.vs_l is not None
+    assert player.stats.savant.vs_l.xwOBA == 0.395
 
-    # vs_r / vs_l land on new typed fields
-    assert player.stats.savant_vs_r is not None
-    assert player.stats.savant_vs_r.xwOBA == 0.430
-    assert player.stats.savant_vs_r.exit_velo == 96.2
-    assert player.stats.savant_vs_l is not None
-    assert player.stats.savant_vs_l.xwOBA == 0.395
-    assert player.stats.savant_vs_l.exit_velo == 93.8
 
-
-def test_savant_vs_r_and_vs_l_land_on_mtbl_pitcher():
-    """Pitcher counterpart: vs_r/vs_l splits flow into MtblPitcherStatsModel."""
+def test_savant_bundle_carries_all_three_splits_for_pitcher():
+    """Pitcher counterpart of the batter bundle test."""
     espn_player = EspnPitcherModel(
         id=1,
         name="Tarik Skubal",
@@ -842,19 +845,20 @@ def test_savant_vs_r_and_vs_l_land_on_mtbl_pitcher():
     ).match_players()
     player = apply_matches(results)["matched"][0]
 
-    # `all` still feeds current_season
-    assert player.stats.current_season.velo == 97.0
-    assert player.stats.current_season.xwOBA == 0.260
+    # All three splits live under the savant bundle (no merge into ESPN
+    # current_season after the source-namespace cleanup).
+    assert player.stats.savant is not None
+    assert player.stats.savant.all is not None
+    assert player.stats.savant.all.velo == 97.0
+    assert player.stats.savant.all.xwOBA == 0.260
+    assert player.stats.savant.vs_r is not None
+    assert player.stats.savant.vs_r.velo == 97.3
+    assert player.stats.savant.vs_l is not None
+    assert player.stats.savant.vs_l.xwOBA == 0.285
 
-    # New split fields populated
-    assert player.stats.savant_vs_r is not None
-    assert player.stats.savant_vs_r.velo == 97.3
-    assert player.stats.savant_vs_l is not None
-    assert player.stats.savant_vs_l.xwOBA == 0.285
 
-
-def test_savant_partial_coverage_only_all_split_yields_none_split_fields():
-    """Player with only the `all` Savant split: savant_vs_r/savant_vs_l are None."""
+def test_savant_bundle_partial_coverage_only_all_split():
+    """Player with only the `all` split: bundle.vs_r and bundle.vs_l stay None."""
     espn_player = EspnBatterModel(
         id=2,
         name="Lefty-Free Hitter",
@@ -893,24 +897,63 @@ def test_savant_partial_coverage_only_all_split_yields_none_split_fields():
     ).match_players()
     player = apply_matches(results)["matched"][0]
 
-    assert player.stats.current_season.xwOBA == 0.320
-    assert player.stats.savant_vs_r is None
-    assert player.stats.savant_vs_l is None
+    # Savant `all` populated; vs_r/vs_l absent → bundle has all set, splits None
+    assert player.stats.savant is not None
+    assert player.stats.savant.all is not None
+    assert player.stats.savant.all.xwOBA == 0.320
+    assert player.stats.savant.vs_r is None
+    assert player.stats.savant.vs_l is None
 
 
-def test_extract_savant_splits_none_input():
-    """The extractor returns empty slot dicts when there is no Savant match."""
+def test_build_savant_bundle_none_input():
+    """The bundle builder returns None when there's no Savant match."""
     from player_universe_trx.matchers.transformation.apply_matches import (
-        _extract_savant_splits,
+        _build_savant_bundle,
     )
 
-    assert _extract_savant_splits(None) == {"vs_r": {}, "vs_l": {}}
+    assert _build_savant_bundle(None, is_batter=True) is None
+    assert _build_savant_bundle(None, is_batter=False) is None
 
 
-def test_extract_savant_stats_reads_all_split():
-    """Regression guard: _extract_savant_stats sources `current_season` from `all`."""
+def test_build_savant_bundle_empty_match_returns_none():
+    """An identity-only Savant match with every field None coerces to None — both roles."""
     from player_universe_trx.matchers.transformation.apply_matches import (
-        _extract_savant_stats,
+        _build_savant_bundle,
+    )
+
+    empty_batter = SavantBatterModel(
+        player_id=1,
+        name="Empty, Match",
+        first_name="Empty",
+        last_name="Match",
+        name_ascii="Empty Match",
+        slug="empty-match",
+        # all/vs_r/vs_l/statcast/home_runs/pitch_arsenal/sprint_speed all default
+    )
+    assert _build_savant_bundle(empty_batter, is_batter=True) is None
+
+    empty_pitcher = SavantPitcherModel(
+        player_id=2,
+        name="Empty, Pitcher",
+        first_name="Empty",
+        last_name="Pitcher",
+        name_ascii="Empty Pitcher",
+        slug="empty-pitcher",
+    )
+    assert _build_savant_bundle(empty_pitcher, is_batter=False) is None
+
+
+def test_savant_bundle_isolates_each_split():
+    """Regression guard: bundle.all, bundle.vs_r, bundle.vs_l are independent objects.
+
+    Replaces the old `_extract_savant_stats reads from .all` regression — that
+    function was deleted in the source-namespace cleanup (no more merge into
+    current_season). The equivalent guard now is that `bundle.all` carries the
+    overall numbers and `bundle.vs_r` / `bundle.vs_l` carry distinct per-split
+    numbers — they don't bleed into each other.
+    """
+    from player_universe_trx.matchers.transformation.apply_matches import (
+        _build_savant_bundle,
     )
 
     sm = SavantBatterModel(
@@ -922,11 +965,188 @@ def test_extract_savant_stats_reads_all_split():
         slug="a-b",
         season=2026,
         all=SavantBatterStatsModel(xwOBA=0.350),
-        vs_r=SavantBatterStatsModel(xwOBA=0.999),  # would be wrong if read
+        vs_r=SavantBatterStatsModel(xwOBA=0.999),
+        vs_l=SavantBatterStatsModel(xwOBA=0.250),
     )
 
-    out = _extract_savant_stats(sm)
-    assert out["xwOBA"] == 0.350  # from `all`, not `vs_r`
-    assert out["savant_player_id"] == 42
-    assert out["savant_player_type"] == "batter"
-    assert out["savant_season"] == 2026
+    bundle = _build_savant_bundle(sm, is_batter=True)
+    assert bundle is not None
+    assert bundle.all is not None and bundle.all.xwOBA == 0.350
+    assert bundle.vs_r is not None and bundle.vs_r.xwOBA == 0.999
+    assert bundle.vs_l is not None and bundle.vs_l.xwOBA == 0.250
+
+
+# ========== Savant bundle sub-domains end-to-end ==========
+
+
+def test_savant_bundle_carries_batter_sub_domains():
+    """All four batter sub-domains (statcast, home_runs, pitch_arsenal, sprint_speed) reach the bundle."""
+    from player_universe_trx.models.savant import (
+        SavantHomeRunsModel,
+        SavantPitchArsenalEntryModel,
+        SavantSprintSpeedModel,
+        SavantStatcastModel,
+    )
+
+    espn_player = EspnBatterModel(
+        id=10,
+        name="Mike Trout",
+        first_name="Mike",
+        last_name="Trout",
+        slug="mike-trout",
+        pro_team="LAA",
+        stats=EspnBatterStatsGroupModel(
+            current_season=EspnBatterStatsModel(AB=500, HR=20)
+        ),
+    )
+    fg_player = FangraphsBatterModel(
+        playerid="10155",
+        name="Mike Trout",
+        ascii_name="Mike Trout",
+        slug="mike-trout",
+        team="LAA",
+        xmlbam_id=545361,
+    )
+    savant_player = SavantBatterModel(
+        player_id=545361,
+        name="Trout, Mike",
+        first_name="Mike",
+        last_name="Trout",
+        name_ascii="Mike Trout",
+        slug="mike-trout",
+        season=2026,
+        all=SavantBatterStatsModel(xwOBA=0.380),
+        statcast=SavantStatcastModel(bbe=120, avg_ev=91.7, ev50=98.0, barrels=12),
+        home_runs=SavantHomeRunsModel(
+            year=2026, hr_type="adj_xhr", HR=11, xHR=12.5, no_doubters=4
+        ),
+        pitch_arsenal=[
+            SavantPitchArsenalEntryModel(pitch_type="FF", pitches=371, xwOBA=0.46),
+            SavantPitchArsenalEntryModel(pitch_type="SL", pitches=78, xwOBA=0.369),
+        ],
+        sprint_speed=SavantSprintSpeedModel(position="CF", sprint_speed=28.7, age=33),
+    )
+
+    results = PlayerMatcher(
+        [espn_player], [fg_player], [savant_player]
+    ).match_players()
+    player = apply_matches(results)["matched"][0]
+
+    b = player.stats.savant
+    assert b is not None
+    assert b.statcast is not None and b.statcast.avg_ev == 91.7
+    assert b.home_runs is not None and b.home_runs.HR == 11 and b.home_runs.xHR == 12.5
+    assert len(b.pitch_arsenal) == 2
+    assert {e.pitch_type for e in b.pitch_arsenal} == {"FF", "SL"}
+    assert b.sprint_speed is not None and b.sprint_speed.sprint_speed == 28.7
+
+
+def test_savant_bundle_carries_pitcher_sub_domains():
+    """All four pitcher sub-domains reach the bundle, with expected_statistics in the sprint-speed slot."""
+    from player_universe_trx.models.savant import (
+        SavantHomeRunsModel,
+        SavantPitcherExpectedStatsModel,
+        SavantPitchArsenalEntryModel,
+        SavantStatcastModel,
+    )
+
+    espn_player = EspnPitcherModel(
+        id=11,
+        name="Sandy Alcantara",
+        first_name="Sandy",
+        last_name="Alcantara",
+        slug="sandy-alcantara",
+        pro_team="MIA",
+        stats=EspnPitcherStatsGroupModel(
+            current_season=EspnPitcherStatsModel(W=10, K=150, ERA=3.50)
+        ),
+    )
+    fg_player = FangraphsPitcherModel(
+        playerid="22182",
+        name="Sandy Alcantara",
+        ascii_name="Sandy Alcantara",
+        slug="sandy-alcantara",
+        team="MIA",
+        xmlbam_id=645261,
+    )
+    savant_player = SavantPitcherModel(
+        player_id=645261,
+        name="Alcantara, Sandy",
+        first_name="Sandy",
+        last_name="Alcantara",
+        name_ascii="Sandy Alcantara",
+        slug="sandy-alcantara",
+        season=2026,
+        all=SavantPitcherStatsModel(xwOBA=0.297),
+        statcast=SavantStatcastModel(bbe=182, avg_ev=88.5),
+        home_runs=SavantHomeRunsModel(year=2026, HR=9, xHR=11.4),
+        pitch_arsenal=[
+            SavantPitchArsenalEntryModel(pitch_type="FF", pitches=400),
+            SavantPitchArsenalEntryModel(pitch_type="CH", pitches=180),
+            SavantPitchArsenalEntryModel(pitch_type="SL", pitches=120),
+        ],
+        expected_statistics=SavantPitcherExpectedStatsModel(
+            year=2026, PA=242, xAVG=0.243, xSLG=0.356, xwOBA=0.297, xERA=3.48
+        ),
+    )
+
+    results = PlayerMatcher(
+        [espn_player], [fg_player], [savant_player]
+    ).match_players()
+    player = apply_matches(results)["matched"][0]
+
+    p = player.stats.savant
+    assert p is not None
+    assert p.statcast is not None and p.statcast.bbe == 182
+    assert p.home_runs is not None and p.home_runs.xHR == 11.4
+    assert len(p.pitch_arsenal) == 3
+    # Pitcher bundle has expected_statistics, not sprint_speed
+    assert p.expected_statistics is not None
+    assert p.expected_statistics.xERA == 3.48
+    assert not hasattr(p, "sprint_speed")
+
+
+def test_savant_bundle_sub_domains_default_when_absent():
+    """When upstream omits sub-domain data, the bundle fields stay None or empty list."""
+    espn_player = EspnBatterModel(
+        id=20,
+        name="No Subdomain",
+        first_name="No",
+        last_name="Subdomain",
+        slug="no-subdomain",
+        pro_team="FA",
+        stats=EspnBatterStatsGroupModel(
+            current_season=EspnBatterStatsModel(AB=100)
+        ),
+    )
+    fg_player = FangraphsBatterModel(
+        playerid="ns-1",
+        name="No Subdomain",
+        ascii_name="No Subdomain",
+        slug="no-subdomain",
+        team="FA",
+        xmlbam_id=910001,
+    )
+    savant_player = SavantBatterModel(
+        player_id=910001,
+        name="Subdomain, No",
+        first_name="No",
+        last_name="Subdomain",
+        name_ascii="No Subdomain",
+        slug="no-subdomain",
+        season=2026,
+        all=SavantBatterStatsModel(xwOBA=0.300),
+        # No statcast / home_runs / pitch_arsenal / sprint_speed supplied
+    )
+
+    results = PlayerMatcher(
+        [espn_player], [fg_player], [savant_player]
+    ).match_players()
+    player = apply_matches(results)["matched"][0]
+
+    b = player.stats.savant
+    assert b is not None
+    assert b.statcast is None
+    assert b.home_runs is None
+    assert b.pitch_arsenal == []
+    assert b.sprint_speed is None

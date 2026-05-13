@@ -1,20 +1,35 @@
-from typing import Literal, Optional
+from typing import List, Literal, Optional
+
+from pydantic import Field
 
 from player_universe_trx.models.savant.savant_player import SavantPlayerModel
-from player_universe_trx.models.savant.stats import SavantPitcherStatsModel
+from player_universe_trx.models.savant.stats import (
+    SavantHomeRunsModel,
+    SavantPitcherExpectedStatsModel,
+    SavantPitcherStatsModel,
+    SavantPitchArsenalEntryModel,
+    SavantStatcastModel,
+)
 
 
 class SavantPitcherModel(SavantPlayerModel):
-    """Savant pitcher model with per-split pitcher statistics.
+    """Savant pitcher model with per-split splits + auxiliary sub-domains.
 
-    Savant emits one row per (player, opp_hand). The consolidator groups those
-    rows into three split fields here:
-      - all:  overall stats (guaranteed present post-min_pas-filter fix)
-      - vs_r: stats facing right-handed batters (None if no sample)
-      - vs_l: stats facing left-handed batters (None if no sample)
+    The Savant extractor now emits multiple files per role. They merge by
+    player_id into the fields below:
+      - all / vs_r / vs_l: per-handedness splits (multi-row source)
+      - statcast: contact-allowed quality summary (flat per-player)
+      - home_runs: HR-allowed quality metrics (flat per-player)
+      - pitch_arsenal: per-pitch-type performance (multi-row → list)
+      - expected_statistics: xAVG/xSLG/xwOBA/xERA (flat per-player, pitcher-only)
     """
 
     player_type: Literal["pitcher"] = "pitcher"
     all: Optional[SavantPitcherStatsModel] = None
     vs_r: Optional[SavantPitcherStatsModel] = None
     vs_l: Optional[SavantPitcherStatsModel] = None
+
+    statcast: Optional[SavantStatcastModel] = None
+    home_runs: Optional[SavantHomeRunsModel] = None
+    pitch_arsenal: List[SavantPitchArsenalEntryModel] = Field(default_factory=list)
+    expected_statistics: Optional[SavantPitcherExpectedStatsModel] = None

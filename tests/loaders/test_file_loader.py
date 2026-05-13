@@ -123,11 +123,11 @@ def test_get_file_methods(fixtures_dir):
     )
     assert (
         loader_2026.get_savant_batters_file().name
-        == "savant_batters_2026_05_13_1212.json"
+        == "savant_batters_2026_05_13_1312.json"
     )
     assert (
         loader_2026.get_savant_pitchers_file().name
-        == "savant_pitchers_2026_05_13_1212.json"
+        == "savant_pitchers_2026_05_13_1312.json"
     )
 
     loader_no_files = DataLoader(resources_path=str(fixtures_dir), year=2099)

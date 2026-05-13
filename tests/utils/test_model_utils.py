@@ -466,3 +466,117 @@ def test_consolidator_every_player_has_all_slot(savant_batter_data, savant_pitch
         assert m.all is not None, f"batter {m.player_id} ({m.name}) missing 'all' split"
     for m in pitchers:
         assert m.all is not None, f"pitcher {m.player_id} ({m.name}) missing 'all' split"
+
+
+# ========== Sub-domain merge into Savant models ==========
+
+
+def _savant_subdomain_row(player_id: int, **extras: Any) -> Dict[str, Any]:
+    """Build a minimal sub-domain row keyed by player_id."""
+    return {"player_id": player_id, "name": "Test", **extras}
+
+
+def test_subdomain_merge_attaches_statcast_to_matching_player():
+    """A statcast row keyed by player_id lands on the matching SavantBatterModel."""
+    base = [_savant_batter_row(100, "all", xwOBA=0.300)]
+    statcast = [_savant_subdomain_row(100, bbe=42, avg_ev=89.0, ev50=95.0)]
+    models = create_savant_batter_models(base, statcast_data=statcast)
+    assert len(models) == 1
+    m = models[0]
+    assert m.statcast is not None
+    assert m.statcast.bbe == 42
+    assert m.statcast.avg_ev == 89.0
+
+
+def test_subdomain_merge_skips_unmatched_player_id():
+    """A statcast row for a player_id not in the base file is ignored."""
+    base = [_savant_batter_row(100, "all", xwOBA=0.300)]
+    statcast = [
+        _savant_subdomain_row(100, bbe=42),
+        _savant_subdomain_row(999, bbe=99),  # No matching base row
+    ]
+    models = create_savant_batter_models(base, statcast_data=statcast)
+    assert len(models) == 1
+    assert models[0].statcast.bbe == 42  # The 999-keyed row is silently dropped
+
+
+def test_subdomain_merge_pitch_arsenal_groups_multiple_rows():
+    """Multiple pitch_arsenal rows for the same player_id collect into a list."""
+    base = [_savant_batter_row(100, "all", xwOBA=0.300)]
+    arsenal = [
+        _savant_subdomain_row(100, pitch_type="FF", pitches=200, xwOBA=0.310),
+        _savant_subdomain_row(100, pitch_type="SL", pitches=100, xwOBA=0.260),
+        _savant_subdomain_row(100, pitch_type="CH", pitches=80, xwOBA=0.270),
+    ]
+    models = create_savant_batter_models(base, pitch_arsenal_data=arsenal)
+    m = models[0]
+    assert len(m.pitch_arsenal) == 3
+    assert {e.pitch_type for e in m.pitch_arsenal} == {"FF", "SL", "CH"}
+
+
+def test_subdomain_merge_missing_sub_domain_yields_default_values():
+    """When a sub-domain kwarg is omitted, fields stay None / empty list."""
+    base = [_savant_batter_row(100, "all", xwOBA=0.300)]
+    models = create_savant_batter_models(base)  # No sub-domain kwargs
+    m = models[0]
+    assert m.statcast is None
+    assert m.home_runs is None
+    assert m.pitch_arsenal == []
+    assert m.sprint_speed is None
+
+
+def test_subdomain_merge_handles_nan_in_sub_domain_rows():
+    """NaN floats in sub-domain rows are scrubbed like the base rows."""
+    base = [_savant_batter_row(100, "all", xwOBA=0.300)]
+    sprint = [
+        _savant_subdomain_row(
+            100, position=float("nan"), sprint_speed=29.0, age=30
+        ),
+    ]
+    models = create_savant_batter_models(base, sprint_speed_data=sprint)
+    m = models[0]
+    assert m.sprint_speed is not None
+    assert m.sprint_speed.sprint_speed == 29.0
+    assert m.sprint_speed.position is None  # NaN scrubbed to absent → None
+
+
+def test_subdomain_merge_skips_subdomain_row_with_no_player_id(caplog):
+    """A sub-domain row missing player_id is filtered with a debug log, not propagated."""
+    base = [_savant_batter_row(100, "all", xwOBA=0.300)]
+    statcast = [{"name": "Orphan", "bbe": 50}]  # no player_id
+
+    with caplog.at_level("DEBUG"):
+        models = create_savant_batter_models(base, statcast_data=statcast)
+
+    assert models[0].statcast is None  # orphan didn't attach
+    assert any("no player_id" in r.message for r in caplog.records)
+
+
+def test_consolidator_full_fixture_end_to_end():
+    """End-to-end: load all 10 wire files through the loader+consolidator pipeline."""
+    from player_universe_trx.loaders import DataLoader
+
+    loader = DataLoader(resources_path="tests/fixtures", year=2026)
+    batters = create_savant_batter_models(
+        loader.load_savant_batters(),
+        statcast_data=loader.load_savant_statcast_batters(),
+        home_runs_data=loader.load_savant_home_runs_batters(),
+        pitch_arsenal_data=loader.load_savant_pitch_arsenal_batters(),
+        sprint_speed_data=loader.load_savant_sprint_speed(),
+    )
+    pitchers = create_savant_pitcher_models(
+        loader.load_savant_pitchers(),
+        statcast_data=loader.load_savant_statcast_pitchers(),
+        home_runs_data=loader.load_savant_home_runs_pitchers(),
+        pitch_arsenal_data=loader.load_savant_pitch_arsenal_pitchers(),
+        expected_statistics_data=loader.load_savant_expected_statistics_pitchers(),
+    )
+
+    # Coverage sanity — exact counts taken from raw fixture analysis
+    assert len(batters) == 486
+    assert len(pitchers) == 597
+    assert sum(1 for b in batters if b.statcast) == 269
+    assert sum(1 for b in batters if b.home_runs) == 399
+    assert sum(1 for b in batters if b.pitch_arsenal) == 349
+    assert sum(1 for b in batters if b.sprint_speed) == 401
+    assert sum(1 for p in pitchers if p.expected_statistics) == 367

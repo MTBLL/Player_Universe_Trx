@@ -132,14 +132,63 @@ def main(
     fangraphs_batters = create_fangraphs_batter_models(fangraphs_batters_raw)
     fangraphs_pitchers = create_fangraphs_pitcher_models(fangraphs_pitchers_raw)
 
-    # Load Savant player data (raw dicts for matching)
-    # Note: Savant data may be from a different year
+    # Load Savant player data — the swing/take base file plus per-stat-type
+    # sub-domain files (statcast / home_runs / pitch_arsenal / sprint_speed /
+    # expected_statistics). Each sub-domain merges by player_id during
+    # consolidation. Files are independently optional — if a sub-domain file
+    # is missing, the corresponding model fields stay None on each player.
     logger.info("Loading Savant player data...")
     savant_batters_raw = loader.load_savant_batters()
     savant_pitchers_raw = loader.load_savant_pitchers()
+
+    # Sub-domain files are best-effort: a missing file leaves the matching
+    # fields unpopulated, but doesn't fail the run.
+    def _optional_load(label, fn):
+        try:
+            return fn()
+        except FileNotFoundError as e:
+            logger.warning(f"Optional Savant {label} not found: {e}")
+            return None
+
+    statcast_batters_raw = _optional_load(
+        "statcast batters", loader.load_savant_statcast_batters
+    )
+    statcast_pitchers_raw = _optional_load(
+        "statcast pitchers", loader.load_savant_statcast_pitchers
+    )
+    home_runs_batters_raw = _optional_load(
+        "home runs batters", loader.load_savant_home_runs_batters
+    )
+    home_runs_pitchers_raw = _optional_load(
+        "home runs pitchers", loader.load_savant_home_runs_pitchers
+    )
+    pitch_arsenal_batters_raw = _optional_load(
+        "pitch arsenal batters", loader.load_savant_pitch_arsenal_batters
+    )
+    pitch_arsenal_pitchers_raw = _optional_load(
+        "pitch arsenal pitchers", loader.load_savant_pitch_arsenal_pitchers
+    )
+    sprint_speed_raw = _optional_load("sprint speed", loader.load_savant_sprint_speed)
+    expected_stats_pitchers_raw = _optional_load(
+        "expected statistics pitchers",
+        loader.load_savant_expected_statistics_pitchers,
+    )
+
     logger.info("Creating player models from Savant data...")
-    savant_batters = create_savant_batter_models(savant_batters_raw)
-    savant_pitchers = create_savant_pitcher_models(savant_pitchers_raw)
+    savant_batters = create_savant_batter_models(
+        savant_batters_raw,
+        statcast_data=statcast_batters_raw,
+        home_runs_data=home_runs_batters_raw,
+        pitch_arsenal_data=pitch_arsenal_batters_raw,
+        sprint_speed_data=sprint_speed_raw,
+    )
+    savant_pitchers = create_savant_pitcher_models(
+        savant_pitchers_raw,
+        statcast_data=statcast_pitchers_raw,
+        home_runs_data=home_runs_pitchers_raw,
+        pitch_arsenal_data=pitch_arsenal_pitchers_raw,
+        expected_statistics_data=expected_stats_pitchers_raw,
+    )
 
     # Match batters
     logger.info("Matching batters across ESPN, FanGraphs, and Savant...")

@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from typing_extensions import Sequence
 
@@ -224,25 +224,115 @@ def _consolidate_savant_rows(
     return by_player
 
 
-def create_savant_batter_models(batter_data: List[Dict]) -> Sequence[SavantBatterModel]:
-    """Consolidate flat Savant batter rows into one model per player.
+def _index_savant_subdomain(
+    rows: Optional[List[Dict]],
+    multi_value: bool = False,
+) -> Dict[int, Any]:
+    """Build a player_id → row (or list of rows) lookup from a sub-domain file.
 
-    The Savant extractor emits one row per (player_id, opp_hand) tuple. This
-    function groups by player_id and routes each row into the matching
-    `all` / `vs_r` / `vs_l` slot on SavantBatterModel.
+    NaN floats are scrubbed at the row level so the merged data validates
+    cleanly downstream. Rows without a player_id are dropped with a debug log.
 
     Args:
-        batter_data: Raw Savant batter rows from JSON (one row per split)
+        rows: Raw rows from one of the sub-domain JSON files (already
+            annotated with player_type/season by the loader).
+        multi_value: When True, accumulate a list of rows per player_id
+            (pitch_arsenal's pitch_type-keyed multi-row shape). When False,
+            keep a single dict per player_id (every other sub-domain).
+    """
+    out: Dict[int, Any] = {}
+    if not rows:
+        return out
+    for row in rows:
+        pid = row.get("player_id")
+        if pid is None:
+            logger.debug(
+                f"Skipped Savant sub-domain row with no player_id: {row.get('name')}"
+            )
+            continue
+        cleaned = _scrub_nan(row)
+        if multi_value:
+            out.setdefault(pid, []).append(cleaned)
+        else:
+            out[pid] = cleaned
+    return out
+
+
+def _attach_savant_subdomains(
+    entry: Dict[str, Any],
+    pid: int,
+    *,
+    statcast_idx: Dict[int, Any],
+    home_runs_idx: Dict[int, Any],
+    pitch_arsenal_idx: Dict[int, Any],
+    sprint_speed_idx: Optional[Dict[int, Any]] = None,
+    expected_stats_idx: Optional[Dict[int, Any]] = None,
+) -> None:
+    """In-place: attach sub-domain dicts onto a per-player entry by player_id.
+
+    The entry's keys map 1:1 to the SavantBatterModel/SavantPitcherModel
+    fields. Each sub-domain key is only set if upstream has a row for this
+    player — missing data leaves the field absent (None) on the model.
+    """
+    if pid in statcast_idx:
+        entry["statcast"] = statcast_idx[pid]
+    if pid in home_runs_idx:
+        entry["home_runs"] = home_runs_idx[pid]
+    if pid in pitch_arsenal_idx:
+        entry["pitch_arsenal"] = pitch_arsenal_idx[pid]
+    if sprint_speed_idx is not None and pid in sprint_speed_idx:
+        entry["sprint_speed"] = sprint_speed_idx[pid]
+    if expected_stats_idx is not None and pid in expected_stats_idx:
+        entry["expected_statistics"] = expected_stats_idx[pid]
+
+
+def create_savant_batter_models(
+    batter_data: List[Dict],
+    *,
+    statcast_data: Optional[List[Dict]] = None,
+    home_runs_data: Optional[List[Dict]] = None,
+    pitch_arsenal_data: Optional[List[Dict]] = None,
+    sprint_speed_data: Optional[List[Dict]] = None,
+) -> Sequence[SavantBatterModel]:
+    """Consolidate Savant batter rows + sub-domain files into one model per player.
+
+    The Savant extractor emits one row per (player_id, opp_hand) for the
+    swing/take base file, plus separate flat-or-multi-row files for each
+    sub-domain (statcast / home_runs / pitch_arsenal / sprint_speed). This
+    function groups by player_id, routes each opp_hand row into all/vs_r/vs_l,
+    and merges in matching rows from each sub-domain file (when supplied).
+
+    Sub-domain kwargs all default to None — callers that only want the base
+    swing/take splits don't need to thread the additional sources through.
+
+    Args:
+        batter_data: Swing/take rows (one per opp_hand split).
+        statcast_data: Optional rows from savant_statcast_batter_*.json
+        home_runs_data: Optional rows from savant_home_runs_batter_*.json
+        pitch_arsenal_data: Optional multi-row arsenal data, keyed by pitch_type
+        sprint_speed_data: Optional rows from savant_sprint_speed_*.json
 
     Returns:
-        Sequence of validated SavantBatterModel instances (one per unique
-        player_id, with up to three split sub-objects populated).
+        Sequence of validated SavantBatterModel instances.
     """
+    statcast_idx = _index_savant_subdomain(statcast_data)
+    home_runs_idx = _index_savant_subdomain(home_runs_data)
+    pitch_arsenal_idx = _index_savant_subdomain(pitch_arsenal_data, multi_value=True)
+    sprint_speed_idx = _index_savant_subdomain(sprint_speed_data)
+
     valid_batters: List[SavantBatterModel] = []
     skipped_count = 0
     consolidated = _consolidate_savant_rows(batter_data)
 
     for pid, entry in consolidated.items():
+        _attach_savant_subdomains(
+            entry,
+            pid,
+            statcast_idx=statcast_idx,
+            home_runs_idx=home_runs_idx,
+            pitch_arsenal_idx=pitch_arsenal_idx,
+            sprint_speed_idx=sprint_speed_idx,
+        )
         try:
             valid_batters.append(SavantBatterModel.model_validate(entry))
         except Exception as e:
@@ -259,24 +349,35 @@ def create_savant_batter_models(batter_data: List[Dict]) -> Sequence[SavantBatte
 
 def create_savant_pitcher_models(
     pitcher_data: List[Dict],
+    *,
+    statcast_data: Optional[List[Dict]] = None,
+    home_runs_data: Optional[List[Dict]] = None,
+    pitch_arsenal_data: Optional[List[Dict]] = None,
+    expected_statistics_data: Optional[List[Dict]] = None,
 ) -> Sequence[SavantPitcherModel]:
-    """Consolidate flat Savant pitcher rows into one model per player.
+    """Pitcher counterpart of create_savant_batter_models.
 
-    Same pattern as create_savant_batter_models — see that function's docstring
-    for the row-grouping contract.
-
-    Args:
-        pitcher_data: Raw Savant pitcher rows from JSON (one row per split)
-
-    Returns:
-        Sequence of validated SavantPitcherModel instances (one per unique
-        player_id, with up to three split sub-objects populated).
+    Mirrors the batter signature except `sprint_speed_data` (batter-only)
+    is replaced by `expected_statistics_data` (pitcher-only).
     """
+    statcast_idx = _index_savant_subdomain(statcast_data)
+    home_runs_idx = _index_savant_subdomain(home_runs_data)
+    pitch_arsenal_idx = _index_savant_subdomain(pitch_arsenal_data, multi_value=True)
+    expected_stats_idx = _index_savant_subdomain(expected_statistics_data)
+
     valid_pitchers: List[SavantPitcherModel] = []
     skipped_count = 0
     consolidated = _consolidate_savant_rows(pitcher_data)
 
     for pid, entry in consolidated.items():
+        _attach_savant_subdomains(
+            entry,
+            pid,
+            statcast_idx=statcast_idx,
+            home_runs_idx=home_runs_idx,
+            pitch_arsenal_idx=pitch_arsenal_idx,
+            expected_stats_idx=expected_stats_idx,
+        )
         try:
             valid_pitchers.append(SavantPitcherModel.model_validate(entry))
         except Exception as e:

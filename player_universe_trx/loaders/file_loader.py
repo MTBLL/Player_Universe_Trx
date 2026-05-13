@@ -96,7 +96,16 @@ class DataLoader:
 
     def _extract_savant_season_from_filename(self, filename: str) -> Optional[int]:
         """
-        Extract Savant season from filename in format savant_<role>_<season>_<MM>_<DD>_<HHMM>.json.
+        Extract Savant season from a Savant filename.
+
+        Handles every per-stat file shape the upstream extractor emits:
+          - savant_batters_<YYYY>_<MM>_<DD>_<HHMM>.json
+          - savant_pitchers_<YYYY>_<MM>_<DD>_<HHMM>.json
+          - savant_statcast_<batter|pitcher>_<YYYY>_<MM>_<DD>_<HHMM>.json
+          - savant_home_runs_<batter|pitcher>_<YYYY>_<MM>_<DD>_<HHMM>.json
+          - savant_pitch_arsenal_stats_<batter|pitcher>_<YYYY>_<MM>_<DD>_<HHMM>.json
+          - savant_sprint_speed_<YYYY>_<MM>_<DD>_<HHMM>.json
+          - savant_expected_statistics_pitcher_<YYYY>_<MM>_<DD>_<HHMM>.json
 
         Args:
             filename: Name of the Savant file
@@ -104,7 +113,8 @@ class DataLoader:
         Returns:
             Season year if found, None otherwise
         """
-        season_pattern = r"^savant_(?:batters|pitchers)_(\d{4})_\d{2}_\d{2}_\d{4}\.json$"
+        # The season is the 4-digit group followed by _MM_DD_HHMM.json
+        season_pattern = r"^savant_.+_(\d{4})_\d{2}_\d{2}_\d{4}\.json$"
         match = re.match(season_pattern, filename)
         if not match:
             return None
@@ -365,3 +375,131 @@ class DataLoader:
         data = load_json_data(str(file_path))
         season = self._extract_savant_season_from_filename(file_path.name)
         return self._annotate_savant_rows(data, "pitcher", season)
+
+    # ====================== Extended Savant sub-domains ======================
+    #
+    # The upstream extractor now emits per-stat-type files alongside the
+    # canonical batters/pitchers swing-take output. The methods below look up
+    # the latest file for each (stat_type, role) pair. All are year-indifferent
+    # (same convention as the canonical Savant loaders).
+
+    def _get_savant_subdomain_file(self, stem: str, missing_label: str) -> Path:
+        """Find the latest Savant sub-domain file matching `savant_<stem>_*.json`.
+
+        Args:
+            stem: The role-specific stem after `savant_` (e.g. "statcast_batter").
+            missing_label: Human-readable description for error messages.
+        """
+        pattern = rf"savant_{stem}_\d{{4}}_\d{{2}}_\d{{2}}_\d{{4}}\.json"
+        file_path = self._find_latest_file(pattern)
+        if not file_path:
+            raise FileNotFoundError(
+                f"No Savant {missing_label} file found in {self.resources_path}"
+            )
+        return file_path
+
+    def _load_savant_subdomain(
+        self, stem: str, missing_label: str, player_type: Optional[str] = None
+    ) -> List[Dict]:
+        """Load + annotate the latest Savant sub-domain file.
+
+        Args:
+            stem: Role-specific stem (e.g., "home_runs_batter").
+            missing_label: Human-readable description for error messages.
+            player_type: When provided, annotate each row with player_type and
+                season. Omit for files whose row schema doesn't carry these
+                (e.g., sprint_speed, which is batter-implied by `position`).
+        """
+        file_path = self._get_savant_subdomain_file(stem, missing_label)
+        logger.info(f"Loading Savant {missing_label} from: {file_path}")
+        data = load_json_data(str(file_path))
+        season = self._extract_savant_season_from_filename(file_path.name)
+        if player_type is None:
+            return data
+        return self._annotate_savant_rows(data, player_type, season)
+
+    # ---- Statcast ----
+
+    def get_savant_statcast_batters_file(self) -> Path:
+        return self._get_savant_subdomain_file("statcast_batter", "statcast batters")
+
+    def get_savant_statcast_pitchers_file(self) -> Path:
+        return self._get_savant_subdomain_file("statcast_pitcher", "statcast pitchers")
+
+    def load_savant_statcast_batters(self) -> List[Dict]:
+        return self._load_savant_subdomain(
+            "statcast_batter", "statcast batters", player_type="batter"
+        )
+
+    def load_savant_statcast_pitchers(self) -> List[Dict]:
+        return self._load_savant_subdomain(
+            "statcast_pitcher", "statcast pitchers", player_type="pitcher"
+        )
+
+    # ---- Home runs ----
+
+    def get_savant_home_runs_batters_file(self) -> Path:
+        return self._get_savant_subdomain_file("home_runs_batter", "home runs batters")
+
+    def get_savant_home_runs_pitchers_file(self) -> Path:
+        return self._get_savant_subdomain_file("home_runs_pitcher", "home runs pitchers")
+
+    def load_savant_home_runs_batters(self) -> List[Dict]:
+        return self._load_savant_subdomain(
+            "home_runs_batter", "home runs batters", player_type="batter"
+        )
+
+    def load_savant_home_runs_pitchers(self) -> List[Dict]:
+        return self._load_savant_subdomain(
+            "home_runs_pitcher", "home runs pitchers", player_type="pitcher"
+        )
+
+    # ---- Pitch arsenal ----
+
+    def get_savant_pitch_arsenal_batters_file(self) -> Path:
+        return self._get_savant_subdomain_file(
+            "pitch_arsenal_stats_batter", "pitch arsenal batters"
+        )
+
+    def get_savant_pitch_arsenal_pitchers_file(self) -> Path:
+        return self._get_savant_subdomain_file(
+            "pitch_arsenal_stats_pitcher", "pitch arsenal pitchers"
+        )
+
+    def load_savant_pitch_arsenal_batters(self) -> List[Dict]:
+        return self._load_savant_subdomain(
+            "pitch_arsenal_stats_batter", "pitch arsenal batters", player_type="batter"
+        )
+
+    def load_savant_pitch_arsenal_pitchers(self) -> List[Dict]:
+        return self._load_savant_subdomain(
+            "pitch_arsenal_stats_pitcher",
+            "pitch arsenal pitchers",
+            player_type="pitcher",
+        )
+
+    # ---- Sprint speed (batter-only by position) ----
+
+    def get_savant_sprint_speed_file(self) -> Path:
+        return self._get_savant_subdomain_file("sprint_speed", "sprint speed")
+
+    def load_savant_sprint_speed(self) -> List[Dict]:
+        # Sprint speed file has no role suffix and includes position metadata;
+        # it's batter-only in practice (positions never include 'P').
+        return self._load_savant_subdomain(
+            "sprint_speed", "sprint speed", player_type="batter"
+        )
+
+    # ---- Expected statistics (pitcher only) ----
+
+    def get_savant_expected_statistics_pitchers_file(self) -> Path:
+        return self._get_savant_subdomain_file(
+            "expected_statistics_pitcher", "expected statistics pitchers"
+        )
+
+    def load_savant_expected_statistics_pitchers(self) -> List[Dict]:
+        return self._load_savant_subdomain(
+            "expected_statistics_pitcher",
+            "expected statistics pitchers",
+            player_type="pitcher",
+        )

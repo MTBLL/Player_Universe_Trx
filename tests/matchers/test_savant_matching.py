@@ -193,22 +193,23 @@ def test_savant_stats_merged_correctly():
 
     matched_player = merged["matched"][0]
 
-    # Verify Savant stats were merged into stats object
+    # Savant stats live under stats.savant.all (the overall split).
+    # The savant_player_id / type / season metadata that the old extractor
+    # injected into current_season is gone — that data is still available on
+    # the match result itself (result.savant_match.player_id, etc.).
     assert matched_player.stats is not None
-    assert matched_player.stats.current_season is not None
-    assert matched_player.stats.current_season.exit_velo == 95.4
-    assert matched_player.stats.current_season.savant_player_id == 592450
-    assert matched_player.stats.current_season.savant_player_type == "batter"
-    assert matched_player.stats.current_season.savant_season == 2026
-    assert matched_player.stats.current_season.barrels_per_bbe_pct == 15.2
-    assert matched_player.stats.current_season.hardhit_pct == 52.3
-    assert matched_player.stats.current_season.hardhit_pct_pct_rnk == 92.7
-    assert matched_player.stats.current_season.xwOBA == 0.463
-    assert matched_player.stats.current_season.xAVG == 0.312
-    assert matched_player.stats.current_season.xSLG == 0.654
-    assert matched_player.stats.current_season.swing_miss_pct == 22.5
-    assert matched_player.stats.current_season.bat_speed == 75.8
-    assert matched_player.stats.current_season.attack_angle == 12.3
+    assert matched_player.stats.savant is not None
+    assert matched_player.stats.savant.all is not None
+    assert matched_player.stats.savant.all.exit_velo == 95.4
+    assert matched_player.stats.savant.all.barrels_per_bbe_pct == 15.2
+    assert matched_player.stats.savant.all.hardhit_pct == 52.3
+    assert matched_player.stats.savant.all.hardhit_pct_pct_rnk == 92.7
+    assert matched_player.stats.savant.all.xwOBA == 0.463
+    assert matched_player.stats.savant.all.xAVG == 0.312
+    assert matched_player.stats.savant.all.xSLG == 0.654
+    assert matched_player.stats.savant.all.swing_miss_pct == 22.5
+    assert matched_player.stats.savant.all.bat_speed == 75.8
+    assert matched_player.stats.savant.all.attack_angle == 12.3
 
 
 def test_savant_no_data_when_no_fangraphs_match():

@@ -1,242 +1,47 @@
-"""MTBL player statistics models combining ESPN, FanGraphs, and Savant data."""
+"""MTBL player statistics models.
 
-from typing import Optional
+The MTBL stats container is a source-by-source bundle: ESPN data lives under
+`espn`, FanGraphs projections under `fangraphs`, and Savant Statcast data
+under `savant`. This keeps the data shape parallel across sources — each
+namespace is a self-contained reflection of what that upstream emits, and no
+cross-source merging happens in this layer (each consumer reaches for the
+source it cares about).
+"""
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing import List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from player_universe_trx.models.espn.batter import EspnBatterStatsGroupModel
 from player_universe_trx.models.espn.pitcher import EspnPitcherStatsGroupModel
-from player_universe_trx.models.savant.stats import (
-    SavantBatterStatsModel,
-    SavantPitcherStatsModel,
-)
 from player_universe_trx.models.fangraphs.stats import (
     FangraphsBatterStatsModel,
     FangraphsPitcherStatsModel,
 )
+from player_universe_trx.models.savant.stats import (
+    SavantBatterStatsModel,
+    SavantHomeRunsModel,
+    SavantPitcherExpectedStatsModel,
+    SavantPitcherStatsModel,
+    SavantPitchArsenalEntryModel,
+    SavantSprintSpeedModel,
+    SavantStatcastModel,
+)
 
 
-class MtblBatterSeasonStatsModel(BaseModel):
-    """
-    MTBL batter stats for the current season, including projections and sabermetrics.
-
-    This model holds all stat types in a single object since each source provides unique data:
-    - ESPN: Current season statistics (actual performance)
-    - FanGraphs: Projections (expected future performance)
-    - Savant: Sabermetrics (advanced metrics like exit velocity, barrel rate, etc.)
-    """
-
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
-
-    # ========== ESPN Current Season Stats ==========
-    # Batting statistics
-    AB: Optional[float] = Field(default=None, description="At Bats (ESPN)")
-    H: Optional[float] = Field(default=None, description="Hits (ESPN)")
-    AVG: Optional[float] = Field(default=None, description="Batting Average (ESPN)")
-    singles: Optional[float] = Field(
-        default=None, alias="1B", description="Singles (ESPN)"
-    )
-    doubles: Optional[float] = Field(
-        default=None, alias="2B", description="Doubles (ESPN)"
-    )
-    triples: Optional[float] = Field(
-        default=None, alias="3B", description="Triples (ESPN)"
-    )
-    HR: Optional[float] = Field(default=None, description="Home Runs (ESPN)")
-    XBH: Optional[float] = Field(default=None, description="Extra Base Hits (ESPN)")
-    TB: Optional[float] = Field(default=None, description="Total Bases (ESPN)")
-    SLG: Optional[float] = Field(default=None, description="Slugging Percentage (ESPN)")
-
-    # Plate discipline
-    B_BB: Optional[float] = Field(default=None, description="Walks (ESPN)")
-    B_IBB: Optional[float] = Field(default=None, description="Intentional Walks (ESPN)")
-    HBP: Optional[float] = Field(default=None, description="Hit By Pitch (ESPN)")
-    SF: Optional[float] = Field(default=None, description="Sacrifice Flies (ESPN)")
-    SAC: Optional[float] = Field(default=None, description="Sacrifices (ESPN)")
-    PA: Optional[float] = Field(default=None, description="Plate Appearances (ESPN)")
-    OBP: Optional[float] = Field(default=None, description="On Base Percentage (ESPN)")
-    OPS: Optional[float] = Field(
-        default=None, description="On Base Plus Slugging (ESPN)"
-    )
-
-    # Runs and RBIs
-    R: Optional[float] = Field(default=None, description="Runs (ESPN)")
-    RBI: Optional[float] = Field(default=None, description="Runs Batted In (ESPN)")
-
-    # Stolen bases
-    SB: Optional[float] = Field(default=None, description="Stolen Bases (ESPN)")
-    CS: Optional[float] = Field(default=None, description="Caught Stealing (ESPN)")
-    SBN: Optional[float] = Field(
-        default=None, description="Stolen Base Net (ESPN or computed from SB - CS)"
-    )
-
-    # Other
-    GDP: Optional[float] = Field(
-        default=None, description="Grounded Into Double Play (ESPN)"
-    )
-    B_SO: Optional[float] = Field(default=None, description="Strikeouts (ESPN)")
-    G: Optional[float] = Field(default=None, description="Games (ESPN)")
-
-    # ========== Savant Sabermetrics ==========
-    # Savant metadata
-    savant_player_id: Optional[int] = Field(
-        default=None, description="Savant player ID"
-    )
-    savant_player_type: Optional[str] = Field(
-        default=None, description="Savant player role"
-    )
-    savant_season: Optional[int] = Field(default=None, description="Savant season")
-
-    # Contact metrics
-    exit_velo: Optional[float] = Field(
-        default=None, description="Exit Velocity (Savant)"
-    )
-    adj_exit_velo: Optional[float] = Field(
-        default=None, description="Adjusted Exit Velocity (Savant)"
-    )
-    launch_angle: Optional[float] = Field(
-        default=None, description="Launch Angle (Savant)"
-    )
-
-    # Swing mechanics
-    attack_angle: Optional[float] = Field(
-        default=None, description="Attack Angle (Savant)"
-    )
-    attack_dir: Optional[float] = Field(
-        default=None, description="Attack Direction (Savant)"
-    )
-    bat_speed: Optional[float] = Field(default=None, description="Bat Speed (Savant)")
-    swing_length: Optional[float] = Field(
-        default=None, description="Swing Length (Savant)"
-    )
-    swing_path_tilt: Optional[float] = Field(
-        default=None, description="Swing Path Tilt (Savant)"
-    )
-
-    # Plate discipline
-    swing_miss_pct: Optional[float] = Field(
-        default=None, description="Swing & Miss % (Savant)"
-    )
-    swings: Optional[int] = Field(default=None, description="Number of Swings (Savant)")
-    takes: Optional[int] = Field(default=None, description="Number of Takes (Savant)")
-    whiffs: Optional[int] = Field(default=None, description="Number of Whiffs (Savant)")
-
-    # Performance metrics
-    barrel_rate: Optional[float] = Field(
-        default=None, description="Barrel Rate (Savant)"
-    )
-    barrels_per_bbe_pct: Optional[float] = Field(
-        default=None, description="Barrels per BBE % (Savant)"
-    )
-    barrels_per_bbe_pct_pct_rnk: Optional[float] = Field(
-        default=None, description="Barrels per BBE percentile rank (Savant)"
-    )
-    barrels_per_pa_pct: Optional[float] = Field(
-        default=None, description="Barrels per PA % (Savant)"
-    )
-    barrels_per_pa_pct_pct_rnk: Optional[float] = Field(
-        default=None, description="Barrels per PA percentile rank (Savant)"
-    )
-    barrels_total: Optional[int] = Field(
-        default=None, description="Total Barrels (Savant)"
-    )
-    barrels_total_pct_rnk: Optional[float] = Field(
-        default=None, description="Total barrels percentile rank (Savant)"
-    )
-    hard_hit_rate: Optional[float] = Field(
-        default=None, description="Hard Hit % (Savant)"
-    )
-    hardhit_pct: Optional[float] = Field(
-        default=None, description="Hard Hit Pct (Savant)"
-    )
-    hardhit_pct_pct_rnk: Optional[float] = Field(
-        default=None, description="Hard hit percentile rank (Savant)"
-    )
-    batter_run_value_per_100: Optional[float] = Field(
-        default=None, description="Run Value per 100 (Savant)"
-    )
-
-    # Expected stats
-    xwoba: Optional[float] = Field(default=None, description="Expected wOBA (Savant)")
-    xavg: Optional[float] = Field(default=None, description="Expected AVG (Savant)")
-    xslg: Optional[float] = Field(default=None, description="Expected SLG (Savant)")
-    xAVG: Optional[float] = Field(
-        default=None, description="Expected Batting Average (Savant)"
-    )
-    xAVGdiff: Optional[float] = Field(
-        default=None, description="Expected AVG Differential (Savant)"
-    )
-    xOBP: Optional[float] = Field(default=None, description="Expected OBP (Savant)")
-    xOBPdiff: Optional[float] = Field(
-        default=None, description="Expected OBP Differential (Savant)"
-    )
-    xSLG: Optional[float] = Field(default=None, description="Expected SLG (Savant)")
-    xSLGdiff: Optional[float] = Field(
-        default=None, description="Expected SLG Differential (Savant)"
-    )
-    xwOBA: Optional[float] = Field(default=None, description="Expected wOBA (Savant)")
-
-    # Other Savant stats
-    BABIP: Optional[float] = Field(default=None, description="BABIP (Savant)")
-    BB_pct: Optional[float] = Field(
-        default=None, alias="BB%", description="Walk % (Savant)"
-    )
-    BBdist: Optional[int] = Field(default=None, description="Walk Distance (Savant)")
-    BIP: Optional[int] = Field(default=None, description="Balls In Play (Savant)")
-    ISO: Optional[float] = Field(default=None, description="Isolated Power (Savant)")
-    K_pct: Optional[float] = Field(
-        default=None, alias="K%", description="Strikeout % (Savant)"
-    )
-    wOBA: Optional[float] = Field(default=None, description="wOBA (Savant)")
-    wOBAdiff: Optional[float] = Field(
-        default=None, description="wOBA Differential (Savant)"
-    )
-    run_exp: Optional[float] = Field(
-        default=None, description="Run Expectancy (Savant)"
-    )
-    rate_ideal_attack_angle: Optional[float] = Field(
-        default=None, description="Rate Ideal Attack Angle (Savant)"
-    )
-    pitch_velo: Optional[float] = Field(
-        default=None, description="Avg Pitch Velocity Faced (Savant)"
-    )
-
-    @model_validator(mode="after")
-    def compute_sbn_if_missing(self):
-        """Compute SBN from SB - CS if not provided by ESPN."""
-        # If SBN is already provided (from ESPN), keep it
-        if self.SBN is not None:
-            return self
-
-        # Otherwise, try to compute from SB and CS
-        if self.SB is not None and self.CS is not None:
-            self.SBN = self.SB - self.CS
-        elif self.SB is not None:
-            self.SBN = self.SB
-        elif self.CS is not None:
-            self.SBN = -self.CS
-
-        return self
+# ============================================================
+# FanGraphs bundles — three projection slots under one namespace
+# ============================================================
 
 
-class MtblBatterStatsModel(BaseModel):
-    """
-    MTBL batter statistics container with current season stats and ESPN periods.
+class MtblBatterFangraphsBundle(BaseModel):
+    """All FanGraphs-derived data for a batter — three projection slots."""
 
-    Current season stats contain ESPN current season data and Savant sabermetrics. The
-    three FanGraphs projection slots (preseason, in-season-updated, rest-of-season)
-    live alongside, and ESPN historical periods are preserved in espn_stats.
-    """
+    model_config = ConfigDict(populate_by_name=True)
 
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
-
-    current_season: Optional[MtblBatterSeasonStatsModel] = Field(
-        default=None,
-        description="Combined current season stats (ESPN current + Savant)",
-    )
     projections: Optional[FangraphsBatterStatsModel] = Field(
         default=None,
-        description="FanGraphs preseason projection stats (canonical mix; carries q*/tt_q* percentiles)",
+        description="FanGraphs preseason projection (canonical mix; carries q*/tt_q* percentiles)",
     )
     projs_updated: Optional[FangraphsBatterStatsModel] = Field(
         default=None,
@@ -246,234 +51,16 @@ class MtblBatterStatsModel(BaseModel):
         default=None,
         description="FanGraphs rest-of-season projection (None pre-draft)",
     )
-    savant_vs_r: Optional[SavantBatterStatsModel] = Field(
-        default=None,
-        description="Savant stats facing right-handed pitchers (None if no sample)",
-    )
-    savant_vs_l: Optional[SavantBatterStatsModel] = Field(
-        default=None,
-        description="Savant stats facing left-handed pitchers (None if no sample)",
-    )
-    espn_stats: Optional[EspnBatterStatsGroupModel] = Field(
-        default=None, description="ESPN stats container with all periods"
-    )
 
 
-class MtblPitcherSeasonStatsModel(BaseModel):
-    """
-    MTBL pitcher stats for the current season, including projections and sabermetrics.
-
-    This model holds all stat types in a single object since each source provides unique data:
-    - ESPN: Current season statistics (actual performance)
-    - FanGraphs: Projections (expected future performance)
-    - Savant: Sabermetrics (advanced metrics like spin rate, velocity, etc.)
-    """
+class MtblPitcherFangraphsBundle(BaseModel):
+    """All FanGraphs-derived data for a pitcher — three projection slots."""
 
     model_config = ConfigDict(populate_by_name=True)
 
-    # ========== ESPN Current Season Stats ==========
-    # Pitching statistics
-    GP: Optional[float] = Field(default=None, description="Games Pitched (ESPN)")
-    GS: Optional[float] = Field(default=None, description="Games Started (ESPN)")
-    OUTS: Optional[float] = Field(default=None, description="Outs Recorded (ESPN)")
-    TBF: Optional[float] = Field(default=None, description="Total Batters Faced (ESPN)")
-    P_H: Optional[float] = Field(default=None, description="Hits Allowed (ESPN)")
-    OBA: Optional[float] = Field(
-        default=None, description="Opponent Batting Average (ESPN)"
-    )
-    P_BB: Optional[float] = Field(default=None, description="Walks Allowed (ESPN)")
-    WHIP: Optional[float] = Field(default=None, description="WHIP (ESPN)")
-    OOBP: Optional[float] = Field(default=None, description="Opponent OBP (ESPN)")
-    P_R: Optional[float] = Field(default=None, description="Runs Allowed (ESPN)")
-    ER: Optional[float] = Field(default=None, description="Earned Runs (ESPN)")
-    P_HR: Optional[float] = Field(default=None, description="Home Runs Allowed (ESPN)")
-    ERA: Optional[float] = Field(default=None, description="ERA (ESPN)")
-    K: Optional[float] = Field(default=None, description="Strikeouts (ESPN)")
-    WP: Optional[float] = Field(default=None, description="Wild Pitches (ESPN)")
-    W: Optional[float] = Field(default=None, description="Wins (ESPN)")
-    L: Optional[float] = Field(default=None, description="Losses (ESPN)")
-    WPCT: Optional[float] = Field(default=None, description="Win Percentage (ESPN)")
-    QS: Optional[float] = Field(default=None, description="Quality Starts (ESPN)")
-    k_bb_ratio: Optional[float] = Field(
-        default=None, alias="K/BB", description="K/BB Ratio (ESPN)"
-    )
-
-    # Relief pitcher statistics
-    SV: Optional[float] = Field(default=None, description="Saves (ESPN)")
-    HLD: Optional[float] = Field(default=None, description="Holds (ESPN)")
-    SVHD: Optional[float] = Field(default=None, description="Saves + Holds (ESPN)")
-    SVO: Optional[float] = Field(default=None, description="Save Opportunities (ESPN)")
-    BLSV: Optional[float] = Field(default=None, description="Blown Saves (ESPN)")
-    SV_pct: Optional[float] = Field(default=None, alias="SV%", description="Save Percentage (ESPN)")
-
-    # Additional statistics
-    IP: Optional[float] = Field(default=None, description="Innings Pitched (ESPN)")
-    k_per_9: Optional[float] = Field(default=None, alias="K/9", description="Strikeouts per 9 innings (ESPN)")
-
-    # ========== Savant Sabermetrics ==========
-    # Savant metadata
-    savant_player_id: Optional[int] = Field(
-        default=None, description="Savant player ID"
-    )
-    savant_player_type: Optional[str] = Field(
-        default=None, description="Savant player role"
-    )
-    savant_season: Optional[int] = Field(default=None, description="Savant season")
-
-    # Pitch characteristics
-    velo: Optional[float] = Field(default=None, description="Pitch Velocity (Savant)")
-    spin_rate: Optional[float] = Field(default=None, description="Spin Rate (Savant)")
-    eff_min_vel: Optional[float] = Field(
-        default=None, description="Effective Min Velocity (Savant)"
-    )
-    percieved_velo: Optional[float] = Field(
-        default=None, description="Perceived Velocity (Savant)"
-    )
-
-    # Release point
-    release_extension: Optional[float] = Field(
-        default=None, description="Release Extension (Savant)"
-    )
-    release_pos_x: Optional[float] = Field(
-        default=None, description="Release Position X (Savant)"
-    )
-    release_pos_z: Optional[float] = Field(
-        default=None, description="Release Position Z (Savant)"
-    )
-
-    # Pitch movement
-    break_z: Optional[float] = Field(
-        default=None, description="Vertical Break (Savant)"
-    )
-    induced_break_z: Optional[float] = Field(
-        default=None, description="Induced Vertical Break (Savant)"
-    )
-    break_x_arm_side: Optional[float] = Field(
-        default=None, description="Horizontal Break Arm Side (Savant)"
-    )
-    break_x_batter_in: Optional[float] = Field(
-        default=None, description="Horizontal Break Batter In (Savant)"
-    )
-
-    # Mechanics and performance
-    arm_angle: Optional[float] = Field(default=None, description="Arm Angle (Savant)")
-    pitcher_run_exp: Optional[float] = Field(
-        default=None, description="Pitcher Run Expectancy (Savant)"
-    )
-    pitcher_run_value_per_100: Optional[float] = Field(
-        default=None, description="Run Value per 100 (Savant)"
-    )
-
-    # Contact/Batted ball metrics
-    exit_velo: Optional[float] = Field(
-        default=None, description="Exit Velocity Against (Savant)"
-    )
-    adj_exit_velo: Optional[float] = Field(
-        default=None, description="Adjusted Exit Velo Against (Savant)"
-    )
-    launch_angle: Optional[float] = Field(
-        default=None, description="Launch Angle Against (Savant)"
-    )
-    hardhit_pct: Optional[float] = Field(
-        default=None, description="Hard Hit Pct Against (Savant)"
-    )
-    hardhit_pct_pct_rnk: Optional[float] = Field(
-        default=None, description="Hard hit percentile rank (Savant)"
-    )
-    barrels_per_bbe_pct: Optional[float] = Field(
-        default=None, description="Barrels per BBE Allowed % (Savant)"
-    )
-    barrels_per_bbe_pct_pct_rnk: Optional[float] = Field(
-        default=None, description="Barrels per BBE percentile rank (Savant)"
-    )
-    barrels_per_pa_pct: Optional[float] = Field(
-        default=None, description="Barrels per PA Allowed % (Savant)"
-    )
-    barrels_per_pa_pct_pct_rnk: Optional[float] = Field(
-        default=None, description="Barrels per PA percentile rank (Savant)"
-    )
-
-    # Plate discipline
-    swing_miss_pct: Optional[float] = Field(
-        default=None, description="Swing & Miss % (Savant)"
-    )
-    swings: Optional[int] = Field(default=None, description="Swings Against (Savant)")
-    takes: Optional[int] = Field(default=None, description="Takes (Savant)")
-    whiffs: Optional[int] = Field(default=None, description="Whiffs (Savant)")
-
-    # Expected stats
-    xwoba: Optional[float] = Field(default=None, description="xwOBA Against (Savant)")
-    xavg: Optional[float] = Field(default=None, description="xAVG Against (Savant)")
-    xslg: Optional[float] = Field(default=None, description="xSLG Against (Savant)")
-    xAVG: Optional[float] = Field(
-        default=None, description="Expected AVG Against (Savant)"
-    )
-    xAVGdiff: Optional[float] = Field(
-        default=None, description="Expected AVG Diff (Savant)"
-    )
-    xOBP: Optional[float] = Field(
-        default=None, description="Expected OBP Against (Savant)"
-    )
-    xOBPdiff: Optional[float] = Field(
-        default=None, description="Expected OBP Diff (Savant)"
-    )
-    xSLG: Optional[float] = Field(
-        default=None, description="Expected SLG Against (Savant)"
-    )
-    xSLGdiff: Optional[float] = Field(
-        default=None, description="Expected SLG Diff (Savant)"
-    )
-    xwOBA: Optional[float] = Field(
-        default=None, description="Expected wOBA Against (Savant)"
-    )
-
-    # Other Savant stats
-    BABIP: Optional[float] = Field(default=None, description="BABIP Against (Savant)")
-    BB: Optional[int] = Field(default=None, description="Walks (Savant)")
-    BB_pct: Optional[float] = Field(
-        default=None, alias="BB%", description="Walk % (Savant)"
-    )
-    BBdist: Optional[int] = Field(default=None, description="Walk Distance (Savant)")
-    BIP: Optional[int] = Field(
-        default=None, description="Balls In Play Against (Savant)"
-    )
-    ISO: Optional[float] = Field(default=None, description="ISO Against (Savant)")
-    wOBA: Optional[float] = Field(default=None, description="wOBA Against (Savant)")
-    wOBAdiff: Optional[float] = Field(
-        default=None, description="wOBA Differential (Savant)"
-    )
-    run_exp: Optional[float] = Field(
-        default=None, description="Run Expectancy (Savant)"
-    )
-    barrels_total: Optional[int] = Field(
-        default=None, description="Barrels Allowed (Savant)"
-    )
-    barrels_total_pct_rnk: Optional[float] = Field(
-        default=None, description="Total barrels percentile rank (Savant)"
-    )
-    rate_ideal_attack_angle: Optional[float] = Field(
-        default=None, description="Rate Ideal Attack Angle (Savant)"
-    )
-
-
-class MtblPitcherStatsModel(BaseModel):
-    """
-    MTBL pitcher statistics container with current season stats and ESPN periods.
-
-    Current season stats contain ESPN current season data and Savant sabermetrics. The
-    three FanGraphs projection slots (preseason, in-season-updated, rest-of-season)
-    live alongside, and ESPN historical periods are preserved in espn_stats.
-    """
-
-    model_config = ConfigDict(populate_by_name=True)
-
-    current_season: Optional[MtblPitcherSeasonStatsModel] = Field(
-        default=None,
-        description="Combined current season stats (ESPN current + Savant)",
-    )
     projections: Optional[FangraphsPitcherStatsModel] = Field(
         default=None,
-        description="FanGraphs preseason projection stats (canonical mix; carries q*/tt_q* percentiles)",
+        description="FanGraphs preseason projection (canonical mix; carries q*/tt_q* percentiles)",
     )
     projs_updated: Optional[FangraphsPitcherStatsModel] = Field(
         default=None,
@@ -483,14 +70,123 @@ class MtblPitcherStatsModel(BaseModel):
         default=None,
         description="FanGraphs rest-of-season projection (None pre-draft)",
     )
-    savant_vs_r: Optional[SavantPitcherStatsModel] = Field(
-        default=None,
-        description="Savant stats facing right-handed batters (None if no sample)",
+
+
+# ============================================================
+# Savant bundles — splits + sub-domain stats under one namespace
+# ============================================================
+
+
+class MtblBatterSavantBundle(BaseModel):
+    """All Savant-derived data for a batter."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    all: Optional[SavantBatterStatsModel] = Field(
+        default=None, description="Overall (swing/take) stats"
     )
-    savant_vs_l: Optional[SavantPitcherStatsModel] = Field(
+    vs_r: Optional[SavantBatterStatsModel] = Field(
         default=None,
-        description="Savant stats facing left-handed batters (None if no sample)",
+        description="Swing/take stats facing right-handed pitchers (None if no sample)",
     )
-    espn_stats: Optional[EspnPitcherStatsGroupModel] = Field(
-        default=None, description="ESPN stats container with all periods"
+    vs_l: Optional[SavantBatterStatsModel] = Field(
+        default=None,
+        description="Swing/take stats facing left-handed pitchers (None if no sample)",
+    )
+    statcast: Optional[SavantStatcastModel] = Field(
+        default=None, description="Batted-ball quality summary (ev50, barrels, ...)"
+    )
+    home_runs: Optional[SavantHomeRunsModel] = Field(
+        default=None,
+        description="HR-quality metrics (xHR, doubters, mostly_gone, ...)",
+    )
+    pitch_arsenal: List[SavantPitchArsenalEntryModel] = Field(
+        default_factory=list,
+        description="Performance per pitch_type (FF/SI/SL/CH/...) the batter faced",
+    )
+    sprint_speed: Optional[SavantSprintSpeedModel] = Field(
+        default=None,
+        description="Baserunning sprint-speed metrics (batter-only domain)",
+    )
+
+
+class MtblPitcherSavantBundle(BaseModel):
+    """All Savant-derived data for a pitcher."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    all: Optional[SavantPitcherStatsModel] = Field(
+        default=None, description="Overall (per-pitch) stats"
+    )
+    vs_r: Optional[SavantPitcherStatsModel] = Field(
+        default=None,
+        description="Per-pitch stats facing right-handed batters (None if no sample)",
+    )
+    vs_l: Optional[SavantPitcherStatsModel] = Field(
+        default=None,
+        description="Per-pitch stats facing left-handed batters (None if no sample)",
+    )
+    statcast: Optional[SavantStatcastModel] = Field(
+        default=None,
+        description="Contact-allowed quality summary (ev50, barrels, ...)",
+    )
+    home_runs: Optional[SavantHomeRunsModel] = Field(
+        default=None, description="HR-allowed quality metrics (xHR, doubters, ...)"
+    )
+    pitch_arsenal: List[SavantPitchArsenalEntryModel] = Field(
+        default_factory=list,
+        description="Performance per pitch_type (FF/SI/SL/...) the pitcher throws",
+    )
+    expected_statistics: Optional[SavantPitcherExpectedStatsModel] = Field(
+        default=None,
+        description="xAVG/xSLG/xwOBA/xERA summary (pitcher-only domain)",
+    )
+
+
+# ============================================================
+# Top-level MTBL stats containers — three-namespace layout
+# ============================================================
+
+
+class MtblBatterStatsModel(BaseModel):
+    """MTBL batter statistics — three source-by-source namespaces.
+
+    No cross-source merging happens here. Each consumer reaches for the source
+    namespace they care about (e.g., `stats.espn.current_season.HR` for
+    actuals, `stats.fangraphs.projections.HR` for preseason projection,
+    `stats.savant.all.xwOBA` for sabermetrics).
+    """
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    espn: Optional[EspnBatterStatsGroupModel] = Field(
+        default=None,
+        description="ESPN bundle: current_season + projections + last_*_games + previous_season_24",
+    )
+    fangraphs: Optional[MtblBatterFangraphsBundle] = Field(
+        default=None,
+        description="FanGraphs bundle: preseason / projs_updated / ros projections",
+    )
+    savant: Optional[MtblBatterSavantBundle] = Field(
+        default=None,
+        description="Savant bundle: all/vs_r/vs_l splits + statcast / home_runs / pitch_arsenal / sprint_speed",
+    )
+
+
+class MtblPitcherStatsModel(BaseModel):
+    """MTBL pitcher statistics — three source-by-source namespaces."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    espn: Optional[EspnPitcherStatsGroupModel] = Field(
+        default=None,
+        description="ESPN bundle: current_season + projections + last_*_games + previous_season_24",
+    )
+    fangraphs: Optional[MtblPitcherFangraphsBundle] = Field(
+        default=None,
+        description="FanGraphs bundle: preseason / projs_updated / ros projections",
+    )
+    savant: Optional[MtblPitcherSavantBundle] = Field(
+        default=None,
+        description="Savant bundle: all/vs_r/vs_l splits + statcast / home_runs / pitch_arsenal / expected_statistics",
     )
