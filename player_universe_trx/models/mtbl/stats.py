@@ -6,6 +6,10 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from player_universe_trx.models.espn.batter import EspnBatterStatsGroupModel
 from player_universe_trx.models.espn.pitcher import EspnPitcherStatsGroupModel
+from player_universe_trx.models.savant.stats import (
+    SavantBatterStatsModel,
+    SavantPitcherStatsModel,
+)
 from player_universe_trx.models.fangraphs.stats import (
     FangraphsBatterStatsModel,
     FangraphsPitcherStatsModel,
@@ -242,6 +246,14 @@ class MtblBatterStatsModel(BaseModel):
         default=None,
         description="FanGraphs rest-of-season projection (None pre-draft)",
     )
+    savant_vs_r: Optional[SavantBatterStatsModel] = Field(
+        default=None,
+        description="Savant stats facing right-handed pitchers (None if no sample)",
+    )
+    savant_vs_l: Optional[SavantBatterStatsModel] = Field(
+        default=None,
+        description="Savant stats facing left-handed pitchers (None if no sample)",
+    )
     espn_stats: Optional[EspnBatterStatsGroupModel] = Field(
         default=None, description="ESPN stats container with all periods"
     )
@@ -470,6 +482,14 @@ class MtblPitcherStatsModel(BaseModel):
     ros: Optional[FangraphsPitcherStatsModel] = Field(
         default=None,
         description="FanGraphs rest-of-season projection (None pre-draft)",
+    )
+    savant_vs_r: Optional[SavantPitcherStatsModel] = Field(
+        default=None,
+        description="Savant stats facing right-handed batters (None if no sample)",
+    )
+    savant_vs_l: Optional[SavantPitcherStatsModel] = Field(
+        default=None,
+        description="Savant stats facing left-handed batters (None if no sample)",
     )
     espn_stats: Optional[EspnPitcherStatsGroupModel] = Field(
         default=None, description="ESPN stats container with all periods"

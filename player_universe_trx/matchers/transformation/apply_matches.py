@@ -27,6 +27,10 @@ from player_universe_trx.models.mtbl import (
     MtblPlayerModel,
 )
 from player_universe_trx.models.savant import SavantBatterModel, SavantPitcherModel
+from player_universe_trx.models.savant.stats import (
+    SavantBatterStatsModel,
+    SavantPitcherStatsModel,
+)
 
 if TYPE_CHECKING:  # pragma: no cover
     from player_universe_trx.models.espn import (
@@ -86,25 +90,59 @@ def _extract_fangraphs_projections(
     return out
 
 
+_SAVANT_SPLIT_FIELDS: Tuple[str, ...] = ("vs_r", "vs_l")
+
+
 def _extract_savant_stats(
     savant_match: Optional["SavantBatterModel | SavantPitcherModel"],
 ) -> Dict[str, Any]:
-    """Extract Savant sabermetric stats as unprefixed dictionary.
+    """Extract Savant sabermetric stats for the `all` (overall) split.
+
+    This feeds `MtblBatterSeasonStatsModel.current_season` / its pitcher
+    counterpart — the overall-Savant-numbers-merged-into-the-current-season
+    contract that downstream code already depends on. Per-handedness splits
+    are routed separately via `_extract_savant_splits`.
 
     Args:
-        savant_match: Savant player model with stats
+        savant_match: Savant player model with per-split stats
 
     Returns:
-        Dictionary of Savant stats (unprefixed)
+        Dictionary of Savant `all` split stats (unprefixed), or {} if absent.
     """
-    if savant_match and savant_match.stats:
-        stats = savant_match.stats.model_dump(exclude_none=True)
+    if savant_match and savant_match.all:
+        stats = savant_match.all.model_dump(exclude_none=True)
         stats["savant_player_id"] = savant_match.player_id
         stats["savant_player_type"] = savant_match.player_type
         if savant_match.season is not None:
             stats["savant_season"] = savant_match.season
         return stats
     return {}
+
+
+def _extract_savant_splits(
+    savant_match: Optional["SavantBatterModel | SavantPitcherModel"],
+) -> Dict[str, Dict[str, Any]]:
+    """Extract Savant per-handedness splits (vs_r, vs_l).
+
+    The `all` split is handled by _extract_savant_stats — it flows into
+    current_season. The other two splits are returned here so they can be
+    routed into dedicated savant_vs_r / savant_vs_l fields on the MTBL
+    stats container.
+
+    Returns:
+        Dict keyed by slot name ("vs_r" / "vs_l") with per-slot stats dict as
+        value. Empty dict per slot when the player has no sample for that
+        handedness.
+    """
+    out: Dict[str, Dict[str, Any]] = {slot: {} for slot in _SAVANT_SPLIT_FIELDS}
+    if not savant_match:
+        return out
+    for slot in _SAVANT_SPLIT_FIELDS:
+        model = getattr(savant_match, slot, None)
+        if model is None:
+            continue
+        out[slot] = model.model_dump(exclude_none=True)
+    return out
 
 
 def _build_stats_dict(
@@ -142,6 +180,7 @@ def _create_player_model(
     base_player: MtblPlayerModel,
     stats_dict: Dict[str, Any],
     projections_dict: Dict[str, Dict[str, Any]],
+    savant_splits_dict: Dict[str, Dict[str, Any]],
     espn_stats_container: Optional[
         EspnBatterStatsGroupModel | EspnPitcherStatsGroupModel
     ],
@@ -155,6 +194,9 @@ def _create_player_model(
         projections_dict: FanGraphs projections by slot — keys are
             "projections", "projs_updated", "ros"; each value is the per-slot
             stats dict (possibly empty).
+        savant_splits_dict: Savant per-handedness splits — keys are
+            "vs_r", "vs_l"; each value is the per-slot stats dict (possibly
+            empty). The `all` split is already folded into stats_dict.
         espn_stats_container: ESPN stats container with all periods
         is_batter: True for batter, False for pitcher
 
@@ -170,9 +212,18 @@ def _create_player_model(
     ros = projections_dict.get("ros", {})
     has_any_projection = bool(preseason or updated or ros)
 
+    vs_r = savant_splits_dict.get("vs_r", {})
+    vs_l = savant_splits_dict.get("vs_l", {})
+    has_any_savant_split = bool(vs_r or vs_l)
+
     if is_batter:
         batter_stats: Optional[MtblBatterStatsModel] = None
-        if stats_dict or has_any_projection or espn_stats_container:
+        if (
+            stats_dict
+            or has_any_projection
+            or has_any_savant_split
+            or espn_stats_container
+        ):
             # Type narrow the container for batters
             batter_container: Optional[EspnBatterStatsGroupModel] = (
                 espn_stats_container
@@ -191,12 +242,19 @@ def _create_player_model(
                     FangraphsBatterStatsModel(**updated) if updated else None
                 ),
                 ros=(FangraphsBatterStatsModel(**ros) if ros else None),
+                savant_vs_r=(SavantBatterStatsModel(**vs_r) if vs_r else None),
+                savant_vs_l=(SavantBatterStatsModel(**vs_l) if vs_l else None),
                 espn_stats=batter_container,
             )
         return MtblBatterModel(**base_data, stats=batter_stats)
     else:
         pitcher_stats: Optional[MtblPitcherStatsModel] = None
-        if stats_dict or has_any_projection or espn_stats_container:
+        if (
+            stats_dict
+            or has_any_projection
+            or has_any_savant_split
+            or espn_stats_container
+        ):
             # Type narrow the container for pitchers
             pitcher_container: Optional[EspnPitcherStatsGroupModel] = (
                 espn_stats_container
@@ -215,6 +273,8 @@ def _create_player_model(
                     FangraphsPitcherStatsModel(**updated) if updated else None
                 ),
                 ros=(FangraphsPitcherStatsModel(**ros) if ros else None),
+                savant_vs_r=(SavantPitcherStatsModel(**vs_r) if vs_r else None),
+                savant_vs_l=(SavantPitcherStatsModel(**vs_l) if vs_l else None),
                 espn_stats=pitcher_container,
             )
         return MtblPitcherModel(**base_data, stats=pitcher_stats)
@@ -265,6 +325,9 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
             ambiguous_projections_dict: Dict[str, Dict[str, Any]] = {
                 slot: {} for slot in _FANGRAPHS_PROJECTION_SLOTS
             }
+            ambiguous_savant_splits_dict: Dict[str, Dict[str, Any]] = {
+                slot: {} for slot in _SAVANT_SPLIT_FIELDS
+            }
             ambiguous_espn_stats_container: Optional[Any] = (
                 result.espn_player.stats if result.espn_player.stats else None
             )
@@ -272,6 +335,7 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
                 base_player=base_player,
                 stats_dict=ambiguous_stats_dict,
                 projections_dict=ambiguous_projections_dict,
+                savant_splits_dict=ambiguous_savant_splits_dict,
                 espn_stats_container=ambiguous_espn_stats_container,
                 is_batter=is_batter,
             )
@@ -294,6 +358,12 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
             else {slot: {} for slot in _FANGRAPHS_PROJECTION_SLOTS}
         )
 
+        savant_splits_dict: Dict[str, Dict[str, Any]] = (
+            _extract_savant_splits(result.savant_match)
+            if is_matched
+            else {slot: {} for slot in _SAVANT_SPLIT_FIELDS}
+        )
+
         # Extract ESPN stats container
         espn_stats_container: Optional[Any] = (
             result.espn_player.stats if result.espn_player.stats else None
@@ -304,6 +374,7 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
             base_player=base_player,
             stats_dict=stats_dict,
             projections_dict=projections_dict,
+            savant_splits_dict=savant_splits_dict,
             espn_stats_container=espn_stats_container,
             is_batter=is_batter,
         )

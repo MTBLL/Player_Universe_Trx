@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from typing_extensions import Sequence
 
@@ -132,54 +132,120 @@ def create_fangraphs_pitcher_models(
     return valid_pitchers
 
 
-def create_savant_batter_models(batter_data: List[Dict]) -> Sequence[SavantBatterModel]:
-    """
-    Create SavantBatterModel instances from raw Savant batter data.
+# Identity fields that stay constant across all (player_id, opp_hand) rows for
+# the same player; pulled from the row chosen as identity source during
+# consolidation.
+_SAVANT_IDENTITY_FIELDS = {
+    "player_id",
+    "name",
+    "first_name",
+    "last_name",
+    "name_ascii",
+    "slug",
+    "player_type",
+    "season",
+}
 
-    Transforms flat Savant data structure into nested model with stats object.
-    Separates player identity/pitch count fields from statistical fields.
+# Maps Savant's opp_hand wire value to the model field name. The extractor
+# emits one row per opp_hand per player.
+_OPP_HAND_TO_SLOT = {"all": "all", "R": "vs_r", "L": "vs_l"}
+
+
+def _scrub_nan(d: Dict[str, Any]) -> Dict[str, Any]:
+    """Replace NaN floats with None.
+
+    Upstream Savant rows occasionally surface pandas NaN values for stats like
+    BBdist or barrels_total when the sample is too thin to compute them.
+    json.load deserializes those as Python float('nan'), which pydantic then
+    rejects (finite_number). Treating them as missing is the right semantic.
+    """
+    out: Dict[str, Any] = {}
+    for k, v in d.items():
+        if isinstance(v, float) and v != v:  # NaN is the only x where x != x
+            continue
+        out[k] = v
+    return out
+
+
+def _consolidate_savant_rows(
+    rows: List[Dict],
+) -> Dict[int, Dict[str, Any]]:
+    """Group flat Savant rows by player_id and assemble per-split slots.
+
+    Returns a dict keyed by player_id whose value is a partially-built model
+    dict: identity fields at the root plus `all` / `vs_r` / `vs_l` stats dicts
+    sourced from each row's opp_hand value. Unrecognized opp_hand values are
+    skipped with a debug log (defensive — the extractor's contract is fixed
+    at all/R/L).
+    """
+    by_player: Dict[int, Dict[str, Any]] = {}
+
+    for row in rows:
+        pid = row.get("player_id")
+        if pid is None:
+            logger.debug(f"Skipped Savant row with no player_id: {row.get('name')}")
+            continue
+
+        slot = _OPP_HAND_TO_SLOT.get(row.get("opp_hand", ""))
+        if slot is None:
+            logger.debug(
+                f"Skipped Savant row with unknown opp_hand={row.get('opp_hand')!r} "
+                f"for player_id={pid}"
+            )
+            continue
+
+        # Partition: identity stays at root, everything else (minus opp_hand,
+        # which is metadata, not a stat) goes into the per-split stats dict.
+        # Pitch counts (pitches/total_pitches/pitch_percent) intentionally fall
+        # into the stats dict because they're per-split.
+        identity = {k: v for k, v in row.items() if k in _SAVANT_IDENTITY_FIELDS}
+        stats = _scrub_nan(
+            {
+                k: v
+                for k, v in row.items()
+                if k not in _SAVANT_IDENTITY_FIELDS and k != "opp_hand"
+            }
+        )
+
+        entry = by_player.setdefault(pid, {})
+        # Identity merges via "first-wins" — every row for the same player
+        # carries the same identity values, so the order doesn't matter.
+        for k, v in identity.items():
+            entry.setdefault(k, v)
+        entry[slot] = stats
+
+    return by_player
+
+
+def create_savant_batter_models(batter_data: List[Dict]) -> Sequence[SavantBatterModel]:
+    """Consolidate flat Savant batter rows into one model per player.
+
+    The Savant extractor emits one row per (player_id, opp_hand) tuple. This
+    function groups by player_id and routes each row into the matching
+    `all` / `vs_r` / `vs_l` slot on SavantBatterModel.
 
     Args:
-        batter_data: Raw Savant batter data from JSON (flat structure)
+        batter_data: Raw Savant batter rows from JSON (one row per split)
 
     Returns:
-        Sequence of validated SavantBatterModel instances (nested structure)
+        Sequence of validated SavantBatterModel instances (one per unique
+        player_id, with up to three split sub-objects populated).
     """
-    valid_batters = []
+    valid_batters: List[SavantBatterModel] = []
     skipped_count = 0
+    consolidated = _consolidate_savant_rows(batter_data)
 
-    # Identity and pitch count fields that stay at root level
-    identity_fields = {
-        "player_id",
-        "name",
-        "first_name",
-        "last_name",
-        "name_ascii",
-        "slug",
-        "player_type",
-        "season",
-    }
-    pitch_count_fields = {"pitches", "total_pitches", "pitch_percent"}
-    root_fields = identity_fields | pitch_count_fields
-
-    for batter in batter_data:
+    for pid, entry in consolidated.items():
         try:
-            # Separate root-level fields from stats fields
-            player_data = {k: v for k, v in batter.items() if k in root_fields}
-            stats_data = {k: v for k, v in batter.items() if k not in root_fields}
-
-            # Create nested structure
-            nested_data = {**player_data, "stats": stats_data if stats_data else None}
-
-            # Validate with Pydantic
-            model = SavantBatterModel.model_validate(nested_data)
-            valid_batters.append(model)
+            valid_batters.append(SavantBatterModel.model_validate(entry))
         except Exception as e:
-            logger.debug(f"Skipped batter {batter.get('name', 'unknown')}: {e}")
+            logger.debug(f"Skipped batter player_id={pid}: {e}")
             skipped_count += 1
 
     logger.info(
-        f"Created {len(valid_batters)} Savant batter models, skipped {skipped_count} invalid records"
+        f"Created {len(valid_batters)} Savant batter models from {len(batter_data)} "
+        f"wire rows ({len(consolidated)} unique player_ids); "
+        f"skipped {skipped_count} invalid records"
     )
     return valid_batters
 
@@ -187,52 +253,32 @@ def create_savant_batter_models(batter_data: List[Dict]) -> Sequence[SavantBatte
 def create_savant_pitcher_models(
     pitcher_data: List[Dict],
 ) -> Sequence[SavantPitcherModel]:
-    """
-    Create SavantPitcherModel instances from raw Savant pitcher data.
+    """Consolidate flat Savant pitcher rows into one model per player.
 
-    Transforms flat Savant data structure into nested model with stats object.
-    Separates player identity/pitch count fields from statistical fields.
+    Same pattern as create_savant_batter_models — see that function's docstring
+    for the row-grouping contract.
 
     Args:
-        pitcher_data: Raw Savant pitcher data from JSON (flat structure)
+        pitcher_data: Raw Savant pitcher rows from JSON (one row per split)
 
     Returns:
-        Sequence of validated SavantPitcherModel instances (nested structure)
+        Sequence of validated SavantPitcherModel instances (one per unique
+        player_id, with up to three split sub-objects populated).
     """
-    valid_pitchers = []
+    valid_pitchers: List[SavantPitcherModel] = []
     skipped_count = 0
+    consolidated = _consolidate_savant_rows(pitcher_data)
 
-    # Identity and pitch count fields that stay at root level
-    identity_fields = {
-        "player_id",
-        "name",
-        "first_name",
-        "last_name",
-        "name_ascii",
-        "slug",
-        "player_type",
-        "season",
-    }
-    pitch_count_fields = {"pitches", "total_pitches", "pitch_percent"}
-    root_fields = identity_fields | pitch_count_fields
-
-    for pitcher in pitcher_data:
+    for pid, entry in consolidated.items():
         try:
-            # Separate root-level fields from stats fields
-            player_data = {k: v for k, v in pitcher.items() if k in root_fields}
-            stats_data = {k: v for k, v in pitcher.items() if k not in root_fields}
-
-            # Create nested structure
-            nested_data = {**player_data, "stats": stats_data if stats_data else None}
-
-            # Validate with Pydantic
-            model = SavantPitcherModel.model_validate(nested_data)
-            valid_pitchers.append(model)
+            valid_pitchers.append(SavantPitcherModel.model_validate(entry))
         except Exception as e:
-            logger.debug(f"Skipped pitcher {pitcher.get('name', 'unknown')}: {e}")
+            logger.debug(f"Skipped pitcher player_id={pid}: {e}")
             skipped_count += 1
 
     logger.info(
-        f"Created {len(valid_pitchers)} Savant pitcher models, skipped {skipped_count} invalid records"
+        f"Created {len(valid_pitchers)} Savant pitcher models from {len(pitcher_data)} "
+        f"wire rows ({len(consolidated)} unique player_ids); "
+        f"skipped {skipped_count} invalid records"
     )
     return valid_pitchers
