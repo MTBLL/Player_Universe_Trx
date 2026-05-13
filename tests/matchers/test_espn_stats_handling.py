@@ -311,7 +311,7 @@ def test_all_sources_batters_matched():
         slug="aaron-judge",
         team="NYY",
         xmlbam_id=592450,
-        projection=FangraphsBatterStatsModel(AB=575, H=170, HR=38, RBI=100, AVG=0.296),
+        projections=FangraphsBatterStatsModel(AB=575, H=170, HR=38, RBI=100, AVG=0.296),
     )
 
     savant_player = SavantBatterModel(
@@ -378,7 +378,7 @@ def test_all_sources_pitchers_matched():
         slug="gerrit-cole",
         team="NYY",
         xmlbam_id=543037,
-        projection=FangraphsPitcherStatsModel(W=17, SO=230, ERA=3.00, WHIP=1.05),
+        projections=FangraphsPitcherStatsModel(W=17, SO=230, ERA=3.00, WHIP=1.05),
     )
 
     savant_player = SavantPitcherModel(
@@ -569,3 +569,170 @@ def test_access_nested_espn_projections():
 
     # Current season should be nested under current_season
     assert player.stats.current_season.AVG == 0.300
+
+
+# ========== Three-slot FG projections flow into MTBL stats ==========
+
+
+def test_all_three_fg_projection_slots_land_on_mtbl_batter():
+    """The three upstream FG slots end up as siblings under MtblBatterStatsModel."""
+    espn_player = EspnBatterModel(
+        id=1,
+        name="Aaron Judge",
+        first_name="Aaron",
+        last_name="Judge",
+        slug="aaron-judge",
+        pro_team="NYY",
+        stats=EspnBatterStatsGroupModel(
+            current_season=EspnBatterStatsModel(AB=500, HR=30)
+        ),
+    )
+
+    fg_player = FangraphsBatterModel(
+        playerid="15640",
+        name="Aaron Judge",
+        ascii_name="Aaron Judge",
+        slug="aaron-judge",
+        team="NYY",
+        xmlbam_id=592450,
+        projections=FangraphsBatterStatsModel(HR=40, RBI=110, AVG=0.295),
+        projs_updated=FangraphsBatterStatsModel(HR=37, RBI=100, AVG=0.288),
+        ros=FangraphsBatterStatsModel(HR=12, RBI=32, AVG=0.272),
+    )
+
+    results = PlayerMatcher([espn_player], [fg_player]).match_players()
+    player = apply_matches(results)["matched"][0]
+
+    assert player.stats.projections is not None
+    assert player.stats.projections.hr == 40
+    assert player.stats.projs_updated is not None
+    assert player.stats.projs_updated.hr == 37
+    assert player.stats.ros is not None
+    assert player.stats.ros.hr == 12
+
+
+def test_all_three_fg_projection_slots_land_on_mtbl_pitcher():
+    """Same three-slot wiring for pitchers."""
+    espn_player = EspnPitcherModel(
+        id=1,
+        name="Tarik Skubal",
+        first_name="Tarik",
+        last_name="Skubal",
+        slug="tarik-skubal",
+        pro_team="DET",
+        stats=EspnPitcherStatsGroupModel(
+            current_season=EspnPitcherStatsModel(W=15, K=220, ERA=2.80)
+        ),
+    )
+
+    fg_player = FangraphsPitcherModel(
+        playerid="29597",
+        name="Tarik Skubal",
+        ascii_name="Tarik Skubal",
+        slug="tarik-skubal",
+        team="DET",
+        xmlbam_id=669373,
+        projections=FangraphsPitcherStatsModel(W=18, SO=240, ERA=2.95),
+        projs_updated=FangraphsPitcherStatsModel(W=16, SO=200, ERA=3.05),
+        ros=FangraphsPitcherStatsModel(W=5, SO=70, ERA=3.10),
+    )
+
+    results = PlayerMatcher([espn_player], [fg_player]).match_players()
+    player = apply_matches(results)["matched"][0]
+
+    assert player.stats.projections is not None
+    assert player.stats.projections.wins == 18
+    assert player.stats.projs_updated is not None
+    assert player.stats.projs_updated.wins == 16
+    assert player.stats.ros is not None
+    assert player.stats.ros.wins == 5
+
+
+def test_pre_draft_only_preseason_slot_populated():
+    """Pre-draft / pre-publication shape: only `projections` has data; the other
+    two FG slots are None on MTBL output. Matches the upstream contract where
+    projs_updated and ros serialize as {} until Fangraphs publishes them.
+    """
+    espn_player = EspnBatterModel(
+        id=2,
+        name="Corbin Carroll",
+        first_name="Corbin",
+        last_name="Carroll",
+        slug="corbin-carroll",
+        pro_team="ARI",
+        stats=EspnBatterStatsGroupModel(
+            current_season=EspnBatterStatsModel(AB=550, HR=25)
+        ),
+    )
+
+    fg_player = FangraphsBatterModel(
+        playerid="25878",
+        name="Corbin Carroll",
+        ascii_name="Corbin Carroll",
+        slug="corbin-carroll",
+        team="ARI",
+        xmlbam_id=682998,
+        # Only preseason populated; projs_updated/ros omitted (pre-draft)
+        projections=FangraphsBatterStatsModel(HR=30, SB=40, AVG=0.285),
+    )
+
+    results = PlayerMatcher([espn_player], [fg_player]).match_players()
+    player = apply_matches(results)["matched"][0]
+
+    assert player.stats.projections is not None
+    assert player.stats.projections.hr == 30
+    assert player.stats.projs_updated is None
+    assert player.stats.ros is None
+
+
+def test_fg_match_with_empty_slot_dicts_yields_none_on_mtbl():
+    """An FG match where projs_updated/ros are non-None but model_dump to {}
+    (the round-tripped pre-draft shape) should still produce None for those
+    slots on the MTBL container — empty data is not data.
+    """
+    espn_player = EspnBatterModel(
+        id=3,
+        name="Empty Slots Hitter",
+        first_name="Empty",
+        last_name="Slots",
+        slug="empty-slots",
+        pro_team="FA",
+        stats=EspnBatterStatsGroupModel(
+            current_season=EspnBatterStatsModel(AB=400)
+        ),
+    )
+
+    # Build the FG model via dict load — mimics what happens when reading
+    # upstream JSON with literal `{}` for the two empty slots.
+    fg_player = FangraphsBatterModel.model_validate(
+        {
+            "playerid": "empty-1",
+            "name": "Empty Slots Hitter",
+            "ascii_name": "Empty Slots Hitter",
+            "slug": "empty-slots",
+            "team": "FA",
+            "projections": {"HR": 20},
+            "projs_updated": {},
+            "ros": {},
+        }
+    )
+
+    results = PlayerMatcher([espn_player], [fg_player]).match_players()
+    player = apply_matches(results)["matched"][0]
+
+    assert player.stats.projections is not None
+    assert player.stats.projections.hr == 20
+    # Empty dicts on the wire → None on the typed MTBL output
+    assert player.stats.projs_updated is None
+    assert player.stats.ros is None
+
+
+def test_ambiguous_match_zero_projection_slots():
+    """An ambiguous match contributes none of the three FG slots."""
+    from player_universe_trx.matchers.transformation.apply_matches import (
+        _extract_fangraphs_projections,
+    )
+
+    # Direct extractor check: None input → all three slots empty
+    result = _extract_fangraphs_projections(None)
+    assert result == {"projections": {}, "projs_updated": {}, "ros": {}}
