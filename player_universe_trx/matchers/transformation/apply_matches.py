@@ -183,7 +183,7 @@ def _create_player_model(
     Args:
         base_player: Base MTBL player model (identity / fantasy-team fields).
         espn_bundle: ESPN stats container (current_season + projections +
-            last_*_games + previous_season_24), or None.
+            last_*_games + previous_season), or None.
         fangraphs_bundle: Pre-built MTBL FanGraphs bundle, or None.
         savant_bundle: Pre-built MTBL Savant bundle, or None.
         is_batter: Selects MtblBatterModel vs MtblPitcherModel.
@@ -246,7 +246,7 @@ def apply_matches(results: List[PlayerMatchResult]) -> Dict[str, List]:
     Apply matches: assemble source-bundled MTBL models from PlayerMatchResults.
 
     Each output player carries three source bundles under `.stats`:
-      - `espn`:      ESPN periods (current_season / projections / last_* / previous_season_24)
+      - `espn`:      ESPN periods (current_season / projections / last_* / previous_season)
       - `fangraphs`: FanGraphs projection slots (projections / projs_updated / ros)
       - `savant`:    Savant splits + sub-domains (all/vs_r/vs_l + statcast/HR/arsenal/...)
 

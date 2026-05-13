@@ -4,6 +4,7 @@ from player_universe_trx.models.espn import (
     EspnPitcherModel,
     EspnPitcherStatsModel,
 )
+from player_universe_trx.models.espn.batter import EspnBatterStatsGroupModel
 
 
 def test_batter_model_validation(sample_batter):
@@ -58,7 +59,7 @@ def test_batter_model_all_stat_periods(espn_batter_data):
     assert batter.stats is not None
     assert batter.stats.projections is not None
     assert batter.stats.current_season is not None
-    assert batter.stats.previous_season_24 is not None
+    assert batter.stats.previous_season is not None
     assert batter.stats.last_7_games is not None
     assert batter.stats.last_15_games is not None
     assert batter.stats.last_30_games is not None
@@ -71,10 +72,39 @@ def test_pitcher_model_all_stat_periods(espn_pitcher_data):
     assert pitcher.stats is not None
     assert pitcher.stats.projections is not None
     assert pitcher.stats.current_season is not None
-    assert pitcher.stats.previous_season_24 is not None
+    assert pitcher.stats.previous_season is not None
     assert pitcher.stats.last_7_games is not None
     assert pitcher.stats.last_15_games is not None
     assert pitcher.stats.last_30_games is not None
+
+
+def test_previous_season_year_suffix_mapped_to_canonical_field():
+    """ESPN emits previous_season_{YY}; the model normalizes to `previous_season`.
+
+    Locks in the year-agnostic contract — whatever year-suffixed key the wire
+    uses (`_24`, `_25`, `_26`, ...) lands at the same `stats.previous_season`
+    path on the model.
+    """
+    # Each year-suffixed wire key should land at the canonical field
+    for suffix in ("24", "25", "26", "30"):
+        raw = {
+            f"previous_season_{suffix}": {"AB": 480, "HR": 28, "AVG": 0.285},
+        }
+        m = EspnBatterStatsGroupModel.model_validate(raw)
+        assert m.previous_season is not None, f"suffix _{suffix} dropped"
+        assert m.previous_season.AB == 480
+        assert m.previous_season.HR == 28
+
+
+def test_previous_season_explicit_wins_over_suffix():
+    """If both `previous_season` and a year-suffixed key are present, prefer the explicit one."""
+    raw = {
+        "previous_season": {"AB": 100},
+        "previous_season_24": {"AB": 999},
+    }
+    m = EspnBatterStatsGroupModel.model_validate(raw)
+    assert m.previous_season is not None
+    assert m.previous_season.AB == 100
 
 
 def test_batter_nested_models(sample_batter):

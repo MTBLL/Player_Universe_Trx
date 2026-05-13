@@ -3,7 +3,7 @@
 These tests verify that ESPN stats are correctly structured:
 - current_season stats live under stats.current_season
 - ESPN stats container is nested under espn_stats field
-- All ESPN periods are preserved (projections, last_7/15/30_games, previous_season_24)
+- All ESPN periods are preserved (projections, last_7/15/30_games, previous_season)
 """
 
 from player_universe_trx.matchers.player_matcher import PlayerMatcher
@@ -83,7 +83,7 @@ def test_espn_batter_with_nested_container():
             last_7_games=EspnBatterStatsModel(AB=28, H=10, HR=3),
             last_15_games=EspnBatterStatsModel(AB=60, H=18, HR=5),
             last_30_games=EspnBatterStatsModel(AB=120, H=38, HR=10),
-            previous_season_24=EspnBatterStatsModel(AB=480, H=140, HR=28),
+            previous_season=EspnBatterStatsModel(AB=480, H=140, HR=28),
         ),
     )
 
@@ -110,13 +110,13 @@ def test_espn_batter_with_nested_container():
     assert player.stats.espn.last_7_games is not None
     assert player.stats.espn.last_15_games is not None
     assert player.stats.espn.last_30_games is not None
-    assert player.stats.espn.previous_season_24 is not None
+    assert player.stats.espn.previous_season is not None
 
     # Verify nested data is correct
     assert player.stats.espn.projections.AB == 550
     assert player.stats.espn.projections.HR == 35
     assert player.stats.espn.last_7_games.HR == 3
-    assert player.stats.espn.previous_season_24.AB == 480
+    assert player.stats.espn.previous_season.AB == 480
 
 
 def test_espn_batter_both_current_and_nested():
@@ -215,7 +215,7 @@ def test_espn_pitcher_with_nested_container():
             last_7_games=EspnPitcherStatsModel(W=2, K=25, ERA=2.50),
             last_15_games=EspnPitcherStatsModel(W=4, K=50, ERA=2.80),
             last_30_games=EspnPitcherStatsModel(W=7, K=105, ERA=3.00),
-            previous_season_24=EspnPitcherStatsModel(W=14, K=200, ERA=3.25),
+            previous_season=EspnPitcherStatsModel(W=14, K=200, ERA=3.25),
         ),
     )
 
@@ -238,12 +238,12 @@ def test_espn_pitcher_with_nested_container():
     assert player.stats.espn is not None
     assert player.stats.espn.projections is not None
     assert player.stats.espn.last_7_games is not None
-    assert player.stats.espn.previous_season_24 is not None
+    assert player.stats.espn.previous_season is not None
 
     # Verify nested data is correct
     assert player.stats.espn.projections.W == 16
     assert player.stats.espn.last_7_games.ERA == 2.50
-    assert player.stats.espn.previous_season_24.K == 200
+    assert player.stats.espn.previous_season.K == 200
 
 
 def test_espn_pitcher_both_current_and_nested():
@@ -513,7 +513,7 @@ def test_espn_stats_empty_container():
             last_7_games=None,
             last_15_games=None,
             last_30_games=None,
-            previous_season_24=None,
+            previous_season=None,
         ),
     )
 
@@ -552,7 +552,7 @@ def test_access_nested_espn_projections():
             current_season=EspnBatterStatsModel(AB=500, AVG=0.300),
             projections=EspnBatterStatsModel(AB=550, AVG=0.310),
             last_7_games=EspnBatterStatsModel(AB=28, AVG=0.357),
-            previous_season_24=EspnBatterStatsModel(AB=480, AVG=0.285),
+            previous_season=EspnBatterStatsModel(AB=480, AVG=0.285),
         ),
     )
 
@@ -575,7 +575,7 @@ def test_access_nested_espn_projections():
     assert player.stats.espn.current_season.AVG == 0.300
     assert player.stats.espn.projections.AVG == 0.310
     assert player.stats.espn.last_7_games.AVG == 0.357
-    assert player.stats.espn.previous_season_24.AVG == 0.285
+    assert player.stats.espn.previous_season.AVG == 0.285
 
     # Current season should be nested under current_season
     assert player.stats.espn.current_season.AVG == 0.300

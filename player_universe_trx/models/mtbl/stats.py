@@ -161,7 +161,7 @@ class MtblBatterStatsModel(BaseModel):
 
     espn: Optional[EspnBatterStatsGroupModel] = Field(
         default=None,
-        description="ESPN bundle: current_season + projections + last_*_games + previous_season_24",
+        description="ESPN bundle: current_season + projections + last_*_games + previous_season",
     )
     fangraphs: Optional[MtblBatterFangraphsBundle] = Field(
         default=None,
@@ -180,7 +180,7 @@ class MtblPitcherStatsModel(BaseModel):
 
     espn: Optional[EspnPitcherStatsGroupModel] = Field(
         default=None,
-        description="ESPN bundle: current_season + projections + last_*_games + previous_season_24",
+        description="ESPN bundle: current_season + projections + last_*_games + previous_season",
     )
     fangraphs: Optional[MtblPitcherFangraphsBundle] = Field(
         default=None,

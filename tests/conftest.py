@@ -7,8 +7,8 @@ import pytest
 from player_universe_trx.models.espn import EspnPlayerModel
 from player_universe_trx.models.mtbl import MtblPlayerModel
 
-espn_batters_fixture_file = "espn_batters_2025_20260108_095403.json"
-espn_pitchers_fixture_file = "espn_pitchers_2025_20260108_095403.json"
+espn_batters_fixture_file = "espn_batters_2026_20260513_140634.json"
+espn_pitchers_fixture_file = "espn_pitchers_2026_20260513_140634.json"
 fangraphs_batters_fixture_file = "fangraph_batters_2026_20260512_131824.json"
 fangraphs_pitchers_fixture_file = "fangraph_pitchers_2026_20260512_131824.json"
 
