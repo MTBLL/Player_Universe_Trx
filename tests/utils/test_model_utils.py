@@ -316,6 +316,25 @@ def _savant_batter_row(player_id: int, opp_hand: str, **extras: Any) -> Dict[str
     }
 
 
+def _savant_pitcher_row(player_id: int, opp_hand: str, **extras: Any) -> Dict[str, Any]:
+    """Build a minimum-viable Savant pitcher wire row for consolidator tests."""
+    return {
+        "player_id": player_id,
+        "name": "Test, Pitcher",
+        "first_name": "Test",
+        "last_name": "Pitcher",
+        "name_ascii": "Test Pitcher",
+        "slug": "test-pitcher",
+        "player_type": "pitcher",
+        "season": 2026,
+        "opp_hand": opp_hand,
+        "pitches": 100,
+        "total_pitches": 100,
+        "pitch_percent": 100.0,
+        **extras,
+    }
+
+
 def test_consolidator_groups_three_rows_into_one_batter():
     """Three wire rows (one per opp_hand) collapse to one model with all/vs_r/vs_l."""
     rows = [
@@ -523,6 +542,35 @@ def test_subdomain_merge_missing_sub_domain_yields_default_values():
     assert m.home_runs is None
     assert m.pitch_arsenal == []
     assert m.sprint_speed is None
+    assert m.swing_take is None
+
+
+def test_subdomain_merge_attaches_swing_take_to_matching_player():
+    """A swing_take row keyed by player_id lands on the matching model (both roles)."""
+    batter_base = [_savant_batter_row(100, "all", xwOBA=0.300)]
+    swing_take = [
+        _savant_subdomain_row(
+            100,
+            runs_all=7.1,
+            runs_heart=-2.9,
+            runs_shadow=2.6,
+            runs_chase=4.4,
+            runs_waste=2.9,
+        )
+    ]
+    bmodels = create_savant_batter_models(batter_base, swing_take_data=swing_take)
+    assert len(bmodels) == 1
+    assert bmodels[0].swing_take is not None
+    assert bmodels[0].swing_take.runs_all == 7.1
+    assert bmodels[0].swing_take.runs_heart == -2.9
+
+    # swing_take is shared across roles — same merge path for pitchers
+    pitcher_base = [_savant_pitcher_row(200, "all", xwOBA=0.270)]
+    pmodels = create_savant_pitcher_models(pitcher_base, swing_take_data=[
+        _savant_subdomain_row(200, runs_all=0.3, runs_shadow=8.5)
+    ])
+    assert pmodels[0].swing_take is not None
+    assert pmodels[0].swing_take.runs_shadow == 8.5
 
 
 def test_subdomain_merge_handles_nan_in_sub_domain_rows():
@@ -553,7 +601,7 @@ def test_subdomain_merge_skips_subdomain_row_with_no_player_id(caplog):
 
 
 def test_consolidator_full_fixture_end_to_end():
-    """End-to-end: load all 10 wire files through the loader+consolidator pipeline."""
+    """End-to-end: load all 12 wire files through the loader+consolidator pipeline."""
     from player_universe_trx.loaders import DataLoader
 
     loader = DataLoader(resources_path="tests/fixtures", year=2026)
@@ -563,6 +611,7 @@ def test_consolidator_full_fixture_end_to_end():
         home_runs_data=loader.load_savant_home_runs_batters(),
         pitch_arsenal_data=loader.load_savant_pitch_arsenal_batters(),
         sprint_speed_data=loader.load_savant_sprint_speed(),
+        swing_take_data=loader.load_savant_swing_take_batters(),
     )
     pitchers = create_savant_pitcher_models(
         loader.load_savant_pitchers(),
@@ -570,13 +619,16 @@ def test_consolidator_full_fixture_end_to_end():
         home_runs_data=loader.load_savant_home_runs_pitchers(),
         pitch_arsenal_data=loader.load_savant_pitch_arsenal_pitchers(),
         expected_statistics_data=loader.load_savant_expected_statistics_pitchers(),
+        swing_take_data=loader.load_savant_swing_take_pitchers(),
     )
 
-    # Coverage sanity — exact counts taken from raw fixture analysis
-    assert len(batters) == 486
-    assert len(pitchers) == 597
-    assert sum(1 for b in batters if b.statcast) == 269
-    assert sum(1 for b in batters if b.home_runs) == 399
-    assert sum(1 for b in batters if b.pitch_arsenal) == 349
-    assert sum(1 for b in batters if b.sprint_speed) == 401
-    assert sum(1 for p in pitchers if p.expected_statistics) == 367
+    # Coverage sanity — exact counts taken from the 2026_05_14_0516 fixture set
+    assert len(batters) == 490
+    assert len(pitchers) == 601
+    assert sum(1 for b in batters if b.statcast) == 267
+    assert sum(1 for b in batters if b.home_runs) == 400
+    assert sum(1 for b in batters if b.pitch_arsenal) == 348
+    assert sum(1 for b in batters if b.sprint_speed) == 404
+    assert sum(1 for b in batters if b.swing_take) == 300
+    assert sum(1 for p in pitchers if p.expected_statistics) == 368
+    assert sum(1 for p in pitchers if p.swing_take) == 300

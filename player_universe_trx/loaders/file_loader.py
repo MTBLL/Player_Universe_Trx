@@ -502,3 +502,25 @@ class DataLoader:
             "expected statistics pitchers",
             player_type="pitcher",
         )
+
+    # ---- Swing/take run value by plate region ----
+
+    def get_savant_swing_take_batters_file(self) -> Path:
+        return self._get_savant_subdomain_file(
+            "swing_take_batter", "swing take batters"
+        )
+
+    def get_savant_swing_take_pitchers_file(self) -> Path:
+        return self._get_savant_subdomain_file(
+            "swing_take_pitcher", "swing take pitchers"
+        )
+
+    def load_savant_swing_take_batters(self) -> List[Dict]:
+        return self._load_savant_subdomain(
+            "swing_take_batter", "swing take batters", player_type="batter"
+        )
+
+    def load_savant_swing_take_pitchers(self) -> List[Dict]:
+        return self._load_savant_subdomain(
+            "swing_take_pitcher", "swing take pitchers", player_type="pitcher"
+        )

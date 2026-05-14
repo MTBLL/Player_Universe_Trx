@@ -26,6 +26,7 @@ from player_universe_trx.models.savant.stats import (
     SavantPitchArsenalEntryModel,
     SavantSprintSpeedModel,
     SavantStatcastModel,
+    SavantSwingTakeModel,
 )
 
 
@@ -108,6 +109,10 @@ class MtblBatterSavantBundle(BaseModel):
         default=None,
         description="Baserunning sprint-speed metrics (batter-only domain)",
     )
+    swing_take: Optional[SavantSwingTakeModel] = Field(
+        default=None,
+        description="Swing/take run value by plate region (heart/shadow/chase/waste)",
+    )
 
 
 class MtblPitcherSavantBundle(BaseModel):
@@ -141,6 +146,10 @@ class MtblPitcherSavantBundle(BaseModel):
         default=None,
         description="xAVG/xSLG/xwOBA/xERA summary (pitcher-only domain)",
     )
+    swing_take: Optional[SavantSwingTakeModel] = Field(
+        default=None,
+        description="Swing/take run value by plate region (heart/shadow/chase/waste)",
+    )
 
 
 # ============================================================
@@ -169,7 +178,7 @@ class MtblBatterStatsModel(BaseModel):
     )
     savant: Optional[MtblBatterSavantBundle] = Field(
         default=None,
-        description="Savant bundle: all/vs_r/vs_l splits + statcast / home_runs / pitch_arsenal / sprint_speed",
+        description="Savant bundle: all/vs_r/vs_l splits + statcast / home_runs / pitch_arsenal / sprint_speed / swing_take",
     )
 
 
@@ -188,5 +197,5 @@ class MtblPitcherStatsModel(BaseModel):
     )
     savant: Optional[MtblPitcherSavantBundle] = Field(
         default=None,
-        description="Savant bundle: all/vs_r/vs_l splits + statcast / home_runs / pitch_arsenal / expected_statistics",
+        description="Savant bundle: all/vs_r/vs_l splits + statcast / home_runs / pitch_arsenal / expected_statistics / swing_take",
     )

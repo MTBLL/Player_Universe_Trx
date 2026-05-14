@@ -265,6 +265,7 @@ def _attach_savant_subdomains(
     statcast_idx: Dict[int, Any],
     home_runs_idx: Dict[int, Any],
     pitch_arsenal_idx: Dict[int, Any],
+    swing_take_idx: Dict[int, Any],
     sprint_speed_idx: Optional[Dict[int, Any]] = None,
     expected_stats_idx: Optional[Dict[int, Any]] = None,
 ) -> None:
@@ -273,6 +274,10 @@ def _attach_savant_subdomains(
     The entry's keys map 1:1 to the SavantBatterModel/SavantPitcherModel
     fields. Each sub-domain key is only set if upstream has a row for this
     player — missing data leaves the field absent (None) on the model.
+
+    `statcast` / `home_runs` / `pitch_arsenal` / `swing_take` are shared
+    across both roles; `sprint_speed` (batter) and `expected_stats` (pitcher)
+    are role-only and stay None when their index isn't supplied.
     """
     if pid in statcast_idx:
         entry["statcast"] = statcast_idx[pid]
@@ -280,6 +285,8 @@ def _attach_savant_subdomains(
         entry["home_runs"] = home_runs_idx[pid]
     if pid in pitch_arsenal_idx:
         entry["pitch_arsenal"] = pitch_arsenal_idx[pid]
+    if pid in swing_take_idx:
+        entry["swing_take"] = swing_take_idx[pid]
     if sprint_speed_idx is not None and pid in sprint_speed_idx:
         entry["sprint_speed"] = sprint_speed_idx[pid]
     if expected_stats_idx is not None and pid in expected_stats_idx:
@@ -293,14 +300,16 @@ def create_savant_batter_models(
     home_runs_data: Optional[List[Dict]] = None,
     pitch_arsenal_data: Optional[List[Dict]] = None,
     sprint_speed_data: Optional[List[Dict]] = None,
+    swing_take_data: Optional[List[Dict]] = None,
 ) -> Sequence[SavantBatterModel]:
     """Consolidate Savant batter rows + sub-domain files into one model per player.
 
     The Savant extractor emits one row per (player_id, opp_hand) for the
     swing/take base file, plus separate flat-or-multi-row files for each
-    sub-domain (statcast / home_runs / pitch_arsenal / sprint_speed). This
-    function groups by player_id, routes each opp_hand row into all/vs_r/vs_l,
-    and merges in matching rows from each sub-domain file (when supplied).
+    sub-domain (statcast / home_runs / pitch_arsenal / sprint_speed /
+    swing_take). This function groups by player_id, routes each opp_hand row
+    into all/vs_r/vs_l, and merges in matching rows from each sub-domain file
+    (when supplied).
 
     Sub-domain kwargs all default to None — callers that only want the base
     swing/take splits don't need to thread the additional sources through.
@@ -311,6 +320,7 @@ def create_savant_batter_models(
         home_runs_data: Optional rows from savant_home_runs_batter_*.json
         pitch_arsenal_data: Optional multi-row arsenal data, keyed by pitch_type
         sprint_speed_data: Optional rows from savant_sprint_speed_*.json
+        swing_take_data: Optional rows from savant_swing_take_batter_*.json
 
     Returns:
         Sequence of validated SavantBatterModel instances.
@@ -319,6 +329,7 @@ def create_savant_batter_models(
     home_runs_idx = _index_savant_subdomain(home_runs_data)
     pitch_arsenal_idx = _index_savant_subdomain(pitch_arsenal_data, multi_value=True)
     sprint_speed_idx = _index_savant_subdomain(sprint_speed_data)
+    swing_take_idx = _index_savant_subdomain(swing_take_data)
 
     valid_batters: List[SavantBatterModel] = []
     skipped_count = 0
@@ -331,6 +342,7 @@ def create_savant_batter_models(
             statcast_idx=statcast_idx,
             home_runs_idx=home_runs_idx,
             pitch_arsenal_idx=pitch_arsenal_idx,
+            swing_take_idx=swing_take_idx,
             sprint_speed_idx=sprint_speed_idx,
         )
         try:
@@ -354,16 +366,19 @@ def create_savant_pitcher_models(
     home_runs_data: Optional[List[Dict]] = None,
     pitch_arsenal_data: Optional[List[Dict]] = None,
     expected_statistics_data: Optional[List[Dict]] = None,
+    swing_take_data: Optional[List[Dict]] = None,
 ) -> Sequence[SavantPitcherModel]:
     """Pitcher counterpart of create_savant_batter_models.
 
     Mirrors the batter signature except `sprint_speed_data` (batter-only)
-    is replaced by `expected_statistics_data` (pitcher-only).
+    is replaced by `expected_statistics_data` (pitcher-only). `swing_take_data`
+    is shared — both roles get a swing_take run-value-by-region file.
     """
     statcast_idx = _index_savant_subdomain(statcast_data)
     home_runs_idx = _index_savant_subdomain(home_runs_data)
     pitch_arsenal_idx = _index_savant_subdomain(pitch_arsenal_data, multi_value=True)
     expected_stats_idx = _index_savant_subdomain(expected_statistics_data)
+    swing_take_idx = _index_savant_subdomain(swing_take_data)
 
     valid_pitchers: List[SavantPitcherModel] = []
     skipped_count = 0
@@ -376,6 +391,7 @@ def create_savant_pitcher_models(
             statcast_idx=statcast_idx,
             home_runs_idx=home_runs_idx,
             pitch_arsenal_idx=pitch_arsenal_idx,
+            swing_take_idx=swing_take_idx,
             expected_stats_idx=expected_stats_idx,
         )
         try:

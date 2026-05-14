@@ -127,6 +127,7 @@ def _build_savant_bundle(
                 savant_match.home_runs is not None,
                 arsenal_b,
                 savant_match.sprint_speed is not None,
+                savant_match.swing_take is not None,
             ]
         ):
             return None
@@ -138,6 +139,7 @@ def _build_savant_bundle(
             home_runs=savant_match.home_runs,
             pitch_arsenal=arsenal_b,
             sprint_speed=savant_match.sprint_speed,
+            swing_take=savant_match.swing_take,
         )
 
     assert isinstance(savant_match, SavantPitcherModel)
@@ -151,6 +153,7 @@ def _build_savant_bundle(
             savant_match.home_runs is not None,
             arsenal_p,
             savant_match.expected_statistics is not None,
+            savant_match.swing_take is not None,
         ]
     ):
         return None
@@ -162,6 +165,7 @@ def _build_savant_bundle(
         home_runs=savant_match.home_runs,
         pitch_arsenal=arsenal_p,
         expected_statistics=savant_match.expected_statistics,
+        swing_take=savant_match.swing_take,
     )
 
 

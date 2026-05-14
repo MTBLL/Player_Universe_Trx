@@ -118,10 +118,10 @@ def test_get_file_methods(fixtures_dir):
         loader.get_fangraphs_pitchers_file().name == fangraphs_pitchers_fixture_file
     )
     assert (
-        loader.get_savant_batters_file().name == "savant_batters_2026_05_13_1312.json"
+        loader.get_savant_batters_file().name == "savant_batters_2026_05_14_0516.json"
     )
     assert (
-        loader.get_savant_pitchers_file().name == "savant_pitchers_2026_05_13_1312.json"
+        loader.get_savant_pitchers_file().name == "savant_pitchers_2026_05_14_0516.json"
     )
 
     # Savant sub-domain accessors — each thinly wraps _get_savant_subdomain_file
@@ -147,6 +147,12 @@ def test_get_file_methods(fixtures_dir):
     assert loader.get_savant_sprint_speed_file().name.startswith("savant_sprint_speed_")
     assert loader.get_savant_expected_statistics_pitchers_file().name.startswith(
         "savant_expected_statistics_pitcher_"
+    )
+    assert loader.get_savant_swing_take_batters_file().name.startswith(
+        "savant_swing_take_batter_"
+    )
+    assert loader.get_savant_swing_take_pitchers_file().name.startswith(
+        "savant_swing_take_pitcher_"
     )
 
     loader_no_files = DataLoader(resources_path=str(fixtures_dir), year=2099)
