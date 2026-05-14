@@ -507,6 +507,52 @@ def test_subdomain_merge_attaches_statcast_to_matching_player():
     assert m.statcast.avg_ev == 89.0
 
 
+def test_subdomain_merge_strips_identity_noise_keeps_context_fields():
+    """Sub-domain stat objects don't leak player/team identity into their serialized form.
+
+    The wire rows carry full identity (name/slug/player_id/team/...) plus
+    loader-added player_type/season. None of that belongs inside a stat
+    sub-object — the parent player record already has it. The indexing
+    boundary strips it. Declared stat-context fields (`year`, `team_id`)
+    must survive since some sub-domain models legitimately expose them.
+    """
+    base = [_savant_batter_row(100, "all", xwOBA=0.300)]
+    # A swing_take-shaped row carrying the full identity noise set + real
+    # stats + the declared context fields year/team_id.
+    noisy_row = {
+        "player_id": 100,
+        "name": "Test, Player",
+        "first_name": "Test",
+        "last_name": "Player",
+        "name_ascii": "Test Player",
+        "slug": "test-player",
+        "player_type": "batter",
+        "season": 2026,
+        "team": "NYY",
+        "year": 2026,
+        "team_id": 147,
+        "runs_all": 7.1,
+        "runs_heart": -2.9,
+    }
+    models = create_savant_batter_models(base, swing_take_data=[noisy_row])
+    st = models[0].swing_take
+    assert st is not None
+    dumped = st.model_dump(exclude_none=True)
+
+    # No identity / metadata noise survived into the serialized stat object
+    leaked = {
+        "name", "first_name", "last_name", "name_ascii", "slug",
+        "player_id", "player_type", "season", "team",
+    } & set(dumped)
+    assert leaked == set(), f"identity leaked into swing_take: {leaked}"
+
+    # Real stats + declared context fields survived intact
+    assert dumped["runs_all"] == 7.1
+    assert dumped["runs_heart"] == -2.9
+    assert dumped["year"] == 2026
+    assert dumped["team_id"] == 147
+
+
 def test_subdomain_merge_skips_unmatched_player_id():
     """A statcast row for a player_id not in the base file is ignored."""
     base = [_savant_batter_row(100, "all", xwOBA=0.300)]
