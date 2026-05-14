@@ -146,6 +146,15 @@ _SAVANT_IDENTITY_FIELDS = {
     "season",
 }
 
+# Pure player/team identity + loader-added consolidation metadata carried by
+# sub-domain wire rows. These are redundant inside a stat sub-object — the
+# parent MtblPlayerModel already carries identity — so they're stripped at the
+# sub-domain indexing boundary to keep them from leaking through the models'
+# extra="allow" config into the serialized output. Note: `year` and `team_id`
+# are deliberately NOT here — some sub-domain models (home_runs,
+# expected_statistics, swing_take) declare them as real stat-context fields.
+_SAVANT_SUBDOMAIN_NOISE_FIELDS = _SAVANT_IDENTITY_FIELDS | {"team"}
+
 # Maps Savant's opp_hand wire value to the model field name. The extractor
 # emits one row per opp_hand per player.
 _OPP_HAND_TO_SLOT = {"all": "all", "R": "vs_r", "L": "vs_l"}
@@ -230,8 +239,14 @@ def _index_savant_subdomain(
 ) -> Dict[int, Any]:
     """Build a player_id → row (or list of rows) lookup from a sub-domain file.
 
-    NaN floats are scrubbed at the row level so the merged data validates
-    cleanly downstream. Rows without a player_id are dropped with a debug log.
+    Each row is cleaned before storage:
+      - NaN floats are scrubbed so the merged data validates cleanly downstream.
+      - Identity / metadata noise (name, slug, player_id, team, ...) is dropped
+        so it doesn't leak into the serialized stat sub-object via the models'
+        extra="allow" config — the parent player record already carries
+        identity. Genuine stat-context fields (`year`, `team_id`) survive.
+
+    Rows without a player_id are dropped with a debug log.
 
     Args:
         rows: Raw rows from one of the sub-domain JSON files (already
@@ -250,7 +265,13 @@ def _index_savant_subdomain(
                 f"Skipped Savant sub-domain row with no player_id: {row.get('name')}"
             )
             continue
-        cleaned = _scrub_nan(row)
+        # player_id is captured above for the lookup key; strip it (and the
+        # rest of the identity/metadata noise) from the stored stat dict.
+        cleaned = {
+            k: v
+            for k, v in _scrub_nan(row).items()
+            if k not in _SAVANT_SUBDOMAIN_NOISE_FIELDS
+        }
         if multi_value:
             out.setdefault(pid, []).append(cleaned)
         else:
