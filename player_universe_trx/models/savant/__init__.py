@@ -12,6 +12,7 @@ from player_universe_trx.models.savant.stats import (
     SavantPitcherStatsModel,
     SavantSprintSpeedModel,
     SavantStatcastModel,
+    SavantSwingTakeModel,
 )
 
 __all__ = [
@@ -26,4 +27,5 @@ __all__ = [
     "SavantPitchArsenalEntryModel",
     "SavantSprintSpeedModel",
     "SavantPitcherExpectedStatsModel",
+    "SavantSwingTakeModel",
 ]

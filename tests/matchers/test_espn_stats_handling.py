@@ -980,12 +980,13 @@ def test_savant_bundle_isolates_each_split():
 
 
 def test_savant_bundle_carries_batter_sub_domains():
-    """All four batter sub-domains (statcast, home_runs, pitch_arsenal, sprint_speed) reach the bundle."""
+    """All five batter sub-domains (statcast, home_runs, pitch_arsenal, sprint_speed, swing_take) reach the bundle."""
     from player_universe_trx.models.savant import (
         SavantHomeRunsModel,
         SavantPitchArsenalEntryModel,
         SavantSprintSpeedModel,
         SavantStatcastModel,
+        SavantSwingTakeModel,
     )
 
     espn_player = EspnBatterModel(
@@ -1025,6 +1026,9 @@ def test_savant_bundle_carries_batter_sub_domains():
             SavantPitchArsenalEntryModel(pitch_type="SL", pitches=78, xwOBA=0.369),
         ],
         sprint_speed=SavantSprintSpeedModel(position="CF", sprint_speed=28.7, age=33),
+        swing_take=SavantSwingTakeModel(
+            runs_all=15.2, runs_heart=3.1, runs_shadow=7.8, runs_chase=2.9, runs_waste=1.4
+        ),
     )
 
     results = PlayerMatcher(
@@ -1039,15 +1043,19 @@ def test_savant_bundle_carries_batter_sub_domains():
     assert len(b.pitch_arsenal) == 2
     assert {e.pitch_type for e in b.pitch_arsenal} == {"FF", "SL"}
     assert b.sprint_speed is not None and b.sprint_speed.sprint_speed == 28.7
+    assert b.swing_take is not None
+    assert b.swing_take.runs_all == 15.2
+    assert b.swing_take.runs_shadow == 7.8
 
 
 def test_savant_bundle_carries_pitcher_sub_domains():
-    """All four pitcher sub-domains reach the bundle, with expected_statistics in the sprint-speed slot."""
+    """All five pitcher sub-domains reach the bundle (expected_statistics replaces sprint_speed; swing_take is shared)."""
     from player_universe_trx.models.savant import (
         SavantHomeRunsModel,
         SavantPitcherExpectedStatsModel,
         SavantPitchArsenalEntryModel,
         SavantStatcastModel,
+        SavantSwingTakeModel,
     )
 
     espn_player = EspnPitcherModel(
@@ -1088,6 +1096,9 @@ def test_savant_bundle_carries_pitcher_sub_domains():
         expected_statistics=SavantPitcherExpectedStatsModel(
             year=2026, PA=242, xAVG=0.243, xSLG=0.356, xwOBA=0.297, xERA=3.48
         ),
+        swing_take=SavantSwingTakeModel(
+            runs_all=0.3, runs_heart=-4.4, runs_shadow=8.5, runs_chase=-1.0, runs_waste=-2.8
+        ),
     )
 
     results = PlayerMatcher(
@@ -1104,6 +1115,9 @@ def test_savant_bundle_carries_pitcher_sub_domains():
     assert p.expected_statistics is not None
     assert p.expected_statistics.xERA == 3.48
     assert not hasattr(p, "sprint_speed")
+    # swing_take is shared across both roles
+    assert p.swing_take is not None
+    assert p.swing_take.runs_shadow == 8.5
 
 
 def test_savant_bundle_sub_domains_default_when_absent():
@@ -1136,7 +1150,7 @@ def test_savant_bundle_sub_domains_default_when_absent():
         slug="no-subdomain",
         season=2026,
         all=SavantBatterStatsModel(xwOBA=0.300),
-        # No statcast / home_runs / pitch_arsenal / sprint_speed supplied
+        # No statcast / home_runs / pitch_arsenal / sprint_speed / swing_take supplied
     )
 
     results = PlayerMatcher(
@@ -1150,3 +1164,4 @@ def test_savant_bundle_sub_domains_default_when_absent():
     assert b.home_runs is None
     assert b.pitch_arsenal == []
     assert b.sprint_speed is None
+    assert b.swing_take is None

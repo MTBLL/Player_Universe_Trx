@@ -134,9 +134,9 @@ def main(
 
     # Load Savant player data — the swing/take base file plus per-stat-type
     # sub-domain files (statcast / home_runs / pitch_arsenal / sprint_speed /
-    # expected_statistics). Each sub-domain merges by player_id during
-    # consolidation. Files are independently optional — if a sub-domain file
-    # is missing, the corresponding model fields stay None on each player.
+    # expected_statistics / swing_take). Each sub-domain merges by player_id
+    # during consolidation. Files are independently optional — if a sub-domain
+    # file is missing, the corresponding model fields stay None on each player.
     logger.info("Loading Savant player data...")
     savant_batters_raw = loader.load_savant_batters()
     savant_pitchers_raw = loader.load_savant_pitchers()
@@ -173,6 +173,12 @@ def main(
         "expected statistics pitchers",
         loader.load_savant_expected_statistics_pitchers,
     )
+    swing_take_batters_raw = _optional_load(
+        "swing take batters", loader.load_savant_swing_take_batters
+    )
+    swing_take_pitchers_raw = _optional_load(
+        "swing take pitchers", loader.load_savant_swing_take_pitchers
+    )
 
     logger.info("Creating player models from Savant data...")
     savant_batters = create_savant_batter_models(
@@ -181,6 +187,7 @@ def main(
         home_runs_data=home_runs_batters_raw,
         pitch_arsenal_data=pitch_arsenal_batters_raw,
         sprint_speed_data=sprint_speed_raw,
+        swing_take_data=swing_take_batters_raw,
     )
     savant_pitchers = create_savant_pitcher_models(
         savant_pitchers_raw,
@@ -188,6 +195,7 @@ def main(
         home_runs_data=home_runs_pitchers_raw,
         pitch_arsenal_data=pitch_arsenal_pitchers_raw,
         expected_statistics_data=expected_stats_pitchers_raw,
+        swing_take_data=swing_take_pitchers_raw,
     )
 
     # Match batters

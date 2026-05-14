@@ -9,6 +9,7 @@ from player_universe_trx.models.savant.stats import (
     SavantPitchArsenalEntryModel,
     SavantSprintSpeedModel,
     SavantStatcastModel,
+    SavantSwingTakeModel,
 )
 
 
@@ -22,6 +23,7 @@ class SavantBatterModel(SavantPlayerModel):
       - home_runs: HR-quality metrics (flat per-player)
       - pitch_arsenal: per-pitch-type performance (multi-row → list)
       - sprint_speed: baserunning metrics (flat per-player, batter-only)
+      - swing_take: run value by plate region (flat per-player)
     """
 
     player_type: Literal["batter"] = "batter"
@@ -33,3 +35,4 @@ class SavantBatterModel(SavantPlayerModel):
     home_runs: Optional[SavantHomeRunsModel] = None
     pitch_arsenal: List[SavantPitchArsenalEntryModel] = Field(default_factory=list)
     sprint_speed: Optional[SavantSprintSpeedModel] = None
+    swing_take: Optional[SavantSwingTakeModel] = None
