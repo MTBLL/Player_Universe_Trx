@@ -3,7 +3,7 @@ import logging
 import sys
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Dict, Iterator, Optional
+from typing import Any, Dict, Iterator, Optional, TextIO
 
 from rich.console import Console, Group
 from rich.live import Live
@@ -66,29 +66,42 @@ RESOURCE_DIR = "/Users/Shared/BaseballHQ/resources/extract"
 
 
 @contextmanager
-def _route_stdout_log_handlers_through_live() -> Iterator[None]:
-    """Repoint every stdout-bound logging.StreamHandler at the current
-    ``sys.stdout`` for the duration of the context so log lines interleave
-    above a ``rich.live.Live`` region without tearing the progress bars.
+def _route_std_log_handlers_through_live() -> Iterator[None]:
+    """Repoint each std{out,err}-bound logging.StreamHandler at the
+    matching redirected stream for the duration of the context so log
+    lines interleave above a ``rich.live.Live`` region without tearing
+    the progress bars.
 
-    Existing handlers cached the original ``sys.stdout`` at construction
-    time, so Live's stdout redirect doesn't reach them unless we re-point
-    their stream.
+    Existing handlers cached the original ``sys.__stdout__`` /
+    ``sys.__stderr__`` at construction time, so Live's redirects don't
+    reach them unless we re-point. Stdout-bound handlers move to the
+    redirected ``sys.stdout``; stderr-bound handlers move to the
+    redirected ``sys.stderr`` — preserving channel semantics so callers
+    that pipe stdout and stderr separately still see warnings/errors on
+    stderr. Handlers bound to any other stream are left untouched.
     """
-    restorations: list[tuple[logging.StreamHandler, object]] = []
+    restorations: list[tuple[logging.StreamHandler, TextIO]] = []
     seen: set[int] = set()
     logger_names = ["root", *logging.Logger.manager.loggerDict.keys()]
     for name in logger_names:
         lg = logging.getLogger(None if name == "root" else name)
         for h in lg.handlers:
             if (
-                isinstance(h, logging.StreamHandler)
-                and not isinstance(h, logging.FileHandler)
-                and id(h) not in seen
+                not isinstance(h, logging.StreamHandler)
+                or isinstance(h, logging.FileHandler)
+                or id(h) in seen
             ):
-                seen.add(id(h))
-                restorations.append((h, h.stream))
-                h.setStream(sys.stdout)
+                continue
+            seen.add(id(h))
+            new_stream: TextIO
+            if h.stream is sys.__stdout__:
+                new_stream = sys.stdout
+            elif h.stream is sys.__stderr__:
+                new_stream = sys.stderr
+            else:
+                continue
+            restorations.append((h, h.stream))
+            h.setStream(new_stream)
     try:
         yield
     finally:
@@ -297,7 +310,7 @@ def main(
         refresh_per_second=10,
         redirect_stdout=True,
         redirect_stderr=True,
-    ), _route_stdout_log_handlers_through_live():
+    ), _route_std_log_handlers_through_live():
         batter_task = group_progress.add_task("Batters", total=len(espn_batters))
         pitcher_task = group_progress.add_task("Pitchers", total=len(espn_pitchers))
         overall_task = overall_progress.add_task(
