@@ -34,10 +34,31 @@ from player_universe_trx.utils.model_utils import (
 )
 from player_universe_trx.utils.output_utils import save_results
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+_PACKAGE_PREFIX = "player_universe_trx."
+
+
+class _StripPackagePrefixFormatter(logging.Formatter):
+    """Drop the ``player_universe_trx.`` prefix from ``record.name`` so log
+    lines render the rest of the dotted path (e.g. ``matchers.player_matcher``)
+    without the redundant top-level package name on every line.
+    """
+
+    def format(self, record: logging.LogRecord) -> str:
+        if record.name.startswith(_PACKAGE_PREFIX):
+            record.name = record.name[len(_PACKAGE_PREFIX):]
+        return super().format(record)
+
+
+# Configure logging. Calling basicConfig first installs a default root
+# StreamHandler if none exists; we then swap its formatter for the
+# prefix-stripping variant so every logger in the package gets the same
+# treatment via propagation.
+logging.basicConfig(level=logging.INFO)
+_stripping_formatter = _StripPackagePrefixFormatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+for _h in logging.getLogger().handlers:
+    _h.setFormatter(_stripping_formatter)
 logger = logging.getLogger("player_universe_trx")
 
 OUTPUT_DIR = "/Users/Shared/BaseballHQ/resources/transform"
