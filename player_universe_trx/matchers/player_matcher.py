@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Optional, Sequence, Set, Tuple
+from typing import Callable, Dict, List, Optional, Sequence, Set, Tuple
 
 from typing_extensions import TYPE_CHECKING
 
@@ -537,9 +537,17 @@ class PlayerMatcher:
             notes="No definitive match found",
         )
 
-    def match_players(self) -> List[PlayerMatchResult]:
+    def match_players(
+        self,
+        progress_advance: Optional[Callable[[], None]] = None,
+    ) -> List[PlayerMatchResult]:
         """
         Match all ESPN players against FanGraphs and Savant data.
+
+        Args:
+            progress_advance: Optional callable invoked once per player after
+                that player's match attempt completes. Lets callers drive a
+                progress bar without coupling this method to a UI library.
 
         Returns:
             List of PlayerMatchResult objects (one per ESPN player)
@@ -573,5 +581,8 @@ class PlayerMatcher:
                     self.matched_savant_ids.add((savant_id, savant_type))
 
             results.append(result)
+
+            if progress_advance is not None:
+                progress_advance()
 
         return results

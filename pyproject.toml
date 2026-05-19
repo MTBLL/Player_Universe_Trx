@@ -5,7 +5,10 @@ description = "Player Universe Transformer"
 authors = [{ name = "Taylor \"TP\" Pubins", email = "tpubz@icloud.com" }]
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["pydantic (>=2.11.4,<3.0.0)"]
+dependencies = [
+    "pydantic (>=2.11.4,<3.0.0)",
+    "rich (>=13.0.0,<15.0.0)",
+]
 
 [project.scripts]
 universe-trx = "player_universe_trx.__main__:cli"

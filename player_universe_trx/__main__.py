@@ -1,7 +1,20 @@
 import argparse
 import logging
+import sys
+from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterator, Optional
+
+from rich.console import Console, Group
+from rich.live import Live
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+)
 
 from player_universe_trx.loaders import DataLoader
 from player_universe_trx.loaders.league_loader import LeagueLoader
@@ -29,6 +42,37 @@ logger = logging.getLogger("player_universe_trx")
 
 OUTPUT_DIR = "/Users/Shared/BaseballHQ/resources/transform"
 RESOURCE_DIR = "/Users/Shared/BaseballHQ/resources/extract"
+
+
+@contextmanager
+def _route_stdout_log_handlers_through_live() -> Iterator[None]:
+    """Repoint every stdout-bound logging.StreamHandler at the current
+    ``sys.stdout`` for the duration of the context so log lines interleave
+    above a ``rich.live.Live`` region without tearing the progress bars.
+
+    Existing handlers cached the original ``sys.stdout`` at construction
+    time, so Live's stdout redirect doesn't reach them unless we re-point
+    their stream.
+    """
+    restorations: list[tuple[logging.StreamHandler, object]] = []
+    seen: set[int] = set()
+    logger_names = ["root", *logging.Logger.manager.loggerDict.keys()]
+    for name in logger_names:
+        lg = logging.getLogger(None if name == "root" else name)
+        for h in lg.handlers:
+            if (
+                isinstance(h, logging.StreamHandler)
+                and not isinstance(h, logging.FileHandler)
+                and id(h) not in seen
+            ):
+                seen.add(id(h))
+                restorations.append((h, h.stream))
+                h.setStream(sys.stdout)
+    try:
+        yield
+    finally:
+        for handler, original in restorations:
+            handler.setStream(original)
 
 
 def transform_league_data(
@@ -198,24 +242,61 @@ def main(
         swing_take_data=swing_take_pitchers_raw,
     )
 
-    # Match batters
-    logger.info("Matching batters across ESPN, FanGraphs, and Savant...")
+    # Match batters and pitchers under a unified progress display. The top
+    # group bar shows per-role progress, the bottom bar is the overall
+    # total across both roles. A single Console is shared so any log lines
+    # emitted during matching render above the Live region without tearing.
+    logger.info("Matching batters and pitchers across ESPN, FanGraphs, and Savant...")
     batter_matcher = PlayerMatcher(
         espn_players=espn_batters,
         fangraphs_data=fangraphs_batters,
         savant_data=savant_batters,
     )
-    batter_results = batter_matcher.match_players()
-    batter_merged = apply_matches(batter_results)
-
-    # Match pitchers
-    logger.info("Matching pitchers across ESPN, FanGraphs, and Savant...")
     pitcher_matcher = PlayerMatcher(
         espn_players=espn_pitchers,
         fangraphs_data=fangraphs_pitchers,
         savant_data=savant_pitchers,
     )
-    pitcher_results = pitcher_matcher.match_players()
+
+    console = Console()
+    progress_columns = (
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        TimeElapsedColumn(),
+        TimeRemainingColumn(),
+    )
+    group_progress = Progress(*progress_columns, console=console, transient=False)
+    overall_progress = Progress(*progress_columns, console=console, transient=False)
+
+    with Live(
+        Group(group_progress, overall_progress),
+        console=console,
+        refresh_per_second=10,
+        redirect_stdout=True,
+        redirect_stderr=True,
+    ), _route_stdout_log_handlers_through_live():
+        batter_task = group_progress.add_task("Batters", total=len(espn_batters))
+        pitcher_task = group_progress.add_task("Pitchers", total=len(espn_pitchers))
+        overall_task = overall_progress.add_task(
+            "Total progress", total=len(espn_batters) + len(espn_pitchers)
+        )
+
+        def _advance_batter() -> None:
+            group_progress.advance(batter_task)
+            overall_progress.advance(overall_task)
+
+        def _advance_pitcher() -> None:
+            group_progress.advance(pitcher_task)
+            overall_progress.advance(overall_task)
+
+        batter_results = batter_matcher.match_players(progress_advance=_advance_batter)
+        pitcher_results = pitcher_matcher.match_players(
+            progress_advance=_advance_pitcher
+        )
+
+    batter_merged = apply_matches(batter_results)
     pitcher_merged = apply_matches(pitcher_results)
 
     # Combine results

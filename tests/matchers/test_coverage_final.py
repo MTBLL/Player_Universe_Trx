@@ -195,3 +195,33 @@ def test_apply_matches_retired_player():
     assert len(output["matched"]) == 0
     assert len(output["unmatched"]) == 0
     assert len(output["ambiguous"]) == 0
+
+
+def test_match_players_invokes_progress_callback():
+    """match_players should call progress_advance once per ESPN player when
+    a callback is supplied (covers the optional progress-bar hook)."""
+    espn_players = [
+        EspnBatterModel(
+            id=i,
+            name=f"Player {i}",
+            first_name="Player",
+            last_name=str(i),
+            slug=f"player-{i}",
+        )
+        for i in range(3)
+    ]
+    fg_players = [
+        FangraphsBatterModel(name=f"Player {i}", playerid=str(100 + i), slug=f"player-{i}")
+        for i in range(3)
+    ]
+
+    matcher = PlayerMatcher(espn_players, fg_players)
+    calls: list[int] = []
+
+    def _advance() -> None:
+        calls.append(1)
+
+    results = matcher.match_players(progress_advance=_advance)
+
+    assert len(results) == 3
+    assert len(calls) == 3
