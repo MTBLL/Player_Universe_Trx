@@ -2,6 +2,7 @@
 
 from player_universe_trx.models.mtbl.batter import MtblBatterModel
 from player_universe_trx.models.mtbl.league import (
+    CategoryResultModel,
     MtblLeagueModel,
     MtblScheduleModel,
     MtblTeamRosterModel,
@@ -34,6 +35,7 @@ __all__ = [
     "MtblPitcherFangraphsBundle",
     "MtblPitcherSavantBundle",
     "MtblPitcherStatsModel",
+    "CategoryResultModel",
     "MtblLeagueModel",
     "MtblScheduleModel",
     "MtblTeamRosterModel",

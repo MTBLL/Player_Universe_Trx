@@ -138,6 +138,7 @@ class EspnRosterSettingsModel(BaseModel):
 class EspnLeagueSettingsModel(BaseModel):
     """League settings."""
 
+    name: Optional[str] = None
     rosterSettings: Optional[EspnRosterSettingsModel] = Field(
         None, alias="rosterSettings"
     )
@@ -190,6 +191,15 @@ class EspnTeamModel(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
+class EspnCategoryResultModel(BaseModel):
+    """A single scoring category's outcome within a matchup."""
+
+    value: Optional[float] = None
+    result: Optional[str] = None  # WIN / LOSS / TIE
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
 class EspnScheduleMatchupModel(BaseModel):
     """Individual schedule matchup."""
 
@@ -198,6 +208,11 @@ class EspnScheduleMatchupModel(BaseModel):
     playoffTierType: Optional[str] = Field(None, alias="playoffTierType")
     winner: Optional[int | str] = None  # Can be team_id (int) or "BYE WEEK" (str)
     teams: Dict[str, str] = Field(default_factory=dict)  # team_id -> score string
+    # Per-category breakdown for H2H category leagues: team_id -> {category ->
+    # result}. Absent for points/roster-limit leagues (no scoreByStat upstream).
+    categoryResults: Optional[Dict[str, Dict[str, EspnCategoryResultModel]]] = Field(
+        None, alias="categoryResults"
+    )
 
     model_config = ConfigDict(populate_by_name=True)
 

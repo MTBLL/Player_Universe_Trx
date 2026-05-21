@@ -4,6 +4,7 @@ from player_universe_trx.models.espn.batter import (
 )
 from player_universe_trx.models.espn.espn_player import EspnPlayerModel
 from player_universe_trx.models.espn.league import (
+    EspnCategoryResultModel,
     EspnLeagueModel,
     EspnLeagueSettingsModel,
     EspnPlayerMinimalModel,
@@ -13,6 +14,7 @@ from player_universe_trx.models.espn.league import (
     EspnRosterEntryModel,
     EspnRosterModel,
     EspnRosterSettingsModel,
+    EspnScheduleMatchupModel,
     EspnTeamModel,
 )
 from player_universe_trx.models.espn.pitcher import (
@@ -42,4 +44,6 @@ __all__ = [
     "EspnRecordDetailModel",
     "EspnLeagueSettingsModel",
     "EspnRosterSettingsModel",
+    "EspnScheduleMatchupModel",
+    "EspnCategoryResultModel",
 ]

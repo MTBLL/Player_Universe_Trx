@@ -150,6 +150,7 @@ class MtblLeagueModel(BaseModel):
     """MTBL league summary model."""
 
     league_id: int
+    league_name: Optional[str] = None
     season_id: int
     scoring_period_id: Optional[int] = None
     num_teams: int
@@ -157,6 +158,16 @@ class MtblLeagueModel(BaseModel):
     scoring_categories: Optional[ScoringCategoriesModel] = None
     acquisition_budget: Optional[int] = None
     draft_auction_budget: Optional[int] = None
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class CategoryResultModel(BaseModel):
+    """A single scoring category's outcome for a team within a matchup."""
+
+    category: str
+    value: Optional[float] = None
+    result: Optional[str] = None  # WIN / LOSS / TIE
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -173,6 +184,9 @@ class ScheduleMatchupModel(BaseModel):
     team2_score: Optional[str] = None
     winner_id: Optional[int] = None
     is_bye_week: bool = False
+    # Per-category breakdown, populated only for H2H category leagues.
+    team1_categories: Optional[List[CategoryResultModel]] = None
+    team2_categories: Optional[List[CategoryResultModel]] = None
 
     model_config = ConfigDict(populate_by_name=True)
 

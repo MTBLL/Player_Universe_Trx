@@ -4,6 +4,7 @@ from player_universe_trx.transformers import league_transformer
 from player_universe_trx.models.espn import EspnLeagueModel, EspnRosterModel, EspnTeamModel
 from player_universe_trx.models.espn.league import (
     EspnAcquisitionSettingsModel,
+    EspnCategoryResultModel,
     EspnDraftSettingsModel,
     EspnLeagueSettingsModel,
     EspnPlayerMinimalModel,
@@ -274,6 +275,35 @@ def test_create_league_summary_with_and_without_settings():
     assert summary_none.draft_auction_budget is None
 
 
+def test_create_league_summary_preserves_league_name():
+    # Name survives the ESPN settings -> MTBL summary boundary
+    settings = EspnLeagueSettingsModel(name="The Merican Fantasy Invitational")
+    league = EspnLeagueModel(id=7, seasonId=2025, teams=[], settings=settings)
+    summary = LeagueTransformer.create_league_summary(league)
+    assert summary.league_name == "The Merican Fantasy Invitational"
+
+    # No settings block -> league_name is None, not an error
+    league_no_settings = EspnLeagueModel(id=8, seasonId=2025, teams=[], settings=None)
+    assert (
+        LeagueTransformer.create_league_summary(league_no_settings).league_name is None
+    )
+
+    # Settings present but name absent -> None
+    settings_no_name = EspnLeagueSettingsModel(
+        acquisitionSettings=EspnAcquisitionSettingsModel(acquisitionBudget=100)
+    )
+    league_no_name = EspnLeagueModel(
+        id=9, seasonId=2025, teams=[], settings=settings_no_name
+    )
+    assert (
+        LeagueTransformer.create_league_summary(league_no_name).league_name is None
+    )
+
+    # Raw-dict parse: ESPN puts the league name at settings.name
+    parsed = EspnLeagueSettingsModel.model_validate({"name": "Raw League"})
+    assert parsed.name == "Raw League"
+
+
 def test_transform_schedule_playoff_and_bye_week():
     matchup_regular = EspnScheduleMatchupModel(
         id=1,
@@ -312,3 +342,87 @@ def test_transform_schedule_playoff_and_bye_week():
     assert second.team2_id is None
     assert second.winner_id is None
     assert second.is_bye_week is True
+
+    # No categoryResults upstream -> per-category fields stay None
+    assert first.team1_categories is None
+    assert first.team2_categories is None
+
+
+def test_transform_schedule_category_breakdown():
+    matchup = EspnScheduleMatchupModel(
+        id=1,
+        matchupPeriodId=3,
+        playoffTierType="NONE",
+        winner=31,
+        teams={"31": "7-5-0", "1": "5-7-0"},
+        categoryResults={
+            "31": {
+                "R": EspnCategoryResultModel(value=45, result="WIN"),
+                "HR": EspnCategoryResultModel(value=12, result="LOSS"),
+            },
+            "1": {
+                "R": EspnCategoryResultModel(value=40, result="LOSS"),
+                "HR": EspnCategoryResultModel(value=15, result="WIN"),
+            },
+        },
+    )
+    league = EspnLeagueModel(id=1, seasonId=2025, teams=[], schedule=[matchup])
+
+    schedule = LeagueTransformer.transform_schedule(league)
+    m = schedule.matchups[0]
+
+    assert m.team1_categories is not None
+    assert {c.category: c.result for c in m.team1_categories} == {
+        "R": "WIN",
+        "HR": "LOSS",
+    }
+    assert {c.category: c.value for c in m.team1_categories} == {
+        "R": 45.0,
+        "HR": 12.0,
+    }
+    assert {c.category: c.result for c in m.team2_categories} == {
+        "R": "LOSS",
+        "HR": "WIN",
+    }
+
+    # categoryResults parses from a raw dict via the camelCase alias
+    parsed = EspnScheduleMatchupModel.model_validate(
+        {
+            "id": 2,
+            "matchupPeriodId": 3,
+            "winner": 5,
+            "teams": {"5": "6-6-0", "6": "6-6-0"},
+            "categoryResults": {
+                "5": {"SB": {"value": 8, "result": "TIE"}},
+            },
+        }
+    )
+    assert parsed.categoryResults["5"]["SB"].result == "TIE"
+
+    # categoryResults present but missing one team's entry -> that team is None
+    partial = EspnScheduleMatchupModel(
+        id=3,
+        matchupPeriodId=3,
+        winner=9,
+        teams={"9": "8-4-0", "10": "4-8-0"},
+        categoryResults={"9": {"R": EspnCategoryResultModel(value=50, result="WIN")}},
+    )
+    partial_league = EspnLeagueModel(id=1, seasonId=2025, teams=[], schedule=[partial])
+    partial_m = LeagueTransformer.transform_schedule(partial_league).matchups[0]
+    assert partial_m.team1_categories is not None
+    assert partial_m.team2_categories is None
+
+
+def test_transform_schedule_without_category_results():
+    # Points / roster-limit leagues have no categoryResults -> fields are None
+    matchup = EspnScheduleMatchupModel(
+        id=1,
+        matchupPeriodId=1,
+        winner=1,
+        teams={"1": "5-3", "2": "3-5"},
+    )
+    league = EspnLeagueModel(id=1, seasonId=2025, teams=[], schedule=[matchup])
+
+    m = LeagueTransformer.transform_schedule(league).matchups[0]
+    assert m.team1_categories is None
+    assert m.team2_categories is None
