@@ -105,9 +105,10 @@ def test_mapping_helpers_and_eligible_positions():
 
 
 def test_format_acquisition_date_valid_and_invalid(monkeypatch):
+    # Timestamp is interpreted as UTC, so the result is fixed regardless of
+    # the host timezone (the trailing Z must not be a mislabelled local time).
     valid = LeagueTransformer._format_acquisition_date(1700000000000)
-    assert valid.endswith("Z")
-    assert "T" in valid
+    assert valid == "2023-11-14T22:13:20Z"
 
     class _BadDateTime:
         @staticmethod

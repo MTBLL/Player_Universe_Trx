@@ -2,7 +2,7 @@
 
 import logging
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 from player_universe_trx.constants import (
@@ -103,17 +103,21 @@ class LeagueTransformer:
     @staticmethod
     def _format_acquisition_date(timestamp: int) -> str:
         """
-        Convert Unix timestamp (milliseconds) to ISO format date string.
+        Convert a Unix timestamp (milliseconds) to a UTC ISO date string.
+
+        The timestamp is interpreted as UTC -- not the host's local time --
+        so the trailing ``Z`` is accurate regardless of the process
+        timezone.
 
         Args:
             timestamp: Unix timestamp in milliseconds
 
         Returns:
-            ISO format date string
+            ISO format date string in UTC, suffixed with ``Z``
         """
         try:
-            dt = datetime.fromtimestamp(timestamp / 1000)
-            return dt.isoformat() + "Z"
+            dt = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc)
+            return dt.isoformat().replace("+00:00", "Z")
         except (ValueError, OSError):
             return ""
 
