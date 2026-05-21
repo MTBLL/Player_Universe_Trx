@@ -400,8 +400,68 @@ class LeagueTransformer:
         )
 
     @staticmethod
+    def _build_category_name_map(espn_league: EspnLeagueModel) -> Dict[str, str]:
+        """
+        Map stringified ESPN ``stat_id`` -> category name from league scoring
+        settings.
+
+        These are the same statId/name pairs that feed
+        ``league_scoring_categories``; reusing them keeps matchup categories
+        named consistently with every other category surface.
+
+        Args:
+            espn_league: ESPN league model
+
+        Returns:
+            Dict of ``str(stat_id)`` -> category name; empty when the league
+            carries no scoring settings (points/roster-limit leagues)
+        """
+        name_map: Dict[str, str] = {}
+        if espn_league.settings and espn_league.settings.scoringSettings:
+            categories = espn_league.settings.scoringSettings.categories
+            for cat in (*categories.batting, *categories.pitching):
+                name_map[str(cat.statId)] = cat.name
+        return name_map
+
+    @staticmethod
+    def _resolve_category_name(key: str, name_map: Dict[str, str]) -> str:
+        """
+        Resolve a ``categoryResults`` inner key to a category name.
+
+        Upstream ESPN extracts now key the per-category breakdown by numeric
+        ``stat_id`` (e.g. ``"20"``, ``"5"``); older exports keyed by name
+        (``"R"``, ``"HR"``). Numeric keys are resolved via the league's
+        scoring-category map. Any non-numeric key -- a name from an older
+        export, or the ``"BYE"`` sentinel -- passes through unchanged. An
+        unmapped numeric key falls back to the raw id so data is never
+        silently dropped.
+
+        Args:
+            key: Raw ``categoryResults`` inner key
+            name_map: ``str(stat_id)`` -> name map from
+                :meth:`_build_category_name_map`
+
+        Returns:
+            The resolved category name
+        """
+        if not key.isdigit():
+            return key
+        resolved = name_map.get(key)
+        if resolved is None:
+            logger.warning(
+                "matchup category stat_id %s not in league scoring "
+                "settings; emitting raw id",
+                key,
+            )
+            return key
+        return resolved
+
+    @classmethod
     def _extract_team_categories(
-        matchup: EspnScheduleMatchupModel, team_key: Optional[str]
+        cls,
+        matchup: EspnScheduleMatchupModel,
+        team_key: Optional[str],
+        category_name_map: Dict[str, str],
     ) -> Optional[List[CategoryResultModel]]:
         """
         Extract a team's per-category results from an ESPN matchup.
@@ -410,6 +470,8 @@ class LeagueTransformer:
             matchup: ESPN schedule matchup
             team_key: Team ID as a string key (categoryResults is keyed by
                 stringified team IDs, matching the ``teams`` mapping)
+            category_name_map: ``str(stat_id)`` -> name map used to resolve
+                numeric category keys back to names
 
         Returns:
             List of CategoryResultModel, or None for points/roster-limit
@@ -422,9 +484,11 @@ class LeagueTransformer:
             return None
         return [
             CategoryResultModel(
-                category=name, value=result.value, result=result.result
+                category=cls._resolve_category_name(key, category_name_map),
+                value=result.value,
+                result=result.result,
             )
-            for name, result in team_categories.items()
+            for key, result in team_categories.items()
         ]
 
     @classmethod
@@ -439,6 +503,7 @@ class LeagueTransformer:
             MtblScheduleModel with matchups
         """
         matchups = []
+        category_name_map = cls._build_category_name_map(espn_league)
         for matchup in espn_league.schedule:
             # Determine if this is a playoff matchup
             is_playoff = (
@@ -458,8 +523,12 @@ class LeagueTransformer:
             team2_score = matchup.teams.get(team2_key) if team2_key else None
 
             # Per-category breakdown (H2H category leagues only)
-            team1_categories = cls._extract_team_categories(matchup, team1_key)
-            team2_categories = cls._extract_team_categories(matchup, team2_key)
+            team1_categories = cls._extract_team_categories(
+                matchup, team1_key, category_name_map
+            )
+            team2_categories = cls._extract_team_categories(
+                matchup, team2_key, category_name_map
+            )
 
             # Parse winner
             winner_id = None

@@ -413,6 +413,78 @@ def test_transform_schedule_category_breakdown():
     assert partial_m.team2_categories is None
 
 
+def test_transform_schedule_resolves_numeric_stat_ids():
+    # Latest ESPN extracts key categoryResults by numeric stat_id; the
+    # transformer resolves those back to category names via the league's
+    # scoring settings (the source of league_scoring_categories).
+    settings = EspnLeagueSettingsModel(
+        scoringSettings=EspnScoringSettingsModel(
+            categories=EspnScoringCategoriesModel(
+                batting=[
+                    EspnScoringCategoryModel(statId=20, name="R"),
+                    EspnScoringCategoryModel(statId=5, name="HR"),
+                ],
+                pitching=[
+                    EspnScoringCategoryModel(statId=47, name="ERA"),
+                ],
+            )
+        )
+    )
+    matchup = EspnScheduleMatchupModel(
+        id=48,
+        matchupPeriodId=10,
+        winner=1,
+        teams={"1": "8-4-0", "2": "4-8-0"},
+        categoryResults={
+            "1": {
+                "20": EspnCategoryResultModel(value=18, result="WIN"),
+                "5": EspnCategoryResultModel(value=7, result="LOSS"),
+                "47": EspnCategoryResultModel(value=1.373, result="WIN"),
+                # unmapped numeric stat_id -> falls back to the raw id, never dropped
+                "999": EspnCategoryResultModel(value=1, result="TIE"),
+                # non-numeric sentinel -> passes through unchanged
+                "BYE": EspnCategoryResultModel(value=None, result=None),
+            },
+        },
+    )
+    league = EspnLeagueModel(
+        id=1, seasonId=2026, teams=[], schedule=[matchup], settings=settings
+    )
+
+    m = LeagueTransformer.transform_schedule(league).matchups[0]
+    assert {c.category: c.result for c in m.team1_categories} == {
+        "R": "WIN",
+        "HR": "LOSS",
+        "ERA": "WIN",
+        "999": "TIE",
+        "BYE": None,
+    }
+
+
+def test_transform_schedule_category_breakdown_no_scoring_settings():
+    # Without scoring settings the name map is empty; numeric keys fall back
+    # to the raw id, name keys still pass through (backward compatible).
+    matchup = EspnScheduleMatchupModel(
+        id=1,
+        matchupPeriodId=3,
+        winner=1,
+        teams={"1": "1-1-0", "2": "1-1-0"},
+        categoryResults={
+            "1": {
+                "20": EspnCategoryResultModel(value=18, result="WIN"),
+                "HR": EspnCategoryResultModel(value=7, result="LOSS"),
+            },
+        },
+    )
+    league = EspnLeagueModel(id=1, seasonId=2026, teams=[], schedule=[matchup])
+
+    m = LeagueTransformer.transform_schedule(league).matchups[0]
+    assert {c.category: c.result for c in m.team1_categories} == {
+        "20": "WIN",
+        "HR": "LOSS",
+    }
+
+
 def test_transform_schedule_without_category_results():
     # Points / roster-limit leagues have no categoryResults -> fields are None
     matchup = EspnScheduleMatchupModel(
