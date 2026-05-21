@@ -18,6 +18,8 @@ from player_universe_trx.models.espn import (
 )
 from player_universe_trx.models.mtbl import (
     CategoryResultModel,
+    GamesStartedLimitsModel,
+    GamesStartedModel,
     MtblLeagueModel,
     MtblScheduleModel,
     MtblTeamRosterModel,
@@ -116,6 +118,30 @@ class LeagueTransformer:
             return ""
 
     @classmethod
+    def _build_eligible_date_by_position(
+        cls, eligible_dates: Optional[Dict[str, int]]
+    ) -> Optional[Dict[str, str]]:
+        """
+        Map ESPN ``eligibleDateByPosition`` to MTBL-native names and dates.
+
+        ESPN keys this by numeric slot ID with epoch-millisecond values.
+        MTBL surfaces position names with ISO date strings, consistent with
+        ``eligible_positions`` and ``acquisition_date``.
+
+        Args:
+            eligible_dates: ESPN ``slot_id`` -> epoch-ms map, or None
+
+        Returns:
+            ``position_name`` -> ISO date string map, or None when absent
+        """
+        if not eligible_dates:
+            return None
+        return {
+            cls._get_lineup_slot_name(int(slot_id)): cls._format_acquisition_date(ts)
+            for slot_id, ts in eligible_dates.items()
+        }
+
+    @classmethod
     def _create_roster_slot_player(
         cls, entry: EspnRosterEntryModel
     ) -> RosterSlotPlayer:
@@ -154,6 +180,10 @@ class LeagueTransformer:
             injury_status=player.injuryStatus,
             active=player.active,
             keeper_value=entry.playerPoolEntry.keeperValue,
+            jersey=player.jersey,
+            eligible_date_by_position=cls._build_eligible_date_by_position(
+                player.eligibleDateByPosition
+            ),
         )
 
     @classmethod
@@ -370,6 +400,17 @@ class LeagueTransformer:
                 batting=batting_cats, pitching=pitching_cats
             )
 
+        # Extract games-started limits (pitcher start cap)
+        games_started_limits = None
+        if espn_league.settings and espn_league.settings.gamesStartedLimits:
+            limits = espn_league.settings.gamesStartedLimits
+            games_started_limits = GamesStartedLimitsModel(
+                stat_id=limits.statId,
+                min=limits.min,
+                max_per_scoring_period=limits.maxPerScoringPeriod,
+                max_per_matchup=limits.maxPerMatchup,
+            )
+
         # Get acquisition budget
         acquisition_budget = None
         if espn_league.settings and espn_league.settings.acquisitionSettings:
@@ -395,6 +436,7 @@ class LeagueTransformer:
             num_teams=len(espn_league.teams),
             roster_settings=roster_settings,
             scoring_categories=scoring_categories,
+            games_started_limits=games_started_limits,
             acquisition_budget=acquisition_budget,
             draft_auction_budget=draft_auction_budget,
         )
@@ -482,14 +524,46 @@ class LeagueTransformer:
         team_categories = matchup.categoryResults.get(team_key)
         if not team_categories:
             return None
+        # Prefer the category name the extractor now emits inline; fall back
+        # to resolving the numeric stat_id key for older extracts.
         return [
             CategoryResultModel(
-                category=cls._resolve_category_name(key, category_name_map),
+                category=(
+                    result.name
+                    or cls._resolve_category_name(key, category_name_map)
+                ),
                 value=result.value,
                 result=result.result,
             )
             for key, result in team_categories.items()
         ]
+
+    @staticmethod
+    def _extract_team_games_started(
+        matchup: EspnScheduleMatchupModel, team_key: Optional[str]
+    ) -> Optional[GamesStartedModel]:
+        """
+        Extract a team's games-started tally from an ESPN matchup.
+
+        Args:
+            matchup: ESPN schedule matchup
+            team_key: Team ID as a string key (gamesStarted is keyed by
+                stringified team IDs, matching the ``teams`` mapping)
+
+        Returns:
+            GamesStartedModel, or None for leagues without a pitcher start
+            cap (no gamesStarted upstream)
+        """
+        if not matchup.gamesStarted or team_key is None:
+            return None
+        games_started = matchup.gamesStarted.get(team_key)
+        if games_started is None:
+            return None
+        return GamesStartedModel(
+            value=games_started.value,
+            limit_exceeded=games_started.limitExceeded,
+            exceeded_on_scoring_period=games_started.exceededOnScoringPeriod,
+        )
 
     @classmethod
     def transform_schedule(cls, espn_league: EspnLeagueModel) -> MtblScheduleModel:
@@ -530,6 +604,10 @@ class LeagueTransformer:
                 matchup, team2_key, category_name_map
             )
 
+            # Games-started tally (leagues with a pitcher start cap only)
+            team1_games_started = cls._extract_team_games_started(matchup, team1_key)
+            team2_games_started = cls._extract_team_games_started(matchup, team2_key)
+
             # Parse winner
             winner_id = None
             if not is_bye and matchup.winner and isinstance(matchup.winner, int):
@@ -548,6 +626,8 @@ class LeagueTransformer:
                     is_bye_week=is_bye,
                     team1_categories=team1_categories,
                     team2_categories=team2_categories,
+                    team1_games_started=team1_games_started,
+                    team2_games_started=team2_games_started,
                 )
             )
 

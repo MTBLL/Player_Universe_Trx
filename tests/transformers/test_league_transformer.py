@@ -6,6 +6,8 @@ from player_universe_trx.models.espn.league import (
     EspnAcquisitionSettingsModel,
     EspnCategoryResultModel,
     EspnDraftSettingsModel,
+    EspnGamesStartedLimitsModel,
+    EspnGamesStartedModel,
     EspnLeagueSettingsModel,
     EspnPlayerMinimalModel,
     EspnPlayerPoolEntryModel,
@@ -30,6 +32,8 @@ def _make_player_minimal(
     eligible_slots: list[int] | None = None,
     injury_status: str | None = None,
     active: bool = True,
+    jersey: str | None = None,
+    eligible_date_by_position: dict[str, int] | None = None,
 ) -> EspnPlayerMinimalModel:
     return EspnPlayerMinimalModel(
         id=player_id,
@@ -39,6 +43,8 @@ def _make_player_minimal(
         eligibleSlots=eligible_slots or [0],
         injuryStatus=injury_status,
         active=active,
+        jersey=jersey,
+        eligibleDateByPosition=eligible_date_by_position,
     )
 
 
@@ -137,6 +143,9 @@ def test_create_roster_slot_player_and_organize_roster():
     assert roster_player.lineup_slot == "C"
     assert roster_player.acquisition_date is not None
     assert roster_player.keeper_value == 5
+    # New extract fields absent on this player -> stay None
+    assert roster_player.jersey is None
+    assert roster_player.eligible_date_by_position is None
 
     bench_player = _make_player_minimal(
         player_id=11,
@@ -257,6 +266,9 @@ def test_create_league_summary_with_and_without_settings():
     settings = EspnLeagueSettingsModel(
         rosterSettings=EspnRosterSettingsModel(lineupSlotCounts={"C": 1}, rosterSize=25),
         scoringSettings=scoring_settings,
+        gamesStartedLimits=EspnGamesStartedLimitsModel(
+            statId=33, min=4.0, maxPerScoringPeriod=1.43, maxPerMatchup=1
+        ),
         acquisitionSettings=EspnAcquisitionSettingsModel(acquisitionBudget=100),
         draftSettings=EspnDraftSettingsModel(auctionBudget=260),
     )
@@ -266,6 +278,9 @@ def test_create_league_summary_with_and_without_settings():
     assert summary.scoring_categories is not None
     assert summary.acquisition_budget == 100
     assert summary.draft_auction_budget == 260
+    assert summary.games_started_limits is not None
+    assert summary.games_started_limits.stat_id == 33
+    assert summary.games_started_limits.max_per_matchup == 1.0
 
     league_no_settings = EspnLeagueModel(id=6, seasonId=2025, teams=[], settings=None)
     summary_none = LeagueTransformer.create_league_summary(league_no_settings)
@@ -273,6 +288,7 @@ def test_create_league_summary_with_and_without_settings():
     assert summary_none.scoring_categories is None
     assert summary_none.acquisition_budget is None
     assert summary_none.draft_auction_budget is None
+    assert summary_none.games_started_limits is None
 
 
 def test_create_league_summary_preserves_league_name():
@@ -498,3 +514,79 @@ def test_transform_schedule_without_category_results():
     m = LeagueTransformer.transform_schedule(league).matchups[0]
     assert m.team1_categories is None
     assert m.team2_categories is None
+
+
+def test_transform_schedule_category_uses_inline_name():
+    # The extractor now emits the category name inline; it is preferred over
+    # resolving the numeric stat_id key, even when the league has no scoring
+    # settings to resolve against.
+    matchup = EspnScheduleMatchupModel(
+        id=1,
+        matchupPeriodId=3,
+        winner=1,
+        teams={"1": "2-0-0", "2": "0-2-0"},
+        categoryResults={
+            "1": {
+                "5": EspnCategoryResultModel(name="HR", value=9, result="WIN"),
+                "17": EspnCategoryResultModel(name="OBP", value=0.35, result="WIN"),
+            },
+        },
+    )
+    league = EspnLeagueModel(id=1, seasonId=2026, teams=[], schedule=[matchup])
+
+    m = LeagueTransformer.transform_schedule(league).matchups[0]
+    assert {c.category: c.result for c in m.team1_categories} == {
+        "HR": "WIN",
+        "OBP": "WIN",
+    }
+
+
+def test_transform_schedule_games_started():
+    # Leagues with a pitcher start cap carry a per-team gamesStarted tally.
+    matchup = EspnScheduleMatchupModel(
+        id=1,
+        matchupPeriodId=4,
+        winner=1,
+        teams={"1": "6-6-0", "2": "6-6-0"},
+        gamesStarted={
+            "1": EspnGamesStartedModel(
+                value=10, limitExceeded=False, exceededOnScoringPeriod=0
+            ),
+            # team "2" intentionally absent -> that team's tally is None
+        },
+    )
+    league = EspnLeagueModel(id=1, seasonId=2026, teams=[], schedule=[matchup])
+
+    m = LeagueTransformer.transform_schedule(league).matchups[0]
+    assert m.team1_games_started is not None
+    assert m.team1_games_started.value == 10.0
+    assert m.team1_games_started.limit_exceeded is False
+    assert m.team2_games_started is None
+
+    # No gamesStarted upstream -> both teams' tallies stay None
+    no_gs = EspnScheduleMatchupModel(
+        id=2, matchupPeriodId=4, winner=1, teams={"1": "1-0", "2": "0-1"}
+    )
+    no_gs_league = EspnLeagueModel(id=1, seasonId=2026, teams=[], schedule=[no_gs])
+    m2 = LeagueTransformer.transform_schedule(no_gs_league).matchups[0]
+    assert m2.team1_games_started is None
+    assert m2.team2_games_started is None
+
+
+def test_create_roster_slot_player_new_extract_fields():
+    # jersey and eligibleDateByPosition flow from the new extract; slot IDs
+    # resolve to position names and epoch-ms timestamps to ISO date strings.
+    player = _make_player_minimal(
+        player_id=20,
+        full_name="Jersey Guy",
+        jersey="27",
+        eligible_date_by_position={"3": 1775550610180, "10": 1769523361695},
+    )
+    entry = _make_roster_entry(player=player, lineup_slot_id=0)
+
+    roster_player = LeagueTransformer._create_roster_slot_player(entry)
+    assert roster_player.jersey == "27"
+    edp = roster_player.eligible_date_by_position
+    assert edp is not None
+    assert set(edp) == {"3B", "DH"}
+    assert all(v.endswith("Z") and "T" in v for v in edp.values())

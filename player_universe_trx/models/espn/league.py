@@ -15,6 +15,11 @@ class EspnPlayerMinimalModel(BaseModel):
     eligibleSlots: List[int] = Field(default_factory=list, alias="eligibleSlots")
     injuryStatus: Optional[str] = Field(None, alias="injuryStatus")
     active: bool = True
+    jersey: Optional[str] = None  # Uniform number, e.g. "27"
+    # Slot ID -> epoch-ms timestamp the player became eligible at that slot
+    eligibleDateByPosition: Optional[Dict[str, int]] = Field(
+        None, alias="eligibleDateByPosition"
+    )
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -107,6 +112,17 @@ class EspnScoringSettingsModel(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
+class EspnGamesStartedLimitsModel(BaseModel):
+    """League games-started limits for pitchers (start-cap rule)."""
+
+    statId: int = Field(..., alias="statId")
+    min: Optional[float] = None
+    maxPerScoringPeriod: Optional[float] = Field(None, alias="maxPerScoringPeriod")
+    maxPerMatchup: Optional[float] = Field(None, alias="maxPerMatchup")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
 class EspnAcquisitionSettingsModel(BaseModel):
     """League acquisition settings."""
 
@@ -144,6 +160,9 @@ class EspnLeagueSettingsModel(BaseModel):
     )
     scoringSettings: Optional[EspnScoringSettingsModel] = Field(
         None, alias="scoringSettings"
+    )
+    gamesStartedLimits: Optional[EspnGamesStartedLimitsModel] = Field(
+        None, alias="gamesStartedLimits"
     )
     acquisitionSettings: Optional[EspnAcquisitionSettingsModel] = Field(
         None, alias="acquisitionSettings"
@@ -194,8 +213,19 @@ class EspnTeamModel(BaseModel):
 class EspnCategoryResultModel(BaseModel):
     """A single scoring category's outcome within a matchup."""
 
+    name: Optional[str] = None  # Category name (e.g. "HR"); provided inline upstream
     value: Optional[float] = None
     result: Optional[str] = None  # WIN / LOSS / TIE
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class EspnGamesStartedModel(BaseModel):
+    """A team's games-started tally within a matchup (pitcher start cap)."""
+
+    value: float = 0.0
+    limitExceeded: bool = Field(False, alias="limitExceeded")
+    exceededOnScoringPeriod: int = Field(0, alias="exceededOnScoringPeriod")
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -212,6 +242,11 @@ class EspnScheduleMatchupModel(BaseModel):
     # result}. Absent for points/roster-limit leagues (no scoreByStat upstream).
     categoryResults: Optional[Dict[str, Dict[str, EspnCategoryResultModel]]] = Field(
         None, alias="categoryResults"
+    )
+    # Per-team games-started tally: team_id -> games-started result. Present
+    # for leagues with a pitcher start cap.
+    gamesStarted: Optional[Dict[str, EspnGamesStartedModel]] = Field(
+        None, alias="gamesStarted"
     )
 
     model_config = ConfigDict(populate_by_name=True)

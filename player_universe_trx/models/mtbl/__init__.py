@@ -3,6 +3,8 @@
 from player_universe_trx.models.mtbl.batter import MtblBatterModel
 from player_universe_trx.models.mtbl.league import (
     CategoryResultModel,
+    GamesStartedLimitsModel,
+    GamesStartedModel,
     MtblLeagueModel,
     MtblScheduleModel,
     MtblTeamRosterModel,
@@ -36,6 +38,8 @@ __all__ = [
     "MtblPitcherSavantBundle",
     "MtblPitcherStatsModel",
     "CategoryResultModel",
+    "GamesStartedModel",
+    "GamesStartedLimitsModel",
     "MtblLeagueModel",
     "MtblScheduleModel",
     "MtblTeamRosterModel",
