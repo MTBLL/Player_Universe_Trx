@@ -399,6 +399,19 @@ def test_transform_schedule_category_breakdown():
     )
     assert parsed.categoryResults["5"]["SB"].result == "TIE"
 
+    # categoryResults present but missing one team's entry -> that team is None
+    partial = EspnScheduleMatchupModel(
+        id=3,
+        matchupPeriodId=3,
+        winner=9,
+        teams={"9": "8-4-0", "10": "4-8-0"},
+        categoryResults={"9": {"R": EspnCategoryResultModel(value=50, result="WIN")}},
+    )
+    partial_league = EspnLeagueModel(id=1, seasonId=2025, teams=[], schedule=[partial])
+    partial_m = LeagueTransformer.transform_schedule(partial_league).matchups[0]
+    assert partial_m.team1_categories is not None
+    assert partial_m.team2_categories is None
+
 
 def test_transform_schedule_without_category_results():
     # Points / roster-limit leagues have no categoryResults -> fields are None
