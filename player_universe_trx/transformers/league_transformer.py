@@ -13,9 +13,11 @@ from player_universe_trx.constants import (
 from player_universe_trx.models.espn import (
     EspnLeagueModel,
     EspnRosterEntryModel,
+    EspnScheduleMatchupModel,
     EspnTeamModel,
 )
 from player_universe_trx.models.mtbl import (
+    CategoryResultModel,
     MtblLeagueModel,
     MtblScheduleModel,
     MtblTeamRosterModel,
@@ -380,8 +382,14 @@ class LeagueTransformer:
         if espn_league.settings and espn_league.settings.draftSettings:
             draft_auction_budget = espn_league.settings.draftSettings.auctionBudget
 
+        # Preserve upstream league name from ESPN settings
+        league_name = None
+        if espn_league.settings:
+            league_name = espn_league.settings.name
+
         return MtblLeagueModel(
             league_id=espn_league.id,
+            league_name=league_name,
             season_id=espn_league.seasonId,
             scoring_period_id=espn_league.scoringPeriodId,
             num_teams=len(espn_league.teams),
@@ -390,6 +398,34 @@ class LeagueTransformer:
             acquisition_budget=acquisition_budget,
             draft_auction_budget=draft_auction_budget,
         )
+
+    @staticmethod
+    def _extract_team_categories(
+        matchup: EspnScheduleMatchupModel, team_key: Optional[str]
+    ) -> Optional[List[CategoryResultModel]]:
+        """
+        Extract a team's per-category results from an ESPN matchup.
+
+        Args:
+            matchup: ESPN schedule matchup
+            team_key: Team ID as a string key (categoryResults is keyed by
+                stringified team IDs, matching the ``teams`` mapping)
+
+        Returns:
+            List of CategoryResultModel, or None for points/roster-limit
+            leagues where ESPN provides no per-category breakdown
+        """
+        if not matchup.categoryResults or team_key is None:
+            return None
+        team_categories = matchup.categoryResults.get(team_key)
+        if not team_categories:
+            return None
+        return [
+            CategoryResultModel(
+                category=name, value=result.value, result=result.result
+            )
+            for name, result in team_categories.items()
+        ]
 
     @classmethod
     def transform_schedule(cls, espn_league: EspnLeagueModel) -> MtblScheduleModel:
@@ -413,10 +449,17 @@ class LeagueTransformer:
             team_ids = list(matchup.teams.keys())
             is_bye = matchup.winner == "BYE WEEK"
 
-            team1_id = int(team_ids[0]) if team_ids else None
-            team1_score = matchup.teams.get(team_ids[0]) if team_ids else None
-            team2_id = int(team_ids[1]) if len(team_ids) > 1 else None
-            team2_score = matchup.teams.get(team_ids[1]) if len(team_ids) > 1 else None
+            team1_key = team_ids[0] if team_ids else None
+            team2_key = team_ids[1] if len(team_ids) > 1 else None
+
+            team1_id = int(team1_key) if team1_key else None
+            team1_score = matchup.teams.get(team1_key) if team1_key else None
+            team2_id = int(team2_key) if team2_key else None
+            team2_score = matchup.teams.get(team2_key) if team2_key else None
+
+            # Per-category breakdown (H2H category leagues only)
+            team1_categories = cls._extract_team_categories(matchup, team1_key)
+            team2_categories = cls._extract_team_categories(matchup, team2_key)
 
             # Parse winner
             winner_id = None
@@ -434,6 +477,8 @@ class LeagueTransformer:
                     team2_score=team2_score,
                     winner_id=winner_id,
                     is_bye_week=is_bye,
+                    team1_categories=team1_categories,
+                    team2_categories=team2_categories,
                 )
             )
 
