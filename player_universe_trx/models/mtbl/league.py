@@ -40,6 +40,11 @@ class RosterSlotPlayer(BaseModel):
     # Keeper value
     keeper_value: Optional[int] = None
 
+    # Uniform number (e.g. "27")
+    jersey: Optional[str] = None
+    # Position name -> ISO date the player became eligible at that position
+    eligible_date_by_position: Optional[Dict[str, str]] = None
+
     model_config = ConfigDict(populate_by_name=True)
 
 
@@ -70,6 +75,17 @@ class ScoringCategoriesModel(BaseModel):
 
     batting: List[ScoringCategoryModel] = Field(default_factory=list)
     pitching: List[ScoringCategoryModel] = Field(default_factory=list)
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class GamesStartedLimitsModel(BaseModel):
+    """League games-started limits for pitchers (start-cap rule)."""
+
+    stat_id: int
+    min: Optional[float] = None
+    max_per_scoring_period: Optional[float] = None
+    max_per_matchup: Optional[float] = None
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -156,6 +172,7 @@ class MtblLeagueModel(BaseModel):
     num_teams: int
     roster_settings: Optional[RosterSettingsModel] = None
     scoring_categories: Optional[ScoringCategoriesModel] = None
+    games_started_limits: Optional[GamesStartedLimitsModel] = None
     acquisition_budget: Optional[int] = None
     draft_auction_budget: Optional[int] = None
 
@@ -168,6 +185,16 @@ class CategoryResultModel(BaseModel):
     category: str
     value: Optional[float] = None
     result: Optional[str] = None  # WIN / LOSS / TIE
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class GamesStartedModel(BaseModel):
+    """A team's games-started tally within a matchup (pitcher start cap)."""
+
+    value: float = 0.0
+    limit_exceeded: bool = False
+    exceeded_on_scoring_period: int = 0
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -187,6 +214,9 @@ class ScheduleMatchupModel(BaseModel):
     # Per-category breakdown, populated only for H2H category leagues.
     team1_categories: Optional[List[CategoryResultModel]] = None
     team2_categories: Optional[List[CategoryResultModel]] = None
+    # Games-started tally, populated only for leagues with a pitcher start cap.
+    team1_games_started: Optional[GamesStartedModel] = None
+    team2_games_started: Optional[GamesStartedModel] = None
 
     model_config = ConfigDict(populate_by_name=True)
 

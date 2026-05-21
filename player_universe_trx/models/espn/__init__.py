@@ -5,6 +5,8 @@ from player_universe_trx.models.espn.batter import (
 from player_universe_trx.models.espn.espn_player import EspnPlayerModel
 from player_universe_trx.models.espn.league import (
     EspnCategoryResultModel,
+    EspnGamesStartedLimitsModel,
+    EspnGamesStartedModel,
     EspnLeagueModel,
     EspnLeagueSettingsModel,
     EspnPlayerMinimalModel,
@@ -46,4 +48,6 @@ __all__ = [
     "EspnRosterSettingsModel",
     "EspnScheduleMatchupModel",
     "EspnCategoryResultModel",
+    "EspnGamesStartedModel",
+    "EspnGamesStartedLimitsModel",
 ]
