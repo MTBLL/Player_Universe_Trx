@@ -1,0 +1,98 @@
+"""Tests for the atomic publish helper.
+
+These guard the property the publish layer exists to provide: the publish
+directory only ever flips from one internally-consistent set of files to the
+next, and a failed run never corrupts the last good output.
+"""
+
+import hashlib
+import json
+from pathlib import Path
+
+import pytest
+
+from player_universe_trx.utils.atomic_publish import MANIFEST_NAME, atomic_publish
+
+
+def _write(d: Path, name: str, text: str) -> None:
+    (d / name).write_text(text)
+
+
+def test_publishes_staged_files_on_clean_exit(tmp_path):
+    publish = tmp_path / "transform"
+
+    with atomic_publish(str(publish), run_id="run-1") as staging:
+        _write(staging, "hitters.json", '{"a": 1}')
+        _write(staging, "team_18_roster.json", '{"b": 2}')
+        # Nothing is visible in the publish dir mid-run.
+        assert not publish.exists() or not list(publish.glob("*.json"))
+
+    assert (publish / "hitters.json").read_text() == '{"a": 1}'
+    assert (publish / "team_18_roster.json").read_text() == '{"b": 2}'
+
+
+def test_staging_dir_removed_after_publish(tmp_path):
+    publish = tmp_path / "transform"
+    seen = {}
+
+    with atomic_publish(str(publish)) as staging:
+        seen["staging"] = staging
+        _write(staging, "f.json", "{}")
+
+    assert not seen["staging"].exists()
+
+
+def test_staging_shares_parent_with_publish(tmp_path):
+    """Staging must be a sibling of the publish dir so os.replace is atomic
+    (same filesystem), not under the system temp dir."""
+    publish = tmp_path / "transform"
+
+    with atomic_publish(str(publish)) as staging:
+        assert staging.parent == publish.parent
+        _write(staging, "f.json", "{}")
+
+
+def test_manifest_records_sha256_and_size(tmp_path):
+    publish = tmp_path / "transform"
+    payload = '{"hello": "world"}'
+
+    with atomic_publish(str(publish), run_id="2026-05-28T00:00:00Z") as staging:
+        _write(staging, "hitters.json", payload)
+
+    manifest = json.loads((publish / MANIFEST_NAME).read_text())
+    assert manifest["run_id"] == "2026-05-28T00:00:00Z"
+    assert manifest["completed_at"].endswith("Z")
+    entry = manifest["files"]["hitters.json"]
+    assert entry["size"] == len(payload.encode())
+    assert entry["sha256"] == hashlib.sha256(payload.encode()).hexdigest()
+    # The manifest never lists itself.
+    assert MANIFEST_NAME not in manifest["files"]
+
+
+def test_failed_run_leaves_previous_output_untouched(tmp_path):
+    publish = tmp_path / "transform"
+
+    # An initial good run.
+    with atomic_publish(str(publish)) as staging:
+        _write(staging, "hitters.json", '{"v": 1}')
+
+    # A second run that blows up mid-flight must publish nothing.
+    staging_seen = {}
+    with pytest.raises(RuntimeError):
+        with atomic_publish(str(publish)) as staging:
+            staging_seen["dir"] = staging
+            _write(staging, "hitters.json", '{"v": 2}')
+            raise RuntimeError("boom")
+
+    # Last good contents preserved, staging cleaned up.
+    assert (publish / "hitters.json").read_text() == '{"v": 1}'
+    assert not staging_seen["dir"].exists()
+
+
+def test_publish_dir_created_if_missing(tmp_path):
+    publish = tmp_path / "nested" / "transform"
+
+    with atomic_publish(str(publish)) as staging:
+        _write(staging, "f.json", "{}")
+
+    assert (publish / "f.json").exists()
