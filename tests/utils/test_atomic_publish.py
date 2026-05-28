@@ -7,10 +7,12 @@ next, and a failed run never corrupts the last good output.
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import pytest
 
+from player_universe_trx.utils import atomic_publish as ap
 from player_universe_trx.utils.atomic_publish import MANIFEST_NAME, atomic_publish
 
 
@@ -96,3 +98,62 @@ def test_publish_dir_created_if_missing(tmp_path):
         _write(staging, "f.json", "{}")
 
     assert (publish / "f.json").exists()
+
+
+def test_manifest_write_failure_rolls_back_whole_run(tmp_path, monkeypatch):
+    """If the manifest write fails after every file is installed, the run
+    reverts: prior files restored, newly-added files removed."""
+    publish = tmp_path / "transform"
+
+    # Good run 1: a.json only.
+    with atomic_publish(str(publish)) as staging:
+        _write(staging, "a.json", '{"v": 1}')
+    run1_manifest = json.loads((publish / MANIFEST_NAME).read_text())
+
+    # Run 2 overwrites a.json and adds c.json, but the manifest write blows up.
+    def _boom(*_a, **_k):
+        raise OSError("manifest disk full")
+
+    monkeypatch.setattr(ap, "_atomic_write_json", _boom)
+
+    with pytest.raises(OSError):
+        with atomic_publish(str(publish)) as staging:
+            _write(staging, "a.json", '{"v": 2}')
+            _write(staging, "c.json", '{"new": True}')
+
+    # a.json reverted to v1, c.json gone, manifest unchanged from run 1.
+    assert (publish / "a.json").read_text() == '{"v": 1}'
+    assert not (publish / "c.json").exists()
+    assert json.loads((publish / MANIFEST_NAME).read_text()) == run1_manifest
+    # No backup dir left behind on a clean rollback.
+    assert not list(publish.parent.glob(".*backup*"))
+
+
+def test_failure_between_backup_and_install_does_not_lose_old_file(
+    tmp_path, monkeypatch
+):
+    """The dangerous window: the old file is moved into backup, then installing
+    the new version fails. The old version must come back, not vanish."""
+    publish = tmp_path / "transform"
+
+    with atomic_publish(str(publish)) as staging:
+        _write(staging, "a.json", '{"v": 1}')
+
+    real_replace = os.replace
+    calls = {"n": 0}
+
+    def _flaky_replace(src, dst):
+        calls["n"] += 1
+        # Call 1 = move old a.json into backup; call 2 = install new a.json.
+        if calls["n"] == 2:
+            raise OSError("install failed mid-swap")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(ap.os, "replace", _flaky_replace)
+
+    with pytest.raises(OSError):
+        with atomic_publish(str(publish)) as staging:
+            _write(staging, "a.json", '{"v": 2}')
+
+    # Old version restored from backup despite failing between move and install.
+    assert (publish / "a.json").read_text() == '{"v": 1}'

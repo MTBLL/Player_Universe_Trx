@@ -59,45 +59,119 @@ def _atomic_write_json(data: object, dest: Path) -> None:
     directory (not staged) and must itself never be observed half-written.
     """
     tmp = dest.with_suffix(dest.suffix + ".tmp")
-    with open(tmp, "w") as f:
-        json.dump(data, f, indent=2)
-        f.flush()
-        os.fsync(f.fileno())
-    os.replace(tmp, dest)
+    try:
+        with open(tmp, "w") as f:
+            json.dump(data, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, dest)
+    except BaseException:
+        # Never leave a stray .tmp behind on a failed manifest write.
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+        raise
+
+
+def _rollback(
+    backed_up: "list[str]", installed: "list[str]", publish: Path, backup: Path
+) -> None:
+    """Best-effort revert of a partial publish back to the pre-run state.
+
+    ``backed_up`` names whose prior version was moved into ``backup``;
+    ``installed`` names whose new version was placed in ``publish``. A file can
+    be in either or both (a file mid-swap is backed up but not yet installed).
+    Recovery: drop newly-added files that had no prior version, then restore
+    every backed-up version -- which also re-fills any file that was moved aside
+    but never got its replacement. Each step is independent so one failure does
+    not abort the rest; failures are logged loudly because they mean ``publish``
+    is left in a mixed state and the backup dir must be kept for manual repair.
+    """
+    backed_up_set = set(backed_up)
+    for name in installed:
+        if name not in backed_up_set:  # newly added this run -> nothing to restore
+            try:
+                (publish / name).unlink(missing_ok=True)
+            except OSError:
+                logger.exception(
+                    "Rollback failed to remove new file %s; publish dir is in "
+                    "a mixed state and needs manual inspection",
+                    publish / name,
+                )
+    for name in backed_up:
+        try:
+            os.replace(backup / name, publish / name)  # old version back in place
+        except OSError:
+            logger.exception(
+                "Rollback failed to restore %s from backup; publish dir is in "
+                "a mixed state and needs manual inspection",
+                publish / name,
+            )
 
 
 def _publish(staging: Path, publish: Path, run_id: Optional[str], started_at: str) -> None:
-    """Atomically move every file from ``staging`` into ``publish`` and write
-    the manifest last.
+    """Publish every staged file into ``publish``, with rollback on failure.
 
-    The rename loop is the only window during which ``publish`` can hold a
-    mix of old and new files; keep it tight (no I/O beyond ``os.replace``).
-    Checksums for the manifest are computed *after* the renames, reading from
-    the now-published files.
+    POSIX gives no atomic rename for a *set* of files, so a naive loop that
+    fails partway would leave ``publish`` holding a mix of new and old files --
+    exactly the torn snapshot this helper exists to prevent, and a violation of
+    the "a failed run leaves the last good output untouched" contract. To honor
+    that contract, each existing target is moved into a backup dir before being
+    overwritten; if any rename (or the final manifest write) raises, the
+    completed steps are rolled back and the original error re-raised.
+
+    The successful path still has the inherent millisecond-wide window in which
+    a reader can observe a partly-swapped directory -- that is unavoidable
+    without a directory-level atomic primitive and is accepted by design.
+    Checksums for the manifest are computed after the renames, from the
+    now-published files.
     """
     files = sorted(p for p in staging.iterdir() if p.is_file())
 
-    # Tight atomic-rename loop -- minimal inconsistency window. os.replace is
-    # POSIX-atomic per file because staging shares a filesystem with publish.
-    for src in files:
-        os.replace(src, publish / src.name)
+    # Backup shares the publish filesystem so moving old versions aside is an
+    # atomic rename, not a copy.
+    backup = Path(
+        tempfile.mkdtemp(prefix=f".{publish.name}.backup-", dir=publish.parent)
+    )
+    backed_up: "list[str]" = []
+    installed: "list[str]" = []
+    try:
+        for src in files:
+            name = src.name
+            dest = publish / name
+            if dest.exists():
+                os.replace(dest, backup / name)  # move old version aside first
+                backed_up.append(name)
+            os.replace(src, dest)  # install new version
+            installed.append(name)
 
-    manifest = {
-        "run_id": run_id,
-        "started_at": started_at,
-        "completed_at": datetime.now(timezone.utc)
-        .isoformat()
-        .replace("+00:00", "Z"),
-        "files": {
-            src.name: {
-                "sha256": _sha256(publish / src.name),
-                "size": (publish / src.name).stat().st_size,
-            }
-            for src in files
-        },
-    }
-    _atomic_write_json(manifest, publish / MANIFEST_NAME)
+        manifest = {
+            "run_id": run_id,
+            "started_at": started_at,
+            "completed_at": datetime.now(timezone.utc)
+            .isoformat()
+            .replace("+00:00", "Z"),
+            "files": {
+                src.name: {
+                    "sha256": _sha256(publish / src.name),
+                    "size": (publish / src.name).stat().st_size,
+                }
+                for src in files
+            },
+        }
+        _atomic_write_json(manifest, publish / MANIFEST_NAME)
+    except BaseException:
+        _rollback(backed_up, installed, publish, backup)
+        # Keep the backup dir for forensics if anything is left behind; a clean
+        # rollback empties it of restorable versions.
+        if any(backup.iterdir()):
+            logger.error("Backup retained for manual recovery: %s", backup)
+        else:
+            shutil.rmtree(backup, ignore_errors=True)
+        raise
 
+    shutil.rmtree(backup, ignore_errors=True)
     logger.info(
         "Atomically published %d files to %s (manifest: %s)",
         len(files),
