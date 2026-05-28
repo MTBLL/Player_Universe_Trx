@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Iterator, Optional, TextIO
 
 from rich.console import Console, Group
@@ -23,6 +23,7 @@ from player_universe_trx.matchers.player_matcher import (
 )
 from player_universe_trx.matchers.transformation import apply_matches
 from player_universe_trx.transformers.league_transformer import LeagueTransformer
+from player_universe_trx.utils.atomic_publish import atomic_publish
 from player_universe_trx.utils.league_output import save_league_results
 from player_universe_trx.utils.model_utils import (
     create_espn_batter_models,
@@ -361,35 +362,64 @@ def main(
     # Report match method breakdown
     _report_match_statistics(batter_results, pitcher_results)
 
-    # Save results to output directory
-    logger.info("Saving results...")
-    save_results(matched_players, unmatched_players, ambiguous_players, output_dir)
-
-    logger.info("=" * 60)
-    logger.info("Player universe transformation complete")
-    logger.info("=" * 60)
-
     result: Dict[str, Any] = {
         "matched": len(matched_players),
         "unmatched": len(unmatched_players),
         "ambiguous": len(ambiguous_players),
     }
 
-    # Transform league data if league_id is provided
-    if league_id is not None:
-        logger.info("")
-        logger.info("=" * 60)
-        logger.info("Starting league transformation...")
-        logger.info("=" * 60)
-        league_results = transform_league_data(
-            league_id=league_id,
-            resources_path=resources_path,
-            year=year,
-            output_dir=output_dir,
+    # Publish every output file atomically. The whole run (player files *and*
+    # league files) writes into a staging directory; on clean exit the staged
+    # files are renamed into ``output_dir`` in one tight loop and a manifest is
+    # written last. This closes the torn-snapshot race that surfaced downstream
+    # as transient FK violations in Player_Universe_Load -- see the publish
+    # module docstring. A failure anywhere below leaves the last good output
+    # directory untouched.
+    run_id = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    with atomic_publish(output_dir, run_id=run_id) as staging_dir:
+        staging = str(staging_dir)
+
+        logger.info("Saving results...")
+        save_results(
+            matched_players, unmatched_players, ambiguous_players, staging
         )
-        result.update({"league": league_results})
+
+        logger.info("=" * 60)
+        logger.info("Player universe transformation complete")
+        logger.info("=" * 60)
+
+        # Transform league data if league_id is provided
+        if league_id is not None:
+            logger.info("")
+            logger.info("=" * 60)
+            logger.info("Starting league transformation...")
+            logger.info("=" * 60)
+            league_results = transform_league_data(
+                league_id=league_id,
+                resources_path=resources_path,
+                year=year,
+                output_dir=staging,
+            )
+            # transform_league_data reports paths inside the staging dir, which
+            # no longer exists once published. Rewrite them to the final
+            # publish location so callers see real, durable paths.
+            result.update({"league": _rewrite_paths(league_results, staging, output_dir)})
 
     return result
+
+
+def _rewrite_paths(results: Dict[str, Any], old_dir: str, new_dir: str) -> Dict[str, Any]:
+    """Return a copy of ``results`` with any staging-dir paths repointed at the
+    final publish dir. Path values are either strings or lists of strings."""
+
+    def _swap(value: Any) -> Any:
+        if isinstance(value, str):
+            return value.replace(old_dir, new_dir, 1)
+        if isinstance(value, list):
+            return [_swap(v) for v in value]
+        return value
+
+    return {k: _swap(v) for k, v in results.items()}
 
 
 def _report_match_statistics(batter_results, pitcher_results):
