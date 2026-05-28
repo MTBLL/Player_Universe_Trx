@@ -157,3 +157,81 @@ def test_failure_between_backup_and_install_does_not_lose_old_file(
 
     # Old version restored from backup despite failing between move and install.
     assert (publish / "a.json").read_text() == '{"v": 1}'
+
+
+def test_failed_manifest_write_cleans_tmp_and_rolls_back(tmp_path, monkeypatch):
+    """A real manifest write failure (fsync errors) must remove the .tmp file
+    and revert installed files, not leave a stray half-written manifest."""
+    publish = tmp_path / "transform"
+
+    with atomic_publish(str(publish)) as staging:
+        _write(staging, "a.json", '{"v": 1}')
+
+    def _boom_fsync(_fd):
+        raise OSError("fsync failed")
+
+    monkeypatch.setattr(ap.os, "fsync", _boom_fsync)
+
+    with pytest.raises(OSError):
+        with atomic_publish(str(publish)) as staging:
+            _write(staging, "a.json", '{"v": 2}')
+
+    # No stray MANIFEST.json.tmp, and a.json reverted to the prior run.
+    assert not list(publish.glob("*.tmp"))
+    assert (publish / "a.json").read_text() == '{"v": 1}'
+
+
+def test_rollback_logs_when_unlinking_new_file_fails(tmp_path, monkeypatch):
+    """If removing a newly-added file during rollback fails, the error is
+    swallowed-and-logged so the rest of the rollback still runs."""
+    publish = tmp_path / "transform"
+
+    monkeypatch.setattr(ap.os, "fsync", lambda _fd: (_ for _ in ()).throw(OSError()))
+
+    real_unlink = Path.unlink
+
+    def _flaky_unlink(self, *a, **k):
+        # Fail on the new file (rollback path) and on the manifest .tmp cleanup
+        # (the nested best-effort unlink in _atomic_write_json).
+        if self.name == "c.json" or self.suffix == ".tmp":
+            raise OSError("cannot remove")
+        return real_unlink(self, *a, **k)
+
+    monkeypatch.setattr(Path, "unlink", _flaky_unlink)
+
+    with pytest.raises(OSError):
+        with atomic_publish(str(publish)) as staging:
+            _write(staging, "c.json", '{"new": True}')
+
+    # Rollback couldn't remove it, but the run still raised rather than
+    # silently "succeeding".
+
+
+def test_rollback_restore_failure_retains_backup(tmp_path, monkeypatch):
+    """If restoring a backed-up file fails, the backup dir is retained for
+    manual recovery rather than deleted."""
+    publish = tmp_path / "transform"
+
+    with atomic_publish(str(publish)) as staging:
+        _write(staging, "a.json", '{"v": 1}')
+
+    real_replace = os.replace
+    calls = {"n": 0}
+
+    def _flaky_replace(src, dst):
+        calls["n"] += 1
+        # 1 = move old aside (ok); 2 = install new (fail -> rollback);
+        # 3 = restore backup (fail -> backup retained).
+        if calls["n"] in (2, 3):
+            raise OSError("replace failed")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(ap.os, "replace", _flaky_replace)
+
+    with pytest.raises(OSError):
+        with atomic_publish(str(publish)) as staging:
+            _write(staging, "a.json", '{"v": 2}')
+
+    # A backup dir was kept behind for forensics.
+    backups = list(publish.parent.glob(".transform.backup-*"))
+    assert backups, "expected a retained backup dir after a failed rollback"
