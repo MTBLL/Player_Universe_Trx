@@ -96,6 +96,9 @@ class MtblPlayerModel(BaseModel):
     # Media information
     headshot: Optional[str] = None
 
+    # News items from ESPN Fantasy news API (Rotowire notes)
+    news: List[Dict[str, Any]] = Field(default_factory=list)
+
     model_config = ConfigDict(
         populate_by_name=True, arbitrary_types_allowed=True, str_strip_whitespace=True
     )

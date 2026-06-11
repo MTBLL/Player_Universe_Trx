@@ -1,6 +1,6 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BirthPlace(BaseModel):
@@ -111,5 +111,8 @@ class EspnPlayerModel(BaseModel):
 
     # Transactions
     transactions: Optional[List[Transaction]] = None
+
+    # News items from ESPN Fantasy news API (Rotowire notes)
+    news: List[Dict[str, Any]] = Field(default_factory=list)
 
     model_config = ConfigDict(populate_by_name=True)
